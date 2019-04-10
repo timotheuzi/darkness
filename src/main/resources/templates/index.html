@@ -1,0 +1,25 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+    <title>Character creation</title>
+	<script type="text/javascript" th:src="@{js/jquery-3.3.1.js}" /></script>
+    <script type="text/javascript" th:src="@{js/client-side-script.js}" /></script>
+	<link rel="stylesheet" th:href="@{css/styles.css}"/>	
+</head>
+<body>
+	<div class="mainContainer">
+		<p>Please enter a username</p>
+		<input id="createUser" type="text"  width="50px" value=""></input><input id="createButton" type="button" onclick="createNewUser('/darkness/createNewUser');" value="Create User" />
+			<br />
+		<br />
+		<input id="initMap" type="button" onclick="init('/darkness/initializeMap');" value="initialize Maps for game"/>
+		<br />
+		<input id="initItem" type="button" onclick="init('/darkness/initializeItem');" value="initialize Items for game"/>
+		<br />
+		<input id="initNpc" type="button" onclick="init('/darkness/initializeNpc');" value="initialize NPCS for game"/>
+		<div id="output"></div>
+	</div>
+</body>
+	
+</html>

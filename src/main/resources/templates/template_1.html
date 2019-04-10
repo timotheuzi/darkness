@@ -1,0 +1,43 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Dark Alley</title>
+    <script type="text/javascript" th:src="@{js/jquery-3.3.1.js}" /></script>
+    <script type="text/javascript" th:src="@{js/client-side-script.js}" /></script>
+	<link rel="stylesheet" th:href="@{css/styles.css}"/>	
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+	<div class="mainContainer">
+			<h1 id="desc" th:text='${description}' th:value='${description}'/><br />
+			<p>Greetings! <span id="name" th:text='${name}' th:value='${name}'/></span></p><br />
+			<span id="location" th:text='${location}' th:value='${location}'/>
+			<p>The following vagrants are present:</p>
+			<br />
+			<tr th:each="instance : ${npcs}">
+    			<td id="${instance.key}" th:value="${instance.value}" th:text="${instance.value}"></td>
+			</tr>
+			<p>Users in room:</p>
+			<tr th:each="instance : ${users}">
+				<td id="${instance.key}" th:value="${instance.value}" th:text="${instance.value}"></td>
+			</tr> 
+		
+		<input id="textBox" type="text" onsubmit="variousInput();" width="50px" value="" />
+		<input id="template" type="button" onclick="variousInput();" width="15px" value="go" />
+	</div>
+	<div id="output"></div><br />
+    <script type="text/javascript" th:src="@{js/jquery-3.3.1.js}" /></script>
+    <script type="text/javascript" th:src="@{js/client-side-script.js}" /></script>
+	<link rel="stylesheet" th:href="@{css/styles.css}"/>
+	<script th:inline="javascript">
+	/*<![CDATA[*/
+	 	var mapName = /*[[${mapName}]]*/ 'User name';
+		var current_location = /*[[${location}]]*/ 'location';
+		var name = /*[[${mapName}]]*/ 'name';
+	 
+	/*]]>*/
+	</script>	
+
+</body>
+
+</html>
