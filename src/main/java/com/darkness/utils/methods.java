@@ -48,9 +48,9 @@ public class methods {
 	templateController templateController;
 		
 	
-    public Integer mapCount = 0;
-    private Integer npcCount = 0;
-    private Integer itemCount = 0;
+    //public Integer mapCount = 0;
+    //private Integer npcCount = 0;
+    //private Integer itemCount = 0;
     //private Integer items, npcs, users, attack, defense;   
     //private String name, description;
 
@@ -64,7 +64,8 @@ public class methods {
     private String item_1 = "sterling";
 	
 	public void initializeMapValues()
-	{		
+	{	
+		Integer mapCount = CountMaps();
 		mapDB mapDB = new mapDB();
 	    mapDB.setMapName("map_" + (CountMaps() + 1));
 	    if(CountMaps() == 0)
@@ -87,6 +88,7 @@ public class methods {
 	}
 	public void initializeItemValues()
 	{
+		Integer itemCount = 0;
 		Double attack = Math.random() * ((10 - 1) + 1);
 		Double defense = Math.random() * ((5 - 1) + 1);	
 		itemsDB itemsDB = new itemsDB();

@@ -1,9 +1,9 @@
-	//updates on a scheduled to update statuses
-	window.setInternal(function()
-	{
-	    updateStatus();
+ 	//updates on a scheduled to update statuses
+	//window.setInternal(function()
+	//{
+	  //  updateStatus();
 	    
-	}, 50000);
+	//}, 50000);
 	//setInterval(function(){ updateStatus; }, 3000);
 	
 	function ajaxTest()
@@ -55,30 +55,34 @@
 			//var name = $('#name').val();
 			var textBox = $('#textBox').val();
 			//var currentLocation = $('#location').val();
-			var url = "/darkness/various";
-			$.ajax({
-			//url: encodeURI(url + "?location=" + current_location + "&name=" + name + "&value=" + textBox),
-			url: encodeURI(url),
-			contentType : 'application/json',
-			data:JSON.stringify(tempParams)})
-			.then(function(data) 
-			{			
-				if (textBox.toUpperCase().indexOf("MOVE") >= 0)
-				{
-					Redirect(encodeURI("/darkness/template_1?name=" + name));
-				}
-				else (textBox.toUpperCase().indexOf("INV") >= 0)
-				{
-					output = data;
-					//alert(output);
-					//var attack = output["attack"];
-					//var defense = output["defense"];
-					alert(output);
-					$("#output").append(name + " status:" + JSON.stringify(output));
-					$( "#output" ).fadeIn( 4000, function() {});
+			
+			
+			if (textBox.toUpperCase().indexOf("MOVE") >= 0)
+			{
+				Redirect(encodeURI("/darkness/template_1?name=" + name));
+				updateStatus();
+			}
+			else
+			{
+				var url = "/darkness/various";
+				$.ajax({
+					//url: encodeURI(url + "?location=" + current_location + "&name=" + name + "&value=" + textBox),
+					url: encodeURI(url),
+					contentType : 'application/json',
+					data:JSON.stringify(tempParams)})
+					.then(function(data) 
+						{			
+						output = data;
+						//alert(output);
+						//var attack = output["attack"];
+						//var defense = output["defense"];
+						alert(output);
+						$("#output").append(name + " status:" + JSON.stringify(output));
+						$( "#output" ).fadeIn( 4000, function() {});
 					//location.reload();
-				}				
-			});
+								
+						});
+			}
 	}
 
 	function templateSubmit(url)
