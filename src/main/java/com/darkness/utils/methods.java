@@ -84,7 +84,7 @@ public class methods {
 	    mapDB.setNpcs(0);
 	    mapDB.setUsers(0);
 	    mapRepos.save(mapDB);
-	    mapCount++;
+	    //mapCount++;
 	}
 	public void initializeItemValues()
 	{
@@ -126,7 +126,7 @@ public class methods {
 		}			
 		
 		npcRepos.save(npcDB);
-		npcCount++;
+		//npcCount++;
 	}
 	public Boolean createNewUser(String name)
 	{
@@ -224,7 +224,7 @@ public class methods {
 		{
 				count++;
 		}
-		return count;
+tr		return count;
 	}
 	public String CountNpcsByLocation(Integer location)
 	{
