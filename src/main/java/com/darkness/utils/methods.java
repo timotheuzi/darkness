@@ -224,7 +224,7 @@ public class methods {
 		{
 				count++;
 		}
-tr		return count;
+		return count;
 	}
 	public String CountNpcsByLocation(Integer location)
 	{
