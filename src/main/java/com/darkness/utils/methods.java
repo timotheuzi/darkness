@@ -61,7 +61,9 @@ public class methods {
     private String npc_0 = "Burly Bartender"; 
     private String npc_1 = "Vagrant"; 
     
-    private String item_1 = "sterling";
+    private String item_1 = "iron";
+    private String item_2 = "silver";
+    private String item_3 = "golden";
 	
 	public void initializeMapValues()
 	{	
@@ -84,21 +86,24 @@ public class methods {
 	    mapDB.setNpcs(0);
 	    mapDB.setUsers(0);
 	    mapRepos.save(mapDB);
+	    Integer maps = (CountMaps() + 1);
+	    updateCache("Map Location:" + maps.toString(), mapDB.toString());
 	    //mapCount++;
 	}
 	public void initializeItemValues()
 	{
-		Integer itemCount = 0;
-		Double attack = Math.random() * ((10 - 1) + 1);
+		Integer itemCount = CountItems() + 1;
+		Double attacks = (Math.random() * ((10 - 1) + 1));
 		Double defense = Math.random() * ((5 - 1) + 1);	
 		itemsDB itemsDB = new itemsDB();
-		itemsDB.setName("gun	_" + itemCount.toString());
+		itemsDB.setName("gun_" + itemCount.toString());
 		itemsDB.setDescription(item_1);
-		itemsDB.setAttack(attack.intValue());
+		itemsDB.setAttack(attacks.intValue());
 		itemsDB.setDefense(defense.intValue());
-		//itemsDB.location(0);
+		itemsDB.setLocation(1);
 		itemsRepos.save(itemsDB);
-		itemCount++;
+		updateCache("Total items:" + itemCount, "gun_" + itemCount.toString() + "created");
+		//itemCount++;
 	}
 	public void initializeNpcValues()
 	{
@@ -124,8 +129,11 @@ public class methods {
 			npcDB.setDefense(defense.intValue());
 			npcDB.setHp(hp.intValue());	
 		}			
-		
+		//HashMap<?,?> response = new HashMap<>();
 		npcRepos.save(npcDB);
+		//response = ('1', "Successfully added the following NPC:" + npcDB.toString() + npcDB.getLocation());
+		updateCache("Successfully added the following NPC:" + npcDB.toString(), "Location:" + npcDB.getLocation());
+		//return npcDB;
 		//npcCount++;
 	}
 	public Boolean createNewUser(String name)
@@ -420,7 +428,7 @@ public class methods {
 		   return name; 
 		   
 	}	
-	public void updateCache(Integer location, String msg ) 
+	public void updateCache(String location, String msg ) 
 	{	
 		cacheDB newCacheEntry = new cacheDB();
 		newCacheEntry.setCurrentStatus(msg);

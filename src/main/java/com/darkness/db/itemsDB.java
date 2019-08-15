@@ -15,7 +15,8 @@ public class itemsDB{
     private String description;
     private Integer attack;
     private Integer defense;  
- 
+    private Integer location;
+    
     public itemsDB()
     {	
     	//this.id = id;
@@ -71,6 +72,14 @@ public class itemsDB{
     public void setDefense(Integer defense)
     {
         this.defense = defense;
+    }
+    public Integer getLocation()
+    {
+        return location;
+    }
+    public void setLocation(Integer location)
+    {
+        this.location = location;
     }
     
     @Override

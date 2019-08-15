@@ -49,8 +49,8 @@ public class templateController {
         model.addAttribute("name", name);
         userDB newEntry = new userDB();
 		//newEntry.setId(id);
-        if (!uRepo.findIfUserExists(name))
-        {
+        //if (!uRepo.findIfUserExists(name))
+        //{
         	newEntry.setName(name);
         	newEntry.setLvl(1);
         	newEntry.setMoney(1);
@@ -60,7 +60,7 @@ public class templateController {
         	newEntry.setDescription("A weak noob with no weapon");
         	newEntry.setLocation(1);
         	uRepo.save(newEntry);
-        }
+        //}
         return "greeting";
     }
     // home map

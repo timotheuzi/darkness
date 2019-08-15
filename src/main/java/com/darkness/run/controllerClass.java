@@ -177,19 +177,8 @@ public class controllerClass {
 		//Response response = new Response("Done", 1);
 		return count; // + "response" + response;
 	}*/
-	@GetMapping("/CountMaps")
-	public Integer CountMaps()
-	{
-		String result = "";
-		Integer count = 0;
-		for(mapDB mapDB : maprepo.findAll())
-		{
-			count++;
-		}
-		return count;
-	}
+	
 	@SuppressWarnings("static-access")
-	//@GetMapping("/initializeMap")
 	@RequestMapping(method = RequestMethod.GET, path = "/initializeMap", produces = MediaType.TEXT_HTML_VALUE)
 	public String initializeMap()
 	{	
@@ -197,11 +186,17 @@ public class controllerClass {
 		Methods.initializeMapValues();
 		return "Success";
 	}
-	//@GetMapping("/initializeNpc")
 	@RequestMapping(method = RequestMethod.GET, path = "/initializeNpc", produces = MediaType.TEXT_HTML_VALUE)
 	public String initializeNpc()
 	{			
 		Methods.initializeNpcValues();
+		userDB newEntry = new userDB();
+		/*if(newEntry.getLocation() != null)
+		{
+			newEntry.setLocation(newEntry.getLocation());
+		}*/
+		Integer itemCount = (Methods.CountItems() + 1);
+		Methods.updateCache("Location:" + newEntry.getLocation(), "item count:" + itemCount.toString());
 		return "Success";
 	}
 	//@GetMapping("/initializeItem")
@@ -211,19 +206,13 @@ public class controllerClass {
 		Methods.initializeItemValues();
 		return "Success";
 	}
-	//@GetMapping("/various")
 	@RequestMapping(method = RequestMethod.GET, path = "/various", produces = MediaType.APPLICATION_JSON_VALUE) //consumes = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE,
 	public Map various(Integer location, String value, String name) throws JSONException 
 	{
-		//Map<String, String> map = requestForm.get(arg0);
-		//String loca = requestForms.get("location").toString();
-		//String value = requestForms.get("value").toString();
-		//String name = requestForms.get("name").toString();	
-		//Integer location = Integer.parseInt(loca);
 		if(!value.isEmpty())
 		{
 			value = value.replaceAll(",", "");
-			Methods.updateCache(location, value);
+			Methods.updateCache("Map location:" + location.toString(), value);
 		}
 		Map<String,String> output = new HashMap<String,String>();
 		//output.put("msg", value);
@@ -272,7 +261,7 @@ public class controllerClass {
 		}
 		else
 		{
-			output.put("msg", "No implementation for that string yet");
+			output.put("msg", "No implementation for that command yet");
 			return output;
 		}
 		//Map error = (error, "error happened");		
