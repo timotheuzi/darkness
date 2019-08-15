@@ -288,14 +288,21 @@ public class methods {
 			initializeMapValues();
 		}			
 		Double location = Math.random() * ((CountMaps()));
-		//random NPC generation and movement
-		Double npcToMove = Math.random() * ((CountNpcs()));
-		int temp = npcToMove.intValue();
-		npcRepos.findById(temp).get().setLocation(location.intValue()); 
+		
 		userRepos.findByName(name).setLocation(location.intValue());
 		//Model model = null;
 		//templateController.template_1(name, model);
 		return location.intValue();
+	}
+	public void npcMove()
+	{
+		
+		//random NPC generation and movement
+		Double npcToMove = Math.random() * ((CountNpcs()));
+		int temp = npcToMove.intValue();
+		Double location = Math.random() * ((CountMaps()));
+		npcRepos.findById(temp).get().setLocation(location.intValue()); 
+		//return null;
 	}
 	
 	public Map mapStatus(Integer mapIndex)

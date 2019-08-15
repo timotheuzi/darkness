@@ -45,24 +45,29 @@ public class templateController {
     @GetMapping("/greeting")
     public String greeting(@RequestParam(name="name", required=false, defaultValue="World") String name, Model model)
     {
+    	
         model.addAttribute("name", name);
         userDB newEntry = new userDB();
 		//newEntry.setId(id);
-        newEntry.setName(name);
-        newEntry.setLvl(1);
-        newEntry.setMoney(1);
-        newEntry.setExp(1);
-        newEntry.setAttack(1);
-        newEntry.setDefense(1);
-        newEntry.setDescription("A weak noob with no weapon");
-        newEntry.setLocation(1);
-        uRepo.save(newEntry);
+        if (!uRepo.findIfUserExists(name))
+        {
+        	newEntry.setName(name);
+        	newEntry.setLvl(1);
+        	newEntry.setMoney(1);
+        	newEntry.setExp(1);
+        	newEntry.setAttack(1);
+        	newEntry.setDefense(1);
+        	newEntry.setDescription("A weak noob with no weapon");
+        	newEntry.setLocation(1);
+        	uRepo.save(newEntry);
+        }
         return "greeting";
     }
     // home map
     @GetMapping("/home")
     public String home(@RequestParam(name="name", required=false) String name, Model model) 
 	{
+    	methods.npcMove();
 		Integer currentMap = null;
 			//methods.initializeMapValues();
 		//String userName = uRepo.findByName(name).getName();
@@ -79,6 +84,7 @@ public class templateController {
     @GetMapping("/template_1")
     public String template_1(@RequestParam(name="name", required=true) String name, Model model) 
 	{
+    	methods.npcMove();
     	//methods.initializeMapValues();
 		Integer currentMap = methods.move(name);
 		uRepo.findByName(name).setLocation(currentMap.intValue());
