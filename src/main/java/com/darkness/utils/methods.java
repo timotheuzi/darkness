@@ -102,7 +102,7 @@ public class methods {
 		itemsDB.setDefense(defense.intValue());
 		itemsDB.setLocation(1);
 		itemsRepos.save(itemsDB);
-		updateCache("Total items:" + itemCount, "gun_" + itemCount.toString() + "created");
+		updateCache("Total items:" + itemCount, "gun_" + itemCount.toString() + " created");
 		//itemCount++;
 	}
 	public void initializeNpcValues()
@@ -132,7 +132,7 @@ public class methods {
 		//HashMap<?,?> response = new HashMap<>();
 		npcRepos.save(npcDB);
 		//response = ('1', "Successfully added the following NPC:" + npcDB.toString() + npcDB.getLocation());
-		updateCache("Successfully added the following NPC:" + npcDB.toString(), "Location:" + npcDB.getLocation());
+		updateCache("Successfully added the following NPC:" + npcDB.toString(), " Location:" + npcDB.getLocation());
 		//return npcDB;
 		//npcCount++;
 	}

@@ -247,7 +247,7 @@
 				output = data;
 				alert(output)					
 				$("#output").append(output + " ");
-				$( "#output" ).fadeIn( 4000, function() {});
+				$( "#output" ).fadeIn( 4000, function() {});  test
 			});
 	}*/
 	function Redirect(url)
