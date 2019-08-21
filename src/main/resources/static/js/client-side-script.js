@@ -46,8 +46,8 @@
 			var tempParams = 
 			{
 				"value": $("#textBox").val(),
-				"name": name,
-				"location": current_location
+				"name": $("#name").val(),
+				"location": $("#name").val()
 			};
 			
 			//alert('in various');
@@ -99,6 +99,11 @@
 					var resp = output["output"];	
 					$("#output").append(resp + " ");
 					$( "#output" ).fadeIn( 4000, function() {});
+					if(resp == 'move')
+					{
+						alert('FRED');
+						//Redirect(encodeURI("/darkness/template_1?name=" + name));
+					}
 				});
 	}
 
@@ -107,8 +112,8 @@
 			//initMap();
 			//updateRoom
 			var output = {};
-			//var name = $('#name').val();
-			//var current_location = $('#location').val();
+			var name = $('#name').val();
+			var current_location = $('#location').val();
 			var textBox = $('#textBox').val();
 			var url = "/darkness/updateRoom"
 			$.ajax({

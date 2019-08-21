@@ -122,9 +122,10 @@ public class methods {
 		}
 		else
 		{
+			Integer npcLoc = (int) (Math.random() * ((CountMaps())).intValue());
 			npcDB.setName(getMeAgoodName());
 			npcDB.setDescription(npc_1);
-			npcDB.setLocation(2);
+			npcDB.setLocation(npcLoc);
 			npcDB.setAttack(attack.intValue());
 			npcDB.setDefense(defense.intValue());
 			npcDB.setHp(hp.intValue());	
@@ -302,7 +303,7 @@ public class methods {
 		//templateController.template_1(name, model);
 		return location.intValue();
 	}
-	public void npcMove()
+	public void randomNpcMove()
 	{
 		
 		//random NPC generation and movement
@@ -417,13 +418,16 @@ public class methods {
 		         }
 		      }
 		      else touse = cons;
-		      //pick a random character from the set we are goin to use.
+		      //pick a random character from the set we are going to use.
 		      c = touse.charAt(rand.nextInt(touse.length()));
 		      name = name + c;
 		      if (cons.indexOf(c) != -1) consnum++;
 		      if (vocals.indexOf(c) != -1) consnum = consnum -1;
 		   }
-		   name = name.charAt(0) + name.substring(1, name.length());
+		   //upper case first letter
+		   String firstLetter = String.valueOf(name.charAt(0)).toUpperCase();
+		   //String first = firstLetter;
+		   name = firstLetter + name.substring(1, name.length());
 		   System.out.println(name);
 		   return name; 
 		   

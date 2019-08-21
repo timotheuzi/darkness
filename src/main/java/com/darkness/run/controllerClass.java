@@ -190,13 +190,13 @@ public class controllerClass {
 	public String initializeNpc()
 	{			
 		Methods.initializeNpcValues();
-		userDB newEntry = new userDB();
+		//userDB newEntry = new userDB();
 		/*if(newEntry.getLocation() != null)
 		{
 			newEntry.setLocation(newEntry.getLocation());
 		}*/
-		Integer itemCount = (Methods.CountItems() + 1);
-		Methods.updateCache("Location:" + newEntry.getLocation(), "item count:" + itemCount.toString());
+		//Integer itemCount = (Methods.CountItems() + 1);
+		//Methods.updateCache("New NPC:" + newEntry.getLocation(), " item count:" + itemCount.toString());
 		return "Success";
 	}
 	//@GetMapping("/initializeItem")
@@ -220,14 +220,15 @@ public class controllerClass {
 		//cacheRepos.save(output);
 		if (value.toLowerCase().contains("move"))
 		{
-			Methods.move(name);
+			//Methods.move(name);
 			//output.put("users", Methods.ShowUsersInLocation(location).toString());				
 			//output.put("npcs", Methods.ShowNpcsInLocation(location).toString());
 			//output.put("description", maprepo.findById(location).get().getDescription());
 			
-			//Model model = null;
-			//tempController.template_1(name, model);			
-			return output;	
+			//Integer newLocation = Methods.move(name);
+			Model model = null;
+			tempController.template_1(name, model);			
+			//return output;	
 		}
 		else if (value.toLowerCase().contains("inv") && value.toLowerCase().contains(Methods.ShowNpcsInLocation(location).toString()))
 		{

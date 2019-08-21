@@ -12,8 +12,8 @@
 <body>
 	<div class="mainContainer">
 			<h1 id="desc" th:text='${description}' th:value='${description}'/><br />
-			<p>Greetings! <span id="name" th:text='${name}' th:value='${name}'/></span></p><br />
-			<span id="location" th:text='${location}' th:value='${location}'/>
+			<p><span id="name" th:text='${name}' th:value='${name}'/></span></p><br />
+			<span id="location" th:value='${location}' />
 			<p>The following vagrants are present:</p>
 			<br />
 			<tr th:each="instance : ${npcs}">
@@ -23,9 +23,9 @@
 			<tr th:each="instance : ${users}">
 				<td id="${instance.key}" th:value="${instance.value}" th:text="${instance.value}"></td>
 			</tr> 
-		
-		<input id="textBox" type="text" width="50px" value="update Status" />
-		<input id="template" type="button" onclick="variousInput();" width="15px" value="go" />
+			<br />
+		<input id="textBox" type="text" width="50px" value="" /><br />
+		<input id="template" type="button" onclick="variousInput();" width="15px" value="Various" />
 		<input id="template" type="button" onclick="updateStatus();" width="15px" value="updateStatus" />
 		
 	</div>

@@ -39,10 +39,10 @@ public class templateController {
 	{
 		methods.initializeMapValues();
 		methods.initializeItemValues();
-		methods.initializeNpcValues();
+		//methods.initializeNpcValues();
 	    return "index";
 	}
-    @GetMapping("/greeting")
+    /*@GetMapping("/greeting")
     public String greeting(@RequestParam(name="name", required=false, defaultValue="World") String name, Model model)
     {
     	
@@ -62,12 +62,12 @@ public class templateController {
         	uRepo.save(newEntry);
         //}
         return "greeting";
-    }
+    }*/
     // home map
     @GetMapping("/home")
     public String home(@RequestParam(name="name", required=false) String name, Model model) 
 	{
-    	methods.npcMove();
+    	methods.randomNpcMove();
 		Integer currentMap = null;
 			//methods.initializeMapValues();
 		//String userName = uRepo.findByName(name).getName();
@@ -84,7 +84,7 @@ public class templateController {
     @GetMapping("/template_1")
     public String template_1(@RequestParam(name="name", required=true) String name, Model model) 
 	{
-    	methods.npcMove();
+    	methods.randomNpcMove();
     	//methods.initializeMapValues();
 		Integer currentMap = methods.move(name);
 		uRepo.findByName(name).setLocation(currentMap.intValue());
