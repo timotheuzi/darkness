@@ -50,7 +50,7 @@
 				"location": $("#name").val()
 			};
 			
-			//alert('in various');
+			//alert('in various'); ahh
 			var output = [];
 			//var name = $('#name').val();
 			var textBox = $('#textBox').val();
