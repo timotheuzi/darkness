@@ -1,4 +1,4 @@
-package com.darkness.run;
+package com.darkness.controller;
 
 import java.io.Serializable;
 import java.util.Map;

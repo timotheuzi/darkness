@@ -52,12 +52,12 @@ q:before, q:after
 	content: '';
 	content: none;
 }
-table
- {
-	border-collapse: collapse;
-	border-spacing: 0;
-	text-shadow: 3px 2px red;
-}
+#table
+# {
+#	border-collapse: collapse;
+#	border-spacing: 0;
+#	text-shadow: 3px 2px red;
+# }
 mainContainer
 {
 	text-align:left;
@@ -66,7 +66,8 @@ mainContainer
 }
 span,td
 {
-	color: red;
+	color: white
+	;
 }
 .name
 {
@@ -80,8 +81,8 @@ span,td
 }
 #output
 {
-	background-color:grey;
-	color:red;
+	background-color:black;
+	color:white;
 	max-width: auto;
 	max-height: 200px;
 	overflow-y: auto;	

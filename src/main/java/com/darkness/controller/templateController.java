@@ -1,4 +1,4 @@
-package com.darkness.run;
+package com.darkness.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

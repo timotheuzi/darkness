@@ -1,4 +1,4 @@
-package com.darkness.run;
+package com.darkness.controller;
 
 import org.springframework.http.MediaType;
 import org.springframework.ui.Model;
@@ -178,33 +178,25 @@ public class controllerClass {
 		return count; // + "response" + response;
 	}*/
 	
-	@SuppressWarnings("static-access")
 	@RequestMapping(method = RequestMethod.GET, path = "/initializeMap", produces = MediaType.TEXT_HTML_VALUE)
 	public String initializeMap()
 	{	
 		//Response response = 
 		Methods.initializeMapValues();
-		return "Success";
+		return "Initializing one new map was a success";
 	}
 	@RequestMapping(method = RequestMethod.GET, path = "/initializeNpc", produces = MediaType.TEXT_HTML_VALUE)
 	public String initializeNpc()
 	{			
 		Methods.initializeNpcValues();
-		//userDB newEntry = new userDB();
-		/*if(newEntry.getLocation() != null)
-		{
-			newEntry.setLocation(newEntry.getLocation());
-		}*/
-		//Integer itemCount = (Methods.CountItems() + 1);
-		//Methods.updateCache("New NPC:" + newEntry.getLocation(), " item count:" + itemCount.toString());
-		return "Success";
+		return "intitialize one new NPC was a Success";
 	}
 	//@GetMapping("/initializeItem")
 	@RequestMapping(method = RequestMethod.GET, path = "/initializeItem", produces = MediaType.TEXT_HTML_VALUE)
 	public String initializeItem()
 	{			
 		Methods.initializeItemValues();
-		return "Success";
+		return "initialize one new item was a success";
 	}
 	@RequestMapping(method = RequestMethod.GET, path = "/various", produces = MediaType.APPLICATION_JSON_VALUE) //consumes = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE,
 	public Map various(Integer location, String value, String name) throws JSONException 
@@ -212,7 +204,7 @@ public class controllerClass {
 		if(!value.isEmpty())
 		{
 			value = value.replaceAll(",", "");
-			Methods.updateCache("Map location:" + location.toString(), value);
+			Methods.updateCache("Map location: " + location.toString(), " " + value);
 		}
 		Map<String,String> output = new HashMap<String,String>();
 		//output.put("msg", value);
