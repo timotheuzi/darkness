@@ -1,6 +1,5 @@
 package com.darkness;
 
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -29,46 +28,36 @@ import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.Matchers.*;
+
 @RunWith(MockitoJUnitRunner.class)
 @SpringBootTest
-public class darknessApplicationTests 
-{
+public class darknessApplicationTests {
 	@Mock
 	methods mockMethods;
 	@Mock
 	mapDB mockMapDB;
 	@Mock
 	mapRepo mapRepo;
-	
-	
+
 	@Test
-	public void contextLoads() 
-	{
+	public void contextLoads() {
 	}
-	
-	/*@Test
-	public void CountMaps()
-	{
-		/*methods temp = mock(methods.class);
-		Integer countMaps = temp.CountMaps();
-		
-		Iterable<mapDB> iterator = mapRepo.findAll();
-		mapDB list = mock(mapDB.class);
-		Object object = mock(Object.class);
 
-		when(iterator.iterator()).toString();
-		//this is to mock list with one element, adjust accordingly
-		//when(iterator).hasNext()).thenReturn(true, false); 
-		//when(iterator).next().thenReturn(object);
-		
-
-		//String result = "";
-		Integer count = 0;
-		//for(mapDB mapDB : mapRepo.findAll()) 
-		//{
-		//	count++;
-		//}
-		System.out.println("our count is:" + count + " second count " + countMaps);
-	}*/
+	/*
+	 * @Test public void CountMaps() { /*methods temp = mock(methods.class); Integer
+	 * countMaps = temp.CountMaps();
+	 * 
+	 * Iterable<mapDB> iterator = mapRepo.findAll(); mapDB list = mock(mapDB.class);
+	 * Object object = mock(Object.class);
+	 * 
+	 * when(iterator.iterator()).toString(); //this is to mock list with one
+	 * element, adjust accordingly //when(iterator).hasNext()).thenReturn(true,
+	 * false); //when(iterator).next().thenReturn(object);
+	 * 
+	 * 
+	 * //String result = ""; Integer count = 0; //for(mapDB mapDB :
+	 * mapRepo.findAll()) //{ // count++; //} System.out.println("our count is:" +
+	 * count + " second count " + countMaps); }
+	 */
 
 }
