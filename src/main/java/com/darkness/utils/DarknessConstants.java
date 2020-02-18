@@ -1,8 +1,8 @@
 package com.darkness.utils;
 
-public final class darknessConstants {
+public final class DarknessConstants {
 
-	private darknessConstants() {
+	private DarknessConstants() {
 	}
 
 	public static final double PI = 3.14159;

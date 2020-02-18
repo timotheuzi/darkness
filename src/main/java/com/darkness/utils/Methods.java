@@ -120,7 +120,7 @@ public class Methods {
 
 	public Boolean createNewUser(String name) {
 		try {
-			UserDB result = userRepos.FindByName(name);
+			UserDB result = userRepos.findByName(name);
 			result.getName();
 			result.getLvl();
 			result.getMoney();
@@ -154,13 +154,13 @@ public class Methods {
 	public HashMap<String, Integer> getStats(String name, Boolean user) {
 		HashMap<String, Integer> stats = new HashMap<String, Integer>();
 		if (user) {
-			stats.put("ID", userRepos.FindByName(name).getId());
-			stats.put("attack", userRepos.FindByName(name).getAttack());
-			stats.put("defense", userRepos.FindByName(name).getDefense());
-			stats.put("exp", userRepos.FindByName(name).getExp());
-			stats.put("location", userRepos.FindByName(name).getLocation());
-			stats.put("lvl", userRepos.FindByName(name).getLvl());
-			stats.put("money", userRepos.FindByName(name).getMoney());
+			stats.put("ID", userRepos.findByName(name).getId());
+			stats.put("attack", userRepos.findByName(name).getAttack());
+			stats.put("defense", userRepos.findByName(name).getDefense());
+			stats.put("exp", userRepos.findByName(name).getExp());
+			stats.put("location", userRepos.findByName(name).getLocation());
+			stats.put("lvl", userRepos.findByName(name).getLvl());
+			stats.put("money", userRepos.findByName(name).getMoney());
 		} else {
 			stats.put("ID", npcRepos.findByName(name).getId());
 			stats.put("attack", npcRepos.findByName(name).getAttack());
@@ -205,7 +205,7 @@ public class Methods {
 		{
 				count++;
 		}
-tr		return count;
+		return count;
 	}
 
 	public String CountNpcsByLocation(Integer location) {
@@ -262,7 +262,7 @@ tr		return count;
 		Double npcToMove = Math.random() * ((CountNpcs()));
 		int temp = npcToMove.intValue();
 		npcRepos.findById(temp).get().setLocation(location.intValue());
-		userRepos.FindByName(name).setLocation(location.intValue());
+		userRepos.findByName(name).setLocation(location.intValue());
 		// Model model = null;
 		// templateController.template_1(name, model);
 		return location.intValue();
@@ -295,7 +295,7 @@ tr		return count;
 
 	//// get individual user or npc
 	public String getUserByName(String name) {
-		return userRepos.FindByName(name).getName();
+		return userRepos.findByName(name).getName();
 	}
 
 	public String getNpcByName(String name) {
@@ -318,16 +318,16 @@ tr		return count;
 		HashMap userObj = new HashMap();
 
 		try {
-			userObj.put("name", userRepos.FindByName(name).getName());
-			userObj.put("attack", userRepos.FindByName(name).getAttack());
-			userObj.put("defense", userRepos.FindByName(name).getDefense());
-			userObj.put("description", userRepos.FindByName(name).getDescription());
-			userObj.put("exp", userRepos.FindByName(name).getExp());
-			userObj.put("hp", userRepos.FindByName(name).getHp());
-			userObj.put("location", userRepos.FindByName(name).getLocation());
-			userObj.put("lvl", userRepos.FindByName(name).getLvl());
-			userObj.put("money", userRepos.FindByName(name).getMoney());
-			userObj.put("name", userRepos.FindByName(name).getName());
+			userObj.put("name", userRepos.findByName(name).getName());
+			userObj.put("attack", userRepos.findByName(name).getAttack());
+			userObj.put("defense", userRepos.findByName(name).getDefense());
+			userObj.put("description", userRepos.findByName(name).getDescription());
+			userObj.put("exp", userRepos.findByName(name).getExp());
+			userObj.put("hp", userRepos.findByName(name).getHp());
+			userObj.put("location", userRepos.findByName(name).getLocation());
+			userObj.put("lvl", userRepos.findByName(name).getLvl());
+			userObj.put("money", userRepos.findByName(name).getMoney());
+			userObj.put("name", userRepos.findByName(name).getName());
 		} catch (Exception e) {
 			e.printStackTrace();
 			return (HashMap) userObj.put("error", e.toString());
@@ -374,7 +374,7 @@ tr		return count;
 	}
 
 	public void updateCache(Integer location, String msg) {
-		cacheDB newCacheEntry = new cacheDB();
+		CacheDB newCacheEntry = new CacheDB();
 		newCacheEntry.setCurrentStatus(msg);
 		newCacheEntry.setMapName("map_" + location);
 		cacheRepos.save(newCacheEntry);

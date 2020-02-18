@@ -3,7 +3,7 @@ package com.darkness.run;
 import java.io.Serializable;
 import java.util.Map;
 
-public class requestForm implements Serializable {
+public class RequestForm implements Serializable {
 
 	private static final long serialVersionUID = -8848626608893337340L;
 

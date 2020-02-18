@@ -59,8 +59,8 @@ public class ControllerClass {
 			@RequestParam(name = "location", required = false) Integer location,
 			@RequestParam(name = "hp", required = false) Integer hp) {
 
-		repository.FindByName(name);
-		int id = repository.FindByName(name).getId();
+		repository.findByName(name);
+		int id = repository.findByName(name).getId();
 
 		UserDB newEntry = new UserDB();
 		newEntry.setId(id);
@@ -68,49 +68,49 @@ public class ControllerClass {
 		if (lvl != null) {
 			newEntry.setLvl(lvl);
 		} else {
-			newEntry.setLvl(repository.FindByName(name).getLvl());
+			newEntry.setLvl(repository.findByName(name).getLvl());
 		}
 
 		if (money != null) {
 			newEntry.setMoney(money);
 		} else {
-			newEntry.setMoney(repository.FindByName(name).getMoney());
+			newEntry.setMoney(repository.findByName(name).getMoney());
 		}
 
 		if (exp != null) {
 			newEntry.setExp(exp);
 		} else {
-			newEntry.setExp(repository.FindByName(name).getExp());
+			newEntry.setExp(repository.findByName(name).getExp());
 		}
 
 		if (attack != null) {
 			newEntry.setAttack(attack);
 		} else {
-			newEntry.setAttack(repository.FindByName(name).getAttack());
+			newEntry.setAttack(repository.findByName(name).getAttack());
 		}
 
 		if (defense != null) {
 			newEntry.setDefense(defense);
 		} else {
-			newEntry.setDefense(repository.FindByName(name).getDefense());
+			newEntry.setDefense(repository.findByName(name).getDefense());
 		}
 
 		if (description != null) {
 			newEntry.setDescription(description);
 		} else {
-			newEntry.setDescription(repository.FindByName(name).getDescription());
+			newEntry.setDescription(repository.findByName(name).getDescription());
 		}
 
 		if (location != null) {
 			newEntry.setLocation(location);
 		} else {
-			newEntry.setDescription(repository.FindByName(name).getDescription());
+			newEntry.setDescription(repository.findByName(name).getDescription());
 		}
 
 		if (hp != null) {
 			newEntry.setLocation(hp);
 		} else {
-			newEntry.setHp(repository.FindByName(name).getHp());
+			newEntry.setHp(repository.findByName(name).getHp());
 		}
 
 		repository.save(newEntry);

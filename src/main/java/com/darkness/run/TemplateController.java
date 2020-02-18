@@ -65,7 +65,7 @@ public class TemplateController {
 		// String userName = uRepo.findByName(name).getName();
 		currentMap = mRepo.findById(1).get().getId();// Math.random() * ((methods.CountMaps() - 1) + 1);
 		// uRepo.findByName(name).setLocation();
-		model.addAttribute("name", uRepo.FindByName(name).getName());
+		model.addAttribute("name", uRepo.findByName(name).getName());
 		model.addAttribute("mapName", mRepo.findById(currentMap.intValue()).get().getMapName());
 		model.addAttribute("description", mRepo.findById(currentMap.intValue()).get().getDescription());
 		model.addAttribute("npcs", methods.ShowNpcsInLocation(currentMap));
@@ -78,9 +78,9 @@ public class TemplateController {
 	public String template_1(@RequestParam(name = "name", required = true) String name, Model model) {
 		// methods.initializeMapValues();
 		Integer currentMap = methods.move(name);
-		uRepo.FindByName(name).setLocation(currentMap.intValue());
+		uRepo.findByName(name).setLocation(currentMap.intValue());
 		// methods.initializeNpcValues();
-		model.addAttribute("name", uRepo.FindByName(name).getName());
+		model.addAttribute("name", uRepo.findByName(name).getName());
 		model.addAttribute("mapName", mRepo.findById(currentMap.intValue()).get().getMapName());
 		model.addAttribute("description", mRepo.findById(currentMap.intValue()).get().getDescription());
 		/// model.addAttribute("nps", mRepo.findById(currentMap.intValue()).getNpcs());

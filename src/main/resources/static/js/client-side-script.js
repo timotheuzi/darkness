@@ -50,7 +50,7 @@
 				"location": current_location
 			};
 			
-			//alert('in various');
+			alert('in various');
 			var output = [];
 			//var name = $('#name').val();
 			var textBox = $('#textBox').val();
@@ -79,8 +79,7 @@
 						alert(output);
 						$("#output").append(name + " status:" + JSON.stringify(output));
 						$( "#output" ).fadeIn( 4000, function() {});
-					//location.reload();
-								
+					//location.reload();							
 						});
 			}
 	}
@@ -112,7 +111,7 @@
 			var textBox = $('#textBox').val();
 			var url = "/darkness/updateRoom"
 			$.ajax({
-				url: encodeURI(url + "?mapIndex=" + current_location),
+				url: encodeURI(url + "&mapIndex=" + current_location),
 				}).then(function(data)
 				{
 					output = data;
@@ -122,9 +121,9 @@
 					//$("#output").append(textBox + "<br />");
 					//$("#output").append(msg + "<br />");
 					$("#output").replaceWith(msg);
-					$("#users").replaceWith(users);
+					$("#users").replaceWith("its a timo");
 					$("#npcs").replaceWith(npcs);
-					$( "#output" ).fadeIn( 3000, function() {});
+					$( "#output" ).fadeIn( 300, function() {});
 				});
 	}
 	/*function updateUsers(url)

@@ -8,8 +8,9 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.darkness.utils.methods;
-import com.darkness.db.*;
+import com.darkness.utils.Methods;
+import com.darkness.db.MapDB;
+import com.darkness.db.MapRepo;
 
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -31,13 +32,13 @@ import static org.mockito.Matchers.*;
 
 @RunWith(MockitoJUnitRunner.class)
 @SpringBootTest
-public class darknessApplicationTests {
+public class DarknessApplicationTests {
 	@Mock
-	methods mockMethods;
+	Methods mockMethods;
 	@Mock
-	mapDB mockMapDB;
+	MapDB mockMapDB;
 	@Mock
-	mapRepo mapRepo;
+	MapRepo mapRepo;
 
 	@Test
 	public void contextLoads() {

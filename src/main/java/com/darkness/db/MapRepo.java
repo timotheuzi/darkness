@@ -4,7 +4,7 @@ import java.util.Optional;
 
 import org.springframework.data.repository.CrudRepository;
 
-import com.darkness.db.mapDB;
+//import com.darkness.db.mapDB;
 
 public interface MapRepo extends CrudRepository<MapDB, Integer> {
 	// mapDB findByName(String name);

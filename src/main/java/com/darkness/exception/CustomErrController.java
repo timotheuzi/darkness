@@ -1,4 +1,4 @@
-package com.darkness.exception;
+/*package com.darkness.exception;
 
 import java.util.Map;
 
@@ -18,7 +18,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.ModelAndView;
 
 @Controller
-public class ErrorController implements ErrorHandler {
+public class CustomErrController implements ErrorHandler {
 
 	private ErrorAttributes errorAttributes;
 
@@ -74,4 +74,4 @@ public class ErrorController implements ErrorHandler {
 		// TODO Auto-generated method stub
 
 	}
-}
+}*/

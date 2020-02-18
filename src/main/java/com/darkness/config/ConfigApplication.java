@@ -3,7 +3,7 @@ package com.darkness.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.darkness.utils.methods;
+import com.darkness.utils.Methods;
 
 @Configuration
 public class ConfigApplication<config> {
@@ -13,8 +13,8 @@ public class ConfigApplication<config> {
 	// ##################################################################################################
 
 	@Bean
-	public methods methods() {
-		methods methods = new methods();
+	public Methods methods() {
+		Methods methods = new Methods();
 
 		return methods; // rtest
 	}
