@@ -1,7 +1,8 @@
 # darkness
 spring boot application
 
-
+https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#production-ready-endpoints
+https://www.baeldung.com/spring-boot-actuators
 <!-- [INFO] Scanning for projects...
 [WARNING] 
 [WARNING] Some problems were encountered while building the effective model for com.run:darkness:jar:.001
