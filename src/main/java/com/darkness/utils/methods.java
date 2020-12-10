@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import com.darkness.controller.templateController;
+import com.darkness.controller.TemplateController;
 import com.darkness.db.UserRepo;
 import com.darkness.db.ItemsDB;
 import com.darkness.db.ItemsRepo;
@@ -45,7 +45,7 @@ public class Methods {
 	CacheRepo cacheRepos;
 
 	@Autowired
-	templateController templateController;
+	TemplateController templateController;
 
 	// public Integer mapCount = 0;
 	// private Integer npcCount = 0;
