@@ -1,12 +1,16 @@
 package com.darkness.db;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
-//item table
+//for NPC generation
 
 @Entity
-@Table(name = "items")
-public class ItemsDB {
+@Table(name = "npc")
+public class NpcDB {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
@@ -15,16 +19,19 @@ public class ItemsDB {
 	private String description;
 	private Integer attack;
 	private Integer defense;
+	private Integer location;
+	private Integer hp;
 
-	public ItemsDB() {
+	public NpcDB() {
 		// this.id = id;
 	}
 
-	public ItemsDB(String name, String description, Integer attack, Integer defense) {
+	public NpcDB(String name, String description, Integer attack, Integer defense, Integer location) {
 		this.name = name;
 		this.description = description;
 		this.attack = attack;
 		this.defense = defense;
+		this.location = location;
 	}
 
 	public int getId() {
@@ -65,6 +72,22 @@ public class ItemsDB {
 
 	public void setDefense(Integer defense) {
 		this.defense = defense;
+	}
+
+	public Integer getLocation() {
+		return location;
+	}
+
+	public void setLocation(Integer location) {
+		this.location = location;
+	}
+
+	public Integer getHp() {
+		return hp;
+	}
+
+	public void setHp(Integer hp) {
+		this.hp = hp;
 	}
 
 	@Override

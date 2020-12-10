@@ -8,31 +8,31 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.darkness.db.mapRepo;
-import com.darkness.db.userDB;
-import com.darkness.db.userRepo;
-import com.darkness.db.npcRepo;
-import com.darkness.utils.methods;
+import com.darkness.db.MapRepo;
+import com.darkness.db.UserDB;
+import com.darkness.db.UserRepo;
+import com.darkness.db.NpcRepo;
+import com.darkness.utils.Methods;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 @Controller
-public class templateController {
+public class TemplateController {
 	//@Autowiredtest
     //private methods Methods;
 	//@Value("${hellodfsdf}")
 	//this.msg;	
 	@Autowired
-	userRepo uRepo;
+	UserRepo uRepo;
 	
 	@Autowired
-	mapRepo mRepo;
+	MapRepo mRepo;
 	
 	@Autowired
-	npcRepo nRepo;
+	NpcRepo nRepo;
 	
 	@Autowired
-	methods methods;
+	Methods methods;
 	
 	@RequestMapping("/")
     public String index() 
@@ -67,9 +67,9 @@ public class templateController {
     @GetMapping("/home")
     public String home(@RequestParam(name="name", required=false) String name, Model model) 
 	{
-    	methods.randomNpcMove();
+    	//methods.randomNpcMove();
 		Integer currentMap = null;
-			//methods.initializeMapValues();
+		//methods.initializeMapValues();
 		//String userName = uRepo.findByName(name).getName();
 		currentMap = mRepo.findById(1).get().getId();//Math.random() * ((methods.CountMaps() - 1) + 1);
 		//uRepo.findByName(name).setLocation();
@@ -84,7 +84,7 @@ public class templateController {
     @GetMapping("/template_1")
     public String template_1(@RequestParam(name="name", required=true) String name, Model model) 
 	{
-    	methods.randomNpcMove();
+    	//methods.randomNpcMove();
     	//methods.initializeMapValues();
 		Integer currentMap = methods.move(name);
 		uRepo.findByName(name).setLocation(currentMap.intValue());

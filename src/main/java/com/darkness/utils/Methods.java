@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import com.darkness.controller.templateController;
 import com.darkness.db.UserRepo;
 import com.darkness.db.ItemsDB;
 import com.darkness.db.ItemsRepo;
@@ -20,7 +19,7 @@ import com.darkness.db.UserDB;
 import com.darkness.db.CacheRepo;
 import com.darkness.db.CacheDB;
 
-import com.darkness.Darkness.*;
+import com.darkness.run.*;
 
 import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +44,7 @@ public class Methods {
 	CacheRepo cacheRepos;
 
 	@Autowired
-	templateController templateController;
+	TemplateController templateController;
 
 	// public Integer mapCount = 0;
 	// private Integer npcCount = 0;
