@@ -6,7 +6,7 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "items")
-public class ItemsDB {
+public class itemsDB {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
@@ -16,11 +16,11 @@ public class ItemsDB {
 	private Integer attack;
 	private Integer defense;
 
-	public ItemsDB() {
+	public itemsDB() {
 		// this.id = id;
 	}
 
-	public ItemsDB(String name, String description, Integer attack, Integer defense) {
+	public itemsDB(String name, String description, Integer attack, Integer defense) {
 		this.name = name;
 		this.description = description;
 		this.attack = attack;

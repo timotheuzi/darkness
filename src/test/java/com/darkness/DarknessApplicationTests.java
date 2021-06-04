@@ -1,4 +1,4 @@
-package com.darkness;
+/*package com.darkness;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -59,6 +59,6 @@ public class DarknessApplicationTests {
 	 * //String result = ""; Integer count = 0; //for(mapDB mapDB :
 	 * mapRepo.findAll()) //{ // count++; //} System.out.println("our count is:" +
 	 * count + " second count " + countMaps); }
-	 */
 
-}
+
+}*/

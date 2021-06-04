@@ -9,7 +9,7 @@
 			<h1 id="desc" th:text='${description}' th:value='${description}'/><br />
 			<p><span id="name" th:text='${name}' th:value='${name}'/></span></p><br />
 			<span id="location" th:value='${location}' />
-			<p>The following vagrants are present:</p>
+			<p>The following fellows are present:</p>
 			<br />
 			<tr th:each="instance : ${npcs}">
     			<td id="${instance.key}" th:value="${instance.value}" th:text="${instance.value}"></td>
@@ -25,7 +25,7 @@
 	</div>
 	
 	
-	<!
+	
 	<div id="output"></div><br />
     <script type="text/javascript" th:src="@{js/jquery-3.3.1.js}" /></script>
     <script type="text/javascript" th:src="@{js/client-side-script.js}" /></script>

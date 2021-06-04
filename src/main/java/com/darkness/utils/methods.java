@@ -27,7 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ui.Model;
 
-public class Methods {
+public class methods {
 
 	@Autowired
 	UserRepo userRepos;
