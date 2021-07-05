@@ -9,11 +9,9 @@ public class Darkness {
 
 	public static void main(String[] args) {
 		SpringApplication app = new SpringApplication(Darkness.class);
-		System.out.print("Starting darkness with Args: [");
-		for (String s : args) {
-			System.out.print(s + " ");
-		}
-		System.out.println("]");
+		/*System.out.print("Starting dankness with Args: [");
+		for (String s : args) System.out.print(s + " ");
+		System.out.println("]");*/
 		app.run(args);
 	}
 }
