@@ -25,7 +25,7 @@ import com.darkness.utils.Methods;
  */
 
 @RestController
-class ControllerClass<TemplateController> {
+public class ControllerClass {
 
 	@Autowired
 	UserRepo repository;

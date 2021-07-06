@@ -58,10 +58,10 @@ public class Methods {
 	private String map_1 = "A dark street corner";
 	private String map_2 = "A dark alley";
 
-	private String npc_0 = "Burly Bartender";
-	private String npc_1 = "Vagrant";
+	private String npc_0 = "Surly Bartender";
+	private String npc_1 = "Unpaid Nightwatchman";
 
-	private String item_1 = "sterling";
+	private String item_1 = "sterling silver";
 
 	public void initializeMapValues() {
 		Integer mapCount = CountMaps();

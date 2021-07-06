@@ -18,10 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 @Controller
 public class TemplateController {
-	//@Autowiredtest
-    //private methods Methods;
-	//@Value("${hellodfsdf}")
-	//this.msg;	
+
 	@Autowired
 	UserRepo uRepo;
 	
@@ -85,7 +82,7 @@ public class TemplateController {
     public String template_1(@RequestParam(name="name", required=true) String name, Model model) 
 	{
     	//methods.randomNpcMove();
-    	//methods.initializeMapValues();
+    	methods.initializeMapValues();
 		Integer currentMap = methods.move(name);
 		uRepo.findByName(name).setLocation(currentMap.intValue());
 		//methods.initializeNpcValues();
