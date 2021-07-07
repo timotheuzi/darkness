@@ -1,4 +1,5 @@
 /target/
+/wallet_shiddy/
 !.mvn/wrapper/maven-wrapper.jar
 .clover#
 .apt_generated

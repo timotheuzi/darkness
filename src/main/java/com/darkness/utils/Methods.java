@@ -256,11 +256,9 @@ public class Methods {
 	}
 
 	public Integer move(String name) {
-		if (CountMaps() < 11) {
-			initializeMapValues();
-		}
+		if (CountMaps() < 11) initializeMapValues();
 		Double location = Math.random() * ((CountMaps()));
-		// random NPC generation and movement
+		/* random NPC generation and movement */
 		Double npcToMove = Math.random() * ((CountNpcs()));
 		int temp = npcToMove.intValue();
 		npcRepos.findById(temp).get().setLocation(location.intValue());
