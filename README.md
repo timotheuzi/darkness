@@ -1,2 +1,2 @@
 # Darkness 
-darkness (mud-like game) testing platform (early stages)
+mmud like online microservice
