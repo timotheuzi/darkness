@@ -16,41 +16,4 @@ public class CacheDB {
 	private int id;
 	private String mapName;
 	private String currentRoomStatus;
-
-	public CacheDB() {
-		// this.id = id;
-	}
-
-	public int getId() {
-		return id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
-	}
-
-	public CacheDB(String currentRoomStatus) {
-		this.currentRoomStatus = currentRoomStatus;
-	}
-
-	public String getCurrentStatis() {
-		return currentRoomStatus;
-	}
-
-	public void setCurrentStatus(String currentRoomStatus) {
-		this.currentRoomStatus = currentRoomStatus;
-	}
-
-	public String getMapName() {
-		return mapName;
-	}
-
-	public void setMapName(String mapName) {
-		this.mapName = mapName;
-	}
-
-	/*
-	 * @Override public String toString() { return "User{" + ", currentStatus='" +
-	 * currentStatus + '\'' + '}'; }
-	 */
 }

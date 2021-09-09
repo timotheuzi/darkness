@@ -1,4 +1,4 @@
-/*package com.darkness.exception;
+package com.darkness.exception;
 
 import java.util.Map;
 
@@ -74,4 +74,4 @@ public class CustomErrController implements ErrorHandler {
 		// TODO Auto-generated method stub
 
 	}
-}*/
+}

@@ -66,7 +66,7 @@ public class Methods {
 	public void initializeMapValues() {
 		Integer mapCount = CountMaps();
 		MapDB mapDB = new MapDB();
-		mapDB.setMapName("map_" + (CountMaps() + 1));
+		mapDB.setName("map_" + (CountMaps() + 1));
 		if (CountMaps() == 0) {
 			mapDB.setDescription(map_0);
 		} else if ((CountMaps() & 1) == 0) {
@@ -285,10 +285,11 @@ public class Methods {
 			itNpc.remove(); // avoids a ConcurrentModificationException
 			count++;
 		}
-		for (CacheDB cacheDB : cacheRepos.findAll()) {
-			mapObj.put(count, cacheDB.getCurrentStatis());
+		//TODO caching part not decided how this will work
+		/*for (CacheDB cacheDB : cacheRepos.findAll()) {
+			mapObj.put(count, cacheDB());
 			count++;
-		}
+		}*/
 
 		return mapObj;
 	}
@@ -372,12 +373,12 @@ public class Methods {
 		return name;
 
 	}
-
-	public void updateCache(Integer location, String msg) {
+//todo caching
+	/*public void updateCache(Integer location, String msg) {
 		CacheDB newCacheEntry = new CacheDB();
-		newCacheEntry.setCurrentStatus(msg);
-		newCacheEntry.setMapName("map_" + location);
+		//newCacheEntry.(msg);
+		//newCacheEntry("map_" + location);
 		cacheRepos.save(newCacheEntry);
 		// return Methods.getNpcByIndex(index);
-	}
+	}*/
 }

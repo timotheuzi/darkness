@@ -187,7 +187,7 @@ public class ControllerClass {
 		// Integer location = Integer.parseInt(loca);
 		if (!value.isEmpty()) {
 			value = value.replaceAll(",", "");
-			Methods.updateCache(location, value);
+			//Methods.updateCache(location, value);
 		}
 		Map<String, String> output = new HashMap<String, String>();
 		// output.put("msg", value);

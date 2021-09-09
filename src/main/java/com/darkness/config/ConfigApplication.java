@@ -20,7 +20,6 @@ public class ConfigApplication<config> {
 	@Bean
 	public Methods methods() {
 		Methods methods = new Methods();
-
 		return methods; // rtest
 	}
 
