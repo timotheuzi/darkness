@@ -20,13 +20,11 @@ import com.darkness.db.CacheRepo;
 import com.darkness.db.CacheDB;
 
 import com.darkness.controller.TemplateController;
-
-//import com.darkness.run.*;
+import com.darkness.utils.DarknessConstants;
 
 import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.ui.Model;
+
 
 public class Methods {
 
@@ -48,31 +46,16 @@ public class Methods {
 	@Autowired
 	TemplateController templateController;
 
-	// public Integer mapCount = 0;
-	// private Integer npcCount = 0;
-	// private Integer itemCount = 0;
-	// private Integer items, npcs, users, attack, defense;
-	// private String name, description;
-
-	private String map_0 = "An empty bar";
-	private String map_1 = "A dark street corner";
-	private String map_2 = "A dark alley";
-
-	private String npc_0 = "Surly Bartender";
-	private String npc_1 = "Unpaid Nightwatchman";
-
-	private String item_1 = "sterling silver";
-
 	public void initializeMapValues() {
-		Integer mapCount = CountMaps();
+		//Integer mapCount = CountMaps();
 		MapDB mapDB = new MapDB();
 		mapDB.setName("map_" + (CountMaps() + 1));
 		if (CountMaps() == 0) {
-			mapDB.setDescription(map_0);
+			mapDB.setDescription(DarknessConstants.map_0);
 		} else if ((CountMaps() & 1) == 0) {
-			mapDB.setDescription(map_1);
+			mapDB.setDescription(DarknessConstants.map_1);
 		} else {
-			mapDB.setDescription(map_2);
+			mapDB.setDescription(DarknessConstants.map_2);
 		}
 		mapDB.setItems(0);
 		mapDB.setNpcs(0);
@@ -86,8 +69,8 @@ public class Methods {
 		Double attack = Math.random() * ((10 - 1) + 1);
 		Double defense = Math.random() * ((5 - 1) + 1);
 		ItemsDB itemsDB = new ItemsDB();
-		itemsDB.setName("gun	_" + itemCount.toString());
-		itemsDB.setDescription(item_1);
+		itemsDB.setName("gun	_" + itemCount);
+		itemsDB.setDescription(DarknessConstants.item_0);
 		itemsDB.setAttack(attack.intValue());
 		itemsDB.setDefense(defense.intValue());
 		// itemsDB.location(0);
@@ -102,14 +85,14 @@ public class Methods {
 		NpcDB npcDB = new NpcDB();
 		if (CountNpcs() == 0) {
 			npcDB.setName("Frank");
-			npcDB.setDescription(npc_0);
+			npcDB.setDescription(DarknessConstants.npc_0);
 			npcDB.setLocation(1);
 			npcDB.setAttack(75);
 			npcDB.setDefense(75);
 			npcDB.setHp(3000);
 		} else {
 			npcDB.setName(getMeAgoodName());
-			npcDB.setDescription(npc_1);
+			npcDB.setDescription(DarknessConstants.npc_1);
 			npcDB.setLocation(2);
 			npcDB.setAttack(attack.intValue());
 			npcDB.setDefense(defense.intValue());
@@ -336,6 +319,7 @@ public class Methods {
 		return userObj;
 	}
 
+	// todo this doesnt create very good names
 	public static String getMeAgoodName() {
 		Random rand = new Random();
 		String vocals = "aeiou" + "ioaeu" + "ouaei";
