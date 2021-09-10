@@ -35,7 +35,7 @@ public class CustomErrController implements ErrorHandler {
 
 	private Map<String, Object> getErrorAttributes(HttpServletRequest request, boolean includeStackTrace) {
 		RequestAttributes requestAttributes = new ServletRequestAttributes(request);
-		return this.errorAttributes.getErrorAttributes((WebRequest) requestAttributes, includeStackTrace);//
+		return this.errorAttributes.getErrorAttributes((WebRequest) requestAttributes, );//
 	}
 
 	@RequestMapping(value = ERROR_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
