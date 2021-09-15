@@ -1,31 +1,22 @@
 package com.darkness.controller;
 
+import com.darkness.db.*;
+import com.darkness.utils.Methods;
+import org.json.JSONException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.json.JSONException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.darkness.db.CacheRepo;
-import com.darkness.db.MapDB;
-import com.darkness.db.MapRepo;
-import com.darkness.db.UserDB;
-import com.darkness.db.UserRepo;
-import com.darkness.utils.Methods;
-
 /**
- * In game controller endpoints Author: Timotheuzi
+ * In game engine endpoints Author: Timotheuzi
  */
 
 @RestController
-public class ControllerClass {
+public class EngineEndpoints {
 
 	@Autowired
 	UserRepo repository;
@@ -36,7 +27,7 @@ public class ControllerClass {
 	@Autowired
 	CacheRepo cacheRepos;
 	@Autowired
-	TemplateController tempController;
+	ThymeleafController tempController;
 
 	@RequestMapping(method = RequestMethod.GET, path = "/createNewUser", produces = MediaType.TEXT_HTML_VALUE)
 	public String createNewUser(@RequestParam(name = "name", required = true) String name) {
@@ -174,11 +165,6 @@ public class ControllerClass {
 
 	// @GetMapping("/various")
 	@RequestMapping(method = RequestMethod.GET, path = "/various", produces = MediaType.APPLICATION_JSON_VALUE) // consumes
-	// =
-	// MediaType.APPLICATION_JSON_VALUE,
-	// consumes
-	// =
-	// MediaType.APPLICATION_JSON_VALUE,
 	public Map various(Integer location, String value, String name) throws JSONException {
 		// Map<String, String> map = requestForm.get(arg0);
 		// String loca = requestForms.get("location").toString();
