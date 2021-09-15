@@ -44,7 +44,7 @@ obj/
 # Ignore gradle files
 .gradle/
 ####end something borrowed
-
+*.jar
 /lib
 /target
 /.gradle
