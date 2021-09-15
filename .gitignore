@@ -68,3 +68,74 @@ java_pid*
 *.txt
 .txt
 .jar
+
+#built application files
+*.apk
+*.ap_
+*.aab
+
+# files for the dex VM
+*.dex
+
+# Java class files
+*.class
+
+# generated files
+bin/
+gen/
+
+###something borrowed
+# Local configuration file (sdk path, etc)
+local.properties
+
+# Windows thumbnail db
+Thumbs.db
+
+# OSX files
+.DS_Store
+
+# Android Studio
+*.iml
+.idea
+.gradle
+build/
+.navigation
+captures/
+output.json
+
+#NDK
+obj/
+.externalNativeBuild
+/local.properties
+/.idea/workspace.xml
+/.idea/libraries
+/build
+/captures
+
+# Ignore gradle files
+.gradle/
+####end something borrowed
+
+
+/target
+.gradle#
+.idea*
+gradle*
+# testing
+/.gradle/*
+/gradle/*
+.clover#
+
+*.gradle/
+*.gradle
+*.gradle/vcs-1
+### IntelliJ IDEA ###
+*.iws
+*.ipr
+java_pid*
+*.log
+*iml
+*.idea
+*.txt
+.txt
+.jar
