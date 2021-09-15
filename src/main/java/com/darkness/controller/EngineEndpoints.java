@@ -1,27 +1,18 @@
 package com.darkness.controller;
 
+import com.darkness.db.*;
+import com.darkness.utils.Methods;
+import org.json.JSONException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.json.JSONException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.darkness.db.CacheRepo;
-import com.darkness.db.MapDB;
-import com.darkness.db.MapRepo;
-import com.darkness.db.UserDB;
-import com.darkness.db.UserRepo;
-import com.darkness.utils.Methods;
-
 /**
- * In game controller endpoints Author: Timotheuzi
+ * In game engine endpoints Author: Timotheuzi
  */
 
 @RestController
