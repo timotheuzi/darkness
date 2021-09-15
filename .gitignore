@@ -45,10 +45,10 @@ obj/
 .gradle/
 ####end something borrowed
 
-
+/lib
 /target
-.gradle#
-.idea*
+/.gradle
+.idea
 gradle*
 # testing
 /.gradle/*
