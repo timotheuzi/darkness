@@ -1,11 +1,11 @@
 /target/
-/wallet_shiddy/
-!.mvn/wrapper/maven-wrapper.jar
-.clover#
-.apt_generated
-.springBeans
-.sts4-cache
-.mvn
+# Ignore gradle files
+/build/
+/gradle/
+gradlew
+/.gradle/
+/lib/
+.lock
 ### IntelliJ IDEA ###
 .idea
 *.iws

@@ -25,7 +25,7 @@ import com.darkness.utils.Methods;
  */
 
 @RestController
-public class ControllerClass {
+public class EngineEndpoints {
 
 	@Autowired
 	UserRepo repository;
@@ -36,7 +36,7 @@ public class ControllerClass {
 	@Autowired
 	CacheRepo cacheRepos;
 	@Autowired
-	TemplateController tempController;
+	ThymeleafController tempController;
 
 	@RequestMapping(method = RequestMethod.GET, path = "/createNewUser", produces = MediaType.TEXT_HTML_VALUE)
 	public String createNewUser(@RequestParam(name = "name", required = true) String name) {
@@ -174,11 +174,6 @@ public class ControllerClass {
 
 	// @GetMapping("/various")
 	@RequestMapping(method = RequestMethod.GET, path = "/various", produces = MediaType.APPLICATION_JSON_VALUE) // consumes
-	// =
-	// MediaType.APPLICATION_JSON_VALUE,
-	// consumes
-	// =
-	// MediaType.APPLICATION_JSON_VALUE,
 	public Map various(Integer location, String value, String name) throws JSONException {
 		// Map<String, String> map = requestForm.get(arg0);
 		// String loca = requestForms.get("location").toString();

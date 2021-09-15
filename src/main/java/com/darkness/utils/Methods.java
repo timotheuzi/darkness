@@ -19,7 +19,7 @@ import com.darkness.db.UserDB;
 import com.darkness.db.CacheRepo;
 import com.darkness.db.CacheDB;
 
-import com.darkness.controller.TemplateController;
+import com.darkness.controller.ThymeleafController;
 import com.darkness.utils.DarknessConstants;
 
 import org.json.JSONException;
@@ -44,7 +44,7 @@ public class Methods {
 	CacheRepo cacheRepos;
 
 	@Autowired
-	TemplateController templateController;
+	ThymeleafController templateController;
 
 	public void initializeMapValues() {
 		//Integer mapCount = CountMaps();
