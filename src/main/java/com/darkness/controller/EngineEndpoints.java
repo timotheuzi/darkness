@@ -164,13 +164,10 @@ public class EngineEndpoints {
 	}
 
 	// @GetMapping("/various")
-	@RequestMapping(method = RequestMethod.GET, path = "/various", produces = MediaType.APPLICATION_JSON_VALUE) // consumes
-	public Map various(Integer location, String value, String name) throws JSONException {
-		// Map<String, String> map = requestForm.get(arg0);
-		// String loca = requestForms.get("location").toString();
-		// String value = requestForms.get("value").toString();
-		// String name = requestForms.get("name").toString();
-		// Integer location = Integer.parseInt(loca);
+	@RequestMapping(method = RequestMethod.GET, path = "/variousInput", produces = MediaType.APPLICATION_JSON_VALUE) // consumes
+	public Map various(@RequestParam(name = "name", required = true) String name,
+					   @RequestParam(name = "value", required = false, defaultValue = "") String value,
+					   @RequestParam(name = "location", required = false, defaultValue = "0") Integer location) throws JSONException {
 		if (!value.isEmpty()) {
 			value = value.replaceAll(",", "");
 			//Methods.updateCache(location, value);
@@ -243,16 +240,4 @@ public class EngineEndpoints {
 		return Methods.getNpcByIndex(index);
 	}
 
-	// @GetMapping("/findNpcName")
-
-	/*
-	 * @RequestMapping(method = RequestMethod.GET, path = "/saveCookie", produces =
-	 * MediaType.APPLICATION_JSON_VALUE) public String
-	 * saveCookie(@RequestParam(name="user", required=true) String cookie)
-	 *
-	 * {
-	 *
-	 * //java.util.Map<String, String> values = (java.util.Map<String, String>)
-	 * form; return cookie; }
-	 */
 }

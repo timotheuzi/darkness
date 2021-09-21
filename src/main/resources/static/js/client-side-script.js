@@ -4,6 +4,7 @@
     $(document).keyup(function(event) {
     if ($(".input").is(":focus") && event.key == "Enter") {
         // Do work
+        variousInput()
          }
     });
 
@@ -41,54 +42,20 @@
 
 	function variousInput()
 	{
-			alert('in various' + name)
+			//alert('in various' + name)
 			var output = []
 			var textBox = $('#input').val()
-			if (textBox.toUpperCase().indexOf("MOVE") >= 0)
-			{
-				//Redirect(encodeURI("/the_alley/template_1?name=" + name))
-				updateStatus()
-			}
-			else
-			{
 				$.ajax({
 					contentType : 'application/json',
-					data:JSON.stringify(textBox)})
+					data:JSON.stringify(textBox)}
+					url: encodeURI("the_alley/variousInput" + "?name=" + name + "&value=" + textBox),)
 					.then(function(data)
 						{
 						output = data
-						//alert(output)
-						//var attack = output["attack"]
-						//var defense = output["defense"]
 						alert(output)
 						$("#output").append(name + " status:" + JSON.stringify(output))
 						$( "#output" ).fadeIn( 4000, function() {})
-					//location.reload()
 						})
-			}
-	}
-
-	function updateStatus()
-	{
-			var output = {}
-			//var name = $('#name').val()
-			//var current_location = $('#location').val()
-			//var textBox = $('#textBox').val()
-    		$.ajax({
-				data:JSON.stringify(textBox)})
-				.then(function(data)
-				{
-					output = data
-					var msg = output["msg"]
-					var users = output["users"]
-					var npcs = output["npcs"]
-					//$("#output").append(textBox + "<br />")
-					//$("#output").append(msg + "<br />")
-					$("#output").replaceWith(msg)
-					$("#users").replaceWith("its a timo")
-					$("#npcs").replaceWith(npcs)
-					$( "#output" ).fadeIn( 300, function() {})
-				})
 	}
 
 	function createNewUser(url)
@@ -150,113 +117,3 @@
 			window.location.href = url
 		}
 	}
-
-
- 	//updates on a scheduled to update statuses
-	/*window.setInternal(function()
-	{
-	  updateStatus()
-
-	}, 50000)
-	setInterval(function(){ updateStatus }, 3000)*/
-
-	/*function initItem(url)
-    {
-			var output = []
-			$.ajax({
-			url: encodeURI(url),
-			}).then(function(data)
-			{
-				output = data
-				alert(output)
-				$("#output").append(output + " ")
-				$( "#output" ).fadeIn( 4000, function() {})
-			})
-	}
-		/*function updateUsers(url)
-    	{
-
-    			initMap()
-    			var textBox = $('#textBox').val()
-    			var Alley = $('#Alley').val()
-    			$.ajax({
-    				url: encodeURI(url),
-    				}).then(function(data)
-    				{
-    					$('#output').val().(data))
-    				})
-    	}
-
-    	/*function update()
-    	{
-    		$.get("template__1", function(data) {
-    		$("#some_div").html(data)
-    		window.setTimeout(update, 10000)
-    	})
-    	}
-    		/*$(function()
-    	{
-    		var input = document.getElementById("textBox")
-    		input.addEventListener("keyup", function(event) {
-     		 event.preventDefault()
-      		if (event.keyCode === 13) {
-        		document.getElementById("template").click()
-     		 }
-    		})
-
-    		var vTimeOut
-    		vTimeOut= setTimeout(updateStatus, 600)
-
-    	})*/
-
-    	/*function templateSubmit(url)
-    	{
-    			//initMap()
-    			var output = []
-    			var name = $('#name').val()
-    			var textBox = $('#textBox').val()
-    			$.ajax({
-    				url: encodeURI(url),
-    				}).then(function(data)
-    				{
-    					output = data
-    					var resp = output["output"]
-    					$("#output").append(resp + " ")
-    					$( "#output" ).fadeIn( 4000, function() {})
-    					if(resp == 'move')
-    					{
-    						alert('FRED')
-    						//Redirect(encodeURI("/the_alley/template_1?name=" + name))
-    					}
-    				})
-    	}*/
-    	/*function createNewUser(url)
-        {
-    		$(document).ready(function()
-    		{
-    			var name = $('#createUser').val()
-    			var jsonParams =
-    			{
-    					//indicator: , variable
-    					"name": name,
-    			}
-    				$.ajax({
-    					type : "POST",
-    					url : url,
-    					processData : true,
-    					data: JSON.stringify(jsonParams),
-    					contentType : 'application/json',
-    					success : function(response)
-    					{
-    						alert(response)
-    						_Redirect(encodeURI("/home?name=" + name))
-    					}
-    					error : function(xhr, status, error)
-    					{
-    						alert(xhr.responseText)
-    						$("#alert-message-container").html("An unknown error occured when trying to create a new user!  Please try again later.")
-    						$("#alert-message-display").dialog("open")
-    					}
-    				})
-    		})
-    	}*/
