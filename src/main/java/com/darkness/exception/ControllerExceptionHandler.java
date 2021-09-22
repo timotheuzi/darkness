@@ -14,9 +14,11 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 @RestControllerAdvice
 class ControllerExceptionHandler {
 
-        private static final Logger LOG = LoggerFactory.getLogger(ControllerExceptionHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ControllerExceptionHandler.class);
+    private static final HttpStatus UNPROCESSABLE_ENTITY = null;
+    private static final HttpStatus NOT_IMPLEMENTED = null;
 
-        @ResponseStatus(NOT_FOUND)
+    @ResponseStatus(NOT_FOUND)
         @ExceptionHandler(NotFound.class)
         public @ResponseBody
         HttpErrorInfo handleNotFoundExceptions(ServerHttpRequest request, Exception ex) {
@@ -24,19 +26,19 @@ class ControllerExceptionHandler {
             return createHttpErrorInfo(NOT_FOUND, request, ex);
         }
 
-        /*@ResponseStatus(UNPROCESSABLE_ENTITY)
-        @ExceptionHandler(InvalidInputException.class)
+        //@ResponseStatus(UNPROCESSABLE_ENTITY)
+        //@ExceptionHandler(InvalidInputException.class)
         public @ResponseBody HttpErrorInfo handleInvalidInputException(ServerHttpRequest request, Exception ex) {
 
             return createHttpErrorInfo(UNPROCESSABLE_ENTITY, request, ex);
         }
 
-        @ResponseStatus(NOT_IMPLEMENTED)
-        @ExceptionHandler(InvalidInputException.class)
+        //@ResponseStatus(NOT_IMPLEMENTED)
+        //@ExceptionHandler(InvalidInputException.class)
         public @ResponseBody HttpErrorInfo handleMissingException(ServerHttpRequest request, Exception ex) {
 
             return createHttpErrorInfo(NOT_IMPLEMENTED, request, ex);
-        }*/
+        }
 
         private HttpErrorInfo createHttpErrorInfo(HttpStatus httpStatus, ServerHttpRequest request, Exception ex) {
             final String path = request.getPath().pathWithinApplication().value();

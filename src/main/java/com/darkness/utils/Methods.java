@@ -1,29 +1,15 @@
 package com.darkness.utils;
 
+import com.darkness.controller.ThymeleafController;
+import com.darkness.db.*;
+import org.json.JSONException;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.io.StringWriter;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
-
-import com.darkness.db.UserRepo;
-import com.darkness.db.ItemsDB;
-import com.darkness.db.ItemsRepo;
-import com.darkness.db.MapDB;
-import com.darkness.db.MapRepo;
-import com.darkness.db.NpcDB;
-import com.darkness.db.NpcRepo;
-import com.darkness.db.UserDB;
-import com.darkness.db.CacheRepo;
-import com.darkness.db.CacheDB;
-
-import com.darkness.controller.ThymeleafController;
-import com.darkness.utils.DarknessConstants;
-
-import org.json.JSONException;
-import org.springframework.beans.factory.annotation.Autowired;
 
 
 public class Methods {
@@ -61,7 +47,6 @@ public class Methods {
 		mapDB.setNpcs(0);
 		mapDB.setUsers(0);
 		mapRepos.save(mapDB);
-		// mapCount++;
 	}
 
 	public void initializeItemValues() {
@@ -98,9 +83,7 @@ public class Methods {
 			npcDB.setDefense(defense.intValue());
 			npcDB.setHp(hp.intValue());
 		}
-
 		npcRepos.save(npcDB);
-		// npcCount++;
 	}
 
 	public Boolean createNewUser(String name) {
@@ -122,7 +105,6 @@ public class Methods {
 			System.out.println("record doesnt exist, creating it");
 		}
 		UserDB newEntry = new UserDB();
-		// newEntry.setId(id);
 		newEntry.setName(name);
 		newEntry.setLvl(1);
 		newEntry.setMoney(1);
@@ -224,7 +206,7 @@ public class Methods {
 				users.put(userDB.getId(), userDB.getName());
 			}
 		}
-		return users; // + "response" + response;
+		return users;
 	}
 
 	public HashMap<Integer, String> ShowNpcsInLocation(Integer index) {
@@ -234,7 +216,7 @@ public class Methods {
 				npcs.put(npcDB.getId(), npcDB.getName());
 			}
 		}
-		return npcs; // + "response" + response;
+		return npcs;
 
 	}
 
@@ -276,7 +258,6 @@ public class Methods {
 
 		return mapObj;
 	}
-
 	//// get individual user or npc
 	public String getUserByName(String name) {
 		return userRepos.findByName(name).getName();
@@ -320,7 +301,7 @@ public class Methods {
 	}
 
 	// todo this doesnt create very good names
-	public static String getMeAgoodName() {
+	String getMeAgoodName() {
 		Random rand = new Random();
 		String vocals = "aeiou" + "ioaeu" + "ouaei";
 		String cons = "bcdfghjklznpqrst" + "bcdfgjklmnprstvw" + "bcdfgjklmnprst";
@@ -337,11 +318,7 @@ public class Methods {
 		for (int i = 0; i < length; i++) {
 			if (consnum == 2) {
 				touse = vocals;
-				if (length != 2) {
-					consnum = rand.nextInt(2);
-				} else {
-					consnum = 1;
-				}
+				consnum = rand.nextInt(2);
 			} else
 				touse = cons;
 			// pick a random character from the set we are goin to use.
@@ -357,7 +334,7 @@ public class Methods {
 		return name;
 
 	}
-//todo caching
+	//todo caching
 	/*public void updateCache(Integer location, String msg) {
 		CacheDB newCacheEntry = new CacheDB();
 		//newCacheEntry.(msg);

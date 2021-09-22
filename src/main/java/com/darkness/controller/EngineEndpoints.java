@@ -120,19 +120,9 @@ public class EngineEndpoints {
 		return info;
 	}
 
-	/*
-	 * @GetMapping("/CountUsers") public Integer findAll(){
-	 *
-	 * String result = ""; Integer count = 0; for(userDB userDB :
-	 * repository.findAll()) { count++; result += userDB.getId() + "</br>"; }
-	 * //Response response = new Response("Done", 1); return count; // + "response"
-	 * + response; }
-	 */
 	@GetMapping("/CountMaps")
 	public Integer CountMaps() {
 		String result = "";
-		// MapRepo = new MapRepo;
-		// List<maprepo> = maprepo;
 		Integer count = 0;
 		for (MapDB mapDB : maprepo.findAll()) {
 			count++;
@@ -140,50 +130,34 @@ public class EngineEndpoints {
 		return count;
 	}
 
-	@SuppressWarnings("static-access")
-	// @GetMapping("/initializeMap")
 	@RequestMapping(method = RequestMethod.GET, path = "/initializeMap", produces = MediaType.TEXT_HTML_VALUE)
 	public String initializeMap() {
 		// Response response =
 		Methods.initializeMapValues();
 		return "Success";
 	}
-
-	// @GetMapping("/initializeNpc")
 	@RequestMapping(method = RequestMethod.GET, path = "/initializeNpc", produces = MediaType.TEXT_HTML_VALUE)
 	public String initializeNpc() {
 		Methods.initializeNpcValues();
 		return "Success";
 	}
-
-	// @GetMapping("/initializeItem")
 	@RequestMapping(method = RequestMethod.GET, path = "/initializeItem", produces = MediaType.TEXT_HTML_VALUE)
 	public String initializeItem() {
 		Methods.initializeItemValues();
 		return "Success";
 	}
-
-	// @GetMapping("/various")
 	@RequestMapping(method = RequestMethod.GET, path = "/variousInput", produces = MediaType.APPLICATION_JSON_VALUE) // consumes
 	public Map various(@RequestParam(name = "name", required = true) String name,
 					   @RequestParam(name = "value", required = false, defaultValue = "") String value,
 					   @RequestParam(name = "location", required = false, defaultValue = "0") Integer location) throws JSONException {
 		if (!value.isEmpty()) {
 			value = value.replaceAll(",", "");
+			//todo caching
 			//Methods.updateCache(location, value);
 		}
 		Map<String, String> output = new HashMap<String, String>();
-		// output.put("msg", value);
-		// output.put("location", location.toString());
-		// cacheRepos.save(output);
 		if (value.toLowerCase().contains("move")) {
 			Methods.move(name);
-			// output.put("users", Methods.ShowUsersInLocation(location).toString());
-			// output.put("npcs", Methods.ShowNpcsInLocation(location).toString());
-			// output.put("description", maprepo.findById(location).get().getDescription());
-
-			// Model model = null;
-			// tempController.template_1(name, model);
 			return output;
 		} else if (value.toLowerCase().contains("inv")
 				&& value.toLowerCase().contains(Methods.ShowNpcsInLocation(location).toString())) {
@@ -214,8 +188,6 @@ public class EngineEndpoints {
 		// Map error = (error, "error happened");
 		return output;
 	}
-
-	// @GetMapping("/updateRoom")
 	@RequestMapping(method = RequestMethod.GET, path = "/updateRoom", produces = MediaType.APPLICATION_JSON_VALUE)
 	public Map updateRoom(@RequestParam(name = "mapIndex", required = false) Integer mapIndex) {
 		if (mapIndex != null) {
@@ -225,15 +197,11 @@ public class EngineEndpoints {
 			return Methods.mapStatus(mapIndex);
 		}
 	}
-
-	// @GetMapping("/findUserName")
 	@RequestMapping(method = RequestMethod.GET, path = "/findUserByIndex", produces = MediaType.APPLICATION_JSON_VALUE)
 	public String findUserByIndex(@RequestParam(name = "index", required = true) Integer index) {
 		// int[] updateRoom = Methods.mapStatus(location);
 		return Methods.getUserByIndex(index);
 	}
-
-	// @GetMapping("/findNpcName")
 	@RequestMapping(method = RequestMethod.GET, path = "/findNpcByIndex", produces = MediaType.APPLICATION_JSON_VALUE)
 	public String findNpcByIndex(@RequestParam(name = "index", required = true) Integer index) {
 		// int[] updateRoom = Methods.mapStatus(location);
