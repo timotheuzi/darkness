@@ -1,6 +1,7 @@
 package com.darkness.controller;
 
 import com.darkness.db.*;
+import com.darkness.utils.DarknessConstants;
 import com.darkness.utils.Methods;
 import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -111,28 +112,12 @@ public class EngineEndpoints {
 	@RequestMapping(method = RequestMethod.GET, path = "/getFullInformation", produces = MediaType.APPLICATION_JSON_VALUE)
 	public Map getFullInformation(@RequestParam(name = "name", required = true) String name,
 								  @RequestParam(name = "user", required = false, defaultValue = "user") String user) {
-		Map<String, Integer> info = new HashMap<String, Integer>();
-		Boolean userNpc = true;
-		if (user.contains("npc")) {
-			userNpc = false;
-		}
-		info = Methods.getStats(name, userNpc);
-		return info;
+		return Methods.getStats(name);
 	}
 
-	/*
-	 * @GetMapping("/CountUsers") public Integer findAll(){
-	 *
-	 * String result = ""; Integer count = 0; for(userDB userDB :
-	 * repository.findAll()) { count++; result += userDB.getId() + "</br>"; }
-	 * //Response response = new Response("Done", 1); return count; // + "response"
-	 * + response; }
-	 */
 	@GetMapping("/CountMaps")
 	public Integer CountMaps() {
 		String result = "";
-		// MapRepo = new MapRepo;
-		// List<maprepo> = maprepo;
 		Integer count = 0;
 		for (MapDB mapDB : maprepo.findAll()) {
 			count++;
@@ -140,85 +125,47 @@ public class EngineEndpoints {
 		return count;
 	}
 
-	@SuppressWarnings("static-access")
-	// @GetMapping("/initializeMap")
 	@RequestMapping(method = RequestMethod.GET, path = "/initializeMap", produces = MediaType.TEXT_HTML_VALUE)
 	public String initializeMap() {
 		// Response response =
 		Methods.initializeMapValues();
-		return "Success";
+		return "Success initializing map values";
 	}
-
-	// @GetMapping("/initializeNpc")
 	@RequestMapping(method = RequestMethod.GET, path = "/initializeNpc", produces = MediaType.TEXT_HTML_VALUE)
 	public String initializeNpc() {
 		Methods.initializeNpcValues();
-		return "Success";
+		return "Success initializing npc values";
 	}
-
-	// @GetMapping("/initializeItem")
 	@RequestMapping(method = RequestMethod.GET, path = "/initializeItem", produces = MediaType.TEXT_HTML_VALUE)
 	public String initializeItem() {
 		Methods.initializeItemValues();
-		return "Success";
+		return "Success initializing item values";
 	}
-
-	// @GetMapping("/various")
-	@RequestMapping(method = RequestMethod.GET, path = "/various", produces = MediaType.APPLICATION_JSON_VALUE) // consumes
-	public Map various(Integer location, String value, String name) throws JSONException {
-		// Map<String, String> map = requestForm.get(arg0);
-		// String loca = requestForms.get("location").toString();
-		// String value = requestForms.get("value").toString();
-		// String name = requestForms.get("name").toString();
-		// Integer location = Integer.parseInt(loca);
+	@RequestMapping(method = RequestMethod.GET, path = "/variousInput", produces = MediaType.APPLICATION_JSON_VALUE) // consumes
+	public Map various(@RequestParam(name = "name", required = true) String name,
+					   @RequestParam(name = "value", required = false, defaultValue = "") String value,
+					   @RequestParam(name = "location", required = false, defaultValue = "0") Integer location) throws JSONException {
 		if (!value.isEmpty()) {
 			value = value.replaceAll(",", "");
+			//todo caching
 			//Methods.updateCache(location, value);
 		}
-		Map<String, String> output = new HashMap<String, String>();
-		// output.put("msg", value);
-		// output.put("location", location.toString());
-		// cacheRepos.save(output);
+		Map<String, String> output = new HashMap<>();
 		if (value.toLowerCase().contains("move")) {
 			Methods.move(name);
-			// output.put("users", Methods.ShowUsersInLocation(location).toString());
-			// output.put("npcs", Methods.ShowNpcsInLocation(location).toString());
-			// output.put("description", maprepo.findById(location).get().getDescription());
-
-			// Model model = null;
-			// tempController.template_1(name, model);
+			output.put("mapInfo", DarknessConstants.map_1);
+			output.put("npcInfo", DarknessConstants.npc_1);
 			return output;
 		} else if (value.toLowerCase().contains("inv")
 				&& value.toLowerCase().contains(Methods.ShowNpcsInLocation(location).toString())) {
 			Iterator it = Methods.ShowNpcsInLocation(location).entrySet().iterator();
-			while (it.hasNext()) {
-				Map.Entry pair = (Map.Entry) it.next();
-				if (value.contains(pair.getValue().toString())) {
-					return Methods.getStats(pair.getValue().toString(), false);
-				}
-				it.remove(); // avoids a ConcurrentModificationException
-			}
-		} else if (value.toLowerCase().contains("inv")
-				&& value.toLowerCase().contains(Methods.ShowUsersInLocation(location).toString())) {
-			Iterator it = Methods.ShowUsersInLocation(location).entrySet().iterator();
-			while (it.hasNext()) {
-				Map.Entry pair = (Map.Entry) it.next();
-				if (value.contains(pair.getValue().toString())) {
-					return Methods.getStats(pair.getValue().toString(), true);
-				}
-				it.remove(); // avoids a ConcurrentModificationException
-			}
-		} else if (value.toLowerCase().contains("inv")) {
-			return Methods.getStats(name, true);
-		} else {
+			return Methods.getStats(name);
+		}
+		else {
 			output.put("msg", "No implementation for that string yet");
 			return output;
 		}
-		// Map error = (error, "error happened");
-		return output;
 	}
-
-	// @GetMapping("/updateRoom")
 	@RequestMapping(method = RequestMethod.GET, path = "/updateRoom", produces = MediaType.APPLICATION_JSON_VALUE)
 	public Map updateRoom(@RequestParam(name = "mapIndex", required = false) Integer mapIndex) {
 		if (mapIndex != null) {
@@ -228,31 +175,15 @@ public class EngineEndpoints {
 			return Methods.mapStatus(mapIndex);
 		}
 	}
-
-	// @GetMapping("/findUserName")
 	@RequestMapping(method = RequestMethod.GET, path = "/findUserByIndex", produces = MediaType.APPLICATION_JSON_VALUE)
 	public String findUserByIndex(@RequestParam(name = "index", required = true) Integer index) {
 		// int[] updateRoom = Methods.mapStatus(location);
 		return Methods.getUserByIndex(index);
 	}
-
-	// @GetMapping("/findNpcName")
 	@RequestMapping(method = RequestMethod.GET, path = "/findNpcByIndex", produces = MediaType.APPLICATION_JSON_VALUE)
 	public String findNpcByIndex(@RequestParam(name = "index", required = true) Integer index) {
 		// int[] updateRoom = Methods.mapStatus(location);
 		return Methods.getNpcByIndex(index);
 	}
 
-	// @GetMapping("/findNpcName")
-
-	/*
-	 * @RequestMapping(method = RequestMethod.GET, path = "/saveCookie", produces =
-	 * MediaType.APPLICATION_JSON_VALUE) public String
-	 * saveCookie(@RequestParam(name="user", required=true) String cookie)
-	 *
-	 * {
-	 *
-	 * //java.util.Map<String, String> values = (java.util.Map<String, String>)
-	 * form; return cookie; }
-	 */
 }

@@ -3,42 +3,52 @@
  */
 
 plugins {
+    id "org.springframework.boot" version "2.5.3"
     id 'java'
     id 'maven-publish'
     id 'groovy'
 }
+
 
 repositories {
     mavenLocal()
     maven {
         url = uri('https://repo.maven.apache.org/maven2/')
     }
+    mavenCentral()
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-web:2.5.3'
-    implementation 'org.springframework.boot:spring-boot-starter-web-services:2.5.3'
-    implementation 'org.springframework.boot:spring-boot-starter-webflux:2.5.3'
-    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf:2.5.3'
-    implementation 'org.springframework.boot:spring-boot-devtools:2.5.3'
+    implementation 'org.springframework.boot:spring-boot-starter-web:2.5.4'
+    implementation 'org.springframework.boot:spring-boot-starter-web-services:2.5.4'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux:2.5.4'
+
+    /*implementation ('org.springframework.boot:spring-boot-starter-webflux:2.5.4')
+    {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+    }
+    implementation ('org.springframework.boot:spring-boot-starter-reactor-netty')*/
+
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf:2.5.4'
+    implementation 'org.springframework.boot:spring-boot-devtools:2.5.4'
     implementation 'org.mariadb.jdbc:mariadb-java-client:2.7.3'
     implementation 'mysql:mysql-connector-java:8.0.26'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa:2.5.3'
-    implementation 'org.hibernate:hibernate-core:5.4.32.Final'
-    implementation 'org.hibernate:hibernate-entitymanager:5.4.32.Final'
-    implementation 'javax.xml.bind:jaxb-api:2.3.1'
-    implementation 'org.springframework.boot:spring-boot-starter-actuator:2.5.3'
-    implementation 'org.webjars:jquery:3.3.1-1'
-    implementation 'org.json:json:20090211'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa:2.5.4'
+    implementation 'org.hibernate:hibernate-core:5.5.7.Final'
+    implementation 'org.hibernate:hibernate-entitymanager:5.5.7.Final'
+    implementation 'javax.xml.bind:jaxb-api:2.4.0-b180830.0359'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator:2.5.4'
+    implementation 'org.webjars:jquery:3.6.0'
+    implementation 'org.json:json:20210307'
     runtimeOnly 'com.h2database:h2:1.4.200'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.5.3'
-    testImplementation 'io.projectreactor:reactor-test:3.4.8'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.5.4'
+    testImplementation 'io.projectreactor:reactor-test:3.4.10'
 
     //unit testing
     implementation "org.codehaus.groovy:groovy:3.0.8"
     testImplementation platform("org.spockframework:spock-bom:2.0-groovy-3.0")
-    testImplementation "org.spockframework:spock-core"
-    testImplementation "org.spockframework:spock-junit4"
+    testImplementation 'org.spockframework:spock-core:2.0-groovy-3.0'
+    testImplementation 'org.spockframework:spock-junit4:2.0-groovy-3.0'
     //old
     //testImplementation 'org.mockito:mockito-all:1.10.19'
 
@@ -65,4 +75,5 @@ publishing {
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
+    options.compilerArgs << "-Xlint:deprecation"
 }

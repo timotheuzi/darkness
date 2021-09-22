@@ -1,11 +1,11 @@
 //todo new error handler
-package com.darkness.exception;
+/*package com.darkness.exception;
 
 public class InvalidInputException extends RuntimeException {
     public InvalidInputException() {
     }
 
-    public InvalidInputException(String message) {
+   public InvalidInputException(String message) {
         super(message);
     }
 
@@ -16,4 +16,4 @@ public class InvalidInputException extends RuntimeException {
     public InvalidInputException(Throwable cause) {
         super(cause);
     }
-}
+}*/

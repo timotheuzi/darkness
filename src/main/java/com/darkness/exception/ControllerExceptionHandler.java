@@ -9,14 +9,16 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import static org.springframework.http.HttpStatus.*;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @RestControllerAdvice
 class ControllerExceptionHandler {
 
-        private static final Logger LOG = LoggerFactory.getLogger(ControllerExceptionHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ControllerExceptionHandler.class);
+    private static final HttpStatus UNPROCESSABLE_ENTITY = null;
+    private static final HttpStatus NOT_IMPLEMENTED = null;
 
-        @ResponseStatus(NOT_FOUND)
+    @ResponseStatus(NOT_FOUND)
         @ExceptionHandler(NotFound.class)
         public @ResponseBody
         HttpErrorInfo handleNotFoundExceptions(ServerHttpRequest request, Exception ex) {
@@ -24,15 +26,15 @@ class ControllerExceptionHandler {
             return createHttpErrorInfo(NOT_FOUND, request, ex);
         }
 
-        @ResponseStatus(UNPROCESSABLE_ENTITY)
-        @ExceptionHandler(InvalidInputException.class)
+        //@ResponseStatus(UNPROCESSABLE_ENTITY)
+        //@ExceptionHandler(InvalidInputException.class)
         public @ResponseBody HttpErrorInfo handleInvalidInputException(ServerHttpRequest request, Exception ex) {
 
             return createHttpErrorInfo(UNPROCESSABLE_ENTITY, request, ex);
         }
 
-        @ResponseStatus(NOT_IMPLEMENTED)
-        @ExceptionHandler(InvalidInputException.class)
+        //@ResponseStatus(NOT_IMPLEMENTED)
+        //@ExceptionHandler(InvalidInputException.class)
         public @ResponseBody HttpErrorInfo handleMissingException(ServerHttpRequest request, Exception ex) {
 
             return createHttpErrorInfo(NOT_IMPLEMENTED, request, ex);
