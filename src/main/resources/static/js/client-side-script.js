@@ -45,7 +45,7 @@
 				$.ajax({
 				    //data:JSON.stringify(textBox)
 					contentType : 'application/json',
-					url: encodeURI("/variousInput" + "?name=" + name + "&value=" + textBox),
+					url: encodeURI("/the_alley/variousInput" + "?name=" + name + "&value=" + textBox),
 					}).then(function(data)
 						{
 						output = data
