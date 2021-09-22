@@ -1,6 +1,7 @@
 package com.darkness.controller;
 
 import com.darkness.db.UserRepo;
+import com.darkness.utils.DarknessConstants;
 import com.darkness.utils.Methods;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -33,6 +34,8 @@ public class ThymeleafController {
     public String home(@RequestParam(name="name", required=false) String name, Model model)
 	{
 		model.addAttribute("name", uRepo.findByName(name).getName());
+		model.addAttribute("mapInfo", DarknessConstants.map_0);
+		model.addAttribute("npcInfo", DarknessConstants.npc_0);
 		return "home";
     }
 

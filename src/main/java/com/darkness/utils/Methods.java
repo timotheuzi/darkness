@@ -2,7 +2,6 @@ package com.darkness.utils;
 
 import com.darkness.controller.ThymeleafController;
 import com.darkness.db.*;
-import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.StringWriter;
@@ -50,23 +49,22 @@ public class Methods {
 	}
 
 	public void initializeItemValues() {
-		Integer itemCount = 0;
-		Double attack = Math.random() * ((10 - 1) + 1);
-		Double defense = Math.random() * ((5 - 1) + 1);
+		int itemCount = 0;
+		double attack = Math.random() * ((10 - 1) + 1);
+		double defense = Math.random() * ((5 - 1) + 1);
 		ItemsDB itemsDB = new ItemsDB();
 		itemsDB.setName("gun	_" + itemCount);
 		itemsDB.setDescription(DarknessConstants.item_0);
-		itemsDB.setAttack(attack.intValue());
-		itemsDB.setDefense(defense.intValue());
+		itemsDB.setAttack((int) attack);
+		itemsDB.setDefense((int) defense);
 		// itemsDB.location(0);
 		itemsRepos.save(itemsDB);
-		itemCount++;
 	}
 
 	public void initializeNpcValues() {
-		Double attack = Math.random() * ((50 - 1) + 1);
-		Double defense = Math.random() * ((10 - 1) + 1);
-		Double hp = Math.random() * ((1000 - 1) + 1);
+		int attack = (int) (Math.random() * ((50 - 1) + 1));
+		int defense = (int) (Math.random() * ((10 - 1) + 1));
+		int hp = (int) (Math.random() * ((1000 - 1) + 1));
 		NpcDB npcDB = new NpcDB();
 		if (CountNpcs() == 0) {
 			npcDB.setName("Frank");
@@ -79,9 +77,9 @@ public class Methods {
 			npcDB.setName(getMeAgoodName());
 			npcDB.setDescription(DarknessConstants.npc_1);
 			npcDB.setLocation(2);
-			npcDB.setAttack(attack.intValue());
-			npcDB.setDefense(defense.intValue());
-			npcDB.setHp(hp.intValue());
+			npcDB.setAttack((int) attack);
+			npcDB.setDefense(defense);
+			npcDB.setHp(hp);
 		}
 		npcRepos.save(npcDB);
 	}
@@ -118,24 +116,24 @@ public class Methods {
 		return true;
 	}
 
-	public HashMap<String, Integer> getStats(String name, Boolean user) {
+	public HashMap<String, Integer> getStats(String name) {
 		HashMap<String, Integer> stats = new HashMap<String, Integer>();
-		if (user) {
-			stats.put("ID", userRepos.findByName(name).getId());
-			stats.put("attack", userRepos.findByName(name).getAttack());
-			stats.put("defense", userRepos.findByName(name).getDefense());
-			stats.put("exp", userRepos.findByName(name).getExp());
-			stats.put("location", userRepos.findByName(name).getLocation());
-			stats.put("lvl", userRepos.findByName(name).getLvl());
-			stats.put("money", userRepos.findByName(name).getMoney());
-		} else {
+		stats.put("ID", userRepos.findByName(name).getId());
+		stats.put("attack", userRepos.findByName(name).getAttack());
+		stats.put("defense", userRepos.findByName(name).getDefense());
+		stats.put("exp", userRepos.findByName(name).getExp());
+		stats.put("location", userRepos.findByName(name).getLocation());
+		stats.put("lvl", userRepos.findByName(name).getLvl());
+		stats.put("money", userRepos.findByName(name).getMoney());
+
+		/*else {
 			stats.put("ID", npcRepos.findByName(name).getId());
 			stats.put("attack", npcRepos.findByName(name).getAttack());
 			stats.put("defense", npcRepos.findByName(name).getDefense());
 			stats.put("hp", npcRepos.findByName(name).getHp());
 			stats.put("location", npcRepos.findByName(name).getLocation());
 			// stats.put("name", npcRepos.findByName(name).);
-		}
+		}*/
 		return stats;
 	}
 
@@ -187,9 +185,9 @@ public class Methods {
 		return npcs.toString();
 	}
 
-	public String CountUsersByLocation(Integer location) {
+	public String CountUsersByLocation(int location) {
 		StringWriter users = new StringWriter();
-		Integer count = 0;
+		int count = 0;
 		for (UserDB userDB : userRepos.findAll()) {
 			if (userDB.getLocation() == location) {
 				users.write(userDB.getName() + ",");
@@ -233,19 +231,19 @@ public class Methods {
 		return location.intValue();
 	}
 
-	public Map mapStatus(Integer mapIndex) {
-		HashMap mapObj = new HashMap();
+	public Map<Integer, String> mapStatus(Integer mapIndex) {
+		HashMap<Integer, String> mapObj = new HashMap<Integer, String>();
 		int count = 0;
-		Iterator itUser = (ShowUsersInLocation(mapIndex)).entrySet().iterator();
+		Iterator<Map.Entry<Integer, String>> itUser = (ShowUsersInLocation(mapIndex)).entrySet().iterator();
 		while (itUser.hasNext()) {
-			Map.Entry pair = (Map.Entry) itUser.next();
+			Map.Entry<Integer, String> pair = itUser.next();
 			mapObj.put(count, pair.getValue());
 			itUser.remove(); // avoids a ConcurrentModificationException
 			count++;
 		}
-		Iterator itNpc = (ShowNpcsInLocation(mapIndex)).entrySet().iterator();
+		Iterator<Map.Entry<Integer, String>> itNpc = (ShowNpcsInLocation(mapIndex)).entrySet().iterator();
 		while (itNpc.hasNext()) {
-			Map.Entry pair = (Map.Entry) itNpc.next();
+			Map.Entry<Integer, String> pair = itNpc.next();
 			mapObj.put(count, pair.getValue());
 			itNpc.remove(); // avoids a ConcurrentModificationException
 			count++;
@@ -279,26 +277,6 @@ public class Methods {
 		return where;
 	}
 
-	public Map findUserStatsByName(String name) throws JSONException {
-		HashMap userObj = new HashMap();
-
-		try {
-			userObj.put("name", userRepos.findByName(name).getName());
-			userObj.put("attack", userRepos.findByName(name).getAttack());
-			userObj.put("defense", userRepos.findByName(name).getDefense());
-			userObj.put("description", userRepos.findByName(name).getDescription());
-			userObj.put("exp", userRepos.findByName(name).getExp());
-			userObj.put("hp", userRepos.findByName(name).getHp());
-			userObj.put("location", userRepos.findByName(name).getLocation());
-			userObj.put("lvl", userRepos.findByName(name).getLvl());
-			userObj.put("money", userRepos.findByName(name).getMoney());
-			userObj.put("name", userRepos.findByName(name).getName());
-		} catch (Exception e) {
-			e.printStackTrace();
-			return (HashMap) userObj.put("error", e.toString());
-		}
-		return userObj;
-	}
 
 	// todo this doesnt create very good names
 	String getMeAgoodName() {
@@ -341,5 +319,25 @@ public class Methods {
 		//newCacheEntry("map_" + location);
 		cacheRepos.save(newCacheEntry);
 		// return Methods.getNpcByIndex(index);
+	}*/
+	//todo old finds
+		/*public Map findUserStatsByName(String name) throws JSONException {
+		Map userObj = new HashMap();
+		try {
+			userObj.put("name", userRepos.findByName(name).getName());
+			userObj.put("attack", userRepos.findByName(name).getAttack());
+			userObj.put("defense", userRepos.findByName(name).getDefense());
+			userObj.put("description", userRepos.findByName(name).getDescription());
+			userObj.put("exp", userRepos.findByName(name).getExp());
+			userObj.put("hp", userRepos.findByName(name).getHp());
+			userObj.put("location", userRepos.findByName(name).getLocation());
+			userObj.put("lvl", userRepos.findByName(name).getLvl());
+			userObj.put("money", userRepos.findByName(name).getMoney());
+			userObj.put("name", userRepos.findByName(name).getName());
+		} catch (Exception e) {
+			e.printStackTrace();
+			return (HashMap) userObj.put("error", e.toString());
+		}
+		return userObj;
 	}*/
 }

@@ -1,6 +1,7 @@
 package com.darkness.controller;
 
 import com.darkness.db.*;
+import com.darkness.utils.DarknessConstants;
 import com.darkness.utils.Methods;
 import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -111,13 +112,7 @@ public class EngineEndpoints {
 	@RequestMapping(method = RequestMethod.GET, path = "/getFullInformation", produces = MediaType.APPLICATION_JSON_VALUE)
 	public Map getFullInformation(@RequestParam(name = "name", required = true) String name,
 								  @RequestParam(name = "user", required = false, defaultValue = "user") String user) {
-		Map<String, Integer> info = new HashMap<String, Integer>();
-		Boolean userNpc = true;
-		if (user.contains("npc")) {
-			userNpc = false;
-		}
-		info = Methods.getStats(name, userNpc);
-		return info;
+		return Methods.getStats(name);
 	}
 
 	@GetMapping("/CountMaps")
@@ -134,17 +129,17 @@ public class EngineEndpoints {
 	public String initializeMap() {
 		// Response response =
 		Methods.initializeMapValues();
-		return "Success";
+		return "Success initializing map values";
 	}
 	@RequestMapping(method = RequestMethod.GET, path = "/initializeNpc", produces = MediaType.TEXT_HTML_VALUE)
 	public String initializeNpc() {
 		Methods.initializeNpcValues();
-		return "Success";
+		return "Success initializing npc values";
 	}
 	@RequestMapping(method = RequestMethod.GET, path = "/initializeItem", produces = MediaType.TEXT_HTML_VALUE)
 	public String initializeItem() {
 		Methods.initializeItemValues();
-		return "Success";
+		return "Success initializing item values";
 	}
 	@RequestMapping(method = RequestMethod.GET, path = "/variousInput", produces = MediaType.APPLICATION_JSON_VALUE) // consumes
 	public Map various(@RequestParam(name = "name", required = true) String name,
@@ -155,38 +150,21 @@ public class EngineEndpoints {
 			//todo caching
 			//Methods.updateCache(location, value);
 		}
-		Map<String, String> output = new HashMap<String, String>();
+		Map<String, String> output = new HashMap<>();
 		if (value.toLowerCase().contains("move")) {
 			Methods.move(name);
+			output.put("mapInfo", DarknessConstants.map_1);
+			output.put("npcInfo", DarknessConstants.npc_1);
 			return output;
 		} else if (value.toLowerCase().contains("inv")
 				&& value.toLowerCase().contains(Methods.ShowNpcsInLocation(location).toString())) {
 			Iterator it = Methods.ShowNpcsInLocation(location).entrySet().iterator();
-			while (it.hasNext()) {
-				Map.Entry pair = (Map.Entry) it.next();
-				if (value.contains(pair.getValue().toString())) {
-					return Methods.getStats(pair.getValue().toString(), false);
-				}
-				it.remove(); // avoids a ConcurrentModificationException
-			}
-		} else if (value.toLowerCase().contains("inv")
-				&& value.toLowerCase().contains(Methods.ShowUsersInLocation(location).toString())) {
-			Iterator it = Methods.ShowUsersInLocation(location).entrySet().iterator();
-			while (it.hasNext()) {
-				Map.Entry pair = (Map.Entry) it.next();
-				if (value.contains(pair.getValue().toString())) {
-					return Methods.getStats(pair.getValue().toString(), true);
-				}
-				it.remove(); // avoids a ConcurrentModificationException
-			}
-		} else if (value.toLowerCase().contains("inv")) {
-			return Methods.getStats(name, true);
-		} else {
+			return Methods.getStats(name);
+		}
+		else {
 			output.put("msg", "No implementation for that string yet");
 			return output;
 		}
-		// Map error = (error, "error happened");
-		return output;
 	}
 	@RequestMapping(method = RequestMethod.GET, path = "/updateRoom", produces = MediaType.APPLICATION_JSON_VALUE)
 	public Map updateRoom(@RequestParam(name = "mapIndex", required = false) Integer mapIndex) {

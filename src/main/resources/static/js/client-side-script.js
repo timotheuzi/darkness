@@ -1,6 +1,4 @@
-
-
-    // enter logic
+     // enter logic
     $(document).keyup(function(event) {
     if ($(".input").is(":focus") && event.key == "Enter") {
         // Do work
@@ -42,18 +40,19 @@
 
 	function variousInput()
 	{
-			//alert('in various' + name)
 			var output = []
 			var textBox = $('#input').val()
 				$.ajax({
+				    //data:JSON.stringify(textBox)
 					contentType : 'application/json',
-					data:JSON.stringify(textBox)}
-					url: encodeURI("the_alley/variousInput" + "?name=" + name + "&value=" + textBox),)
-					.then(function(data)
+					url: encodeURI("/variousInput" + "?name=" + name + "&value=" + textBox),
+					}).then(function(data)
 						{
 						output = data
 						alert(output)
-						$("#output").append(name + " status:" + JSON.stringify(output))
+						$("#mapInfo").append(output['mapinfo'])
+						$("#npcInfo").append(output['npcinfo'])
+						//$("#npcInfo").append(JSON.stringify(output))
 						$( "#output" ).fadeIn( 4000, function() {})
 						})
 	}

@@ -9,7 +9,10 @@
 	<div><p>Greetings! <span class="name" id="name" th:text='${name}' th:value='${name}'></span></p><br /></div>
 	<div class="mainContainer">
 		<!-- new design is all dynamically created with JS -->
-<div class="output" id="output"></div><br />
+	You are in&nbsp;
+		<div class="mapInfo" id="mapInfo" th:text='${mapInfo}'></div>
+	The following creatures are here:&nbsp;
+		<div class="npcInfo" id="npcInfo" th:text='${npcInfo}'></div>
 <input class="input" id="input" type="text" width="50px" style="text-color:red"/>
 <input id="button" type="button" onclick="variousInput()" width="45px" value="GO" />
 </div>
