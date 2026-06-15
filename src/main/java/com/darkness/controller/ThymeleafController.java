@@ -1,49 +1,43 @@
 package com.darkness.controller;
 
+import com.darkness.db.UserDB;
 import com.darkness.db.UserRepo;
 import com.darkness.utils.DarknessConstants;
-import com.darkness.utils.Methods;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
-//serves up thymeleaf assisted web pages
 @Controller
 public class ThymeleafController {
 
-	@Autowired
-	UserRepo uRepo;
-	
-	@Autowired
-	Methods methods;
+    @Autowired
+    UserRepo uRepo;
 
-	//default index/user creation page
-	@RequestMapping("/")
-    public String index()
-	{
-		methods.initializeMapValues();
-		methods.initializeItemValues();
-		methods.initializeNpcValues();
-	    return "index";
-	}
-    // main home page template
-    @GetMapping("/home")
-    public String home(@RequestParam(name="name", required=false) String name, Model model)
-	{
-		model.addAttribute("name", uRepo.findByName(name).getName());
-		model.addAttribute("mapInfo", DarknessConstants.map_0);
-		model.addAttribute("npcInfo", DarknessConstants.npc_0);
-		return "home";
+    @RequestMapping("/")
+    public String index() {
+        return "redirect:/game";
     }
 
-    //todo administration thymeleaf template
-    @GetMapping("/template_1")
-    public String template_1(@RequestParam(name="name", required=true) String name, Model model) 
-	{
-		model.addAttribute("name", uRepo.findByName(name).getName());
-		return "template_1";
+    @GetMapping("/game")
+    public String game() {
+        return "game";
+    }
+
+    @GetMapping("/home")
+    public Mono<String> home(@RequestParam(name = "name", required = false) String name, Model model) {
+        return Mono.fromCallable(() -> {
+            UserDB u = uRepo.findByName(name);
+            if (u != null) {
+                model.addAttribute("name", u.getName());
+            }
+            model.addAttribute("mapInfo", DarknessConstants.map_0);
+            model.addAttribute("npcInfo", DarknessConstants.npc_0);
+            return "home";
+        }).subscribeOn(Schedulers.boundedElastic());
     }
 }

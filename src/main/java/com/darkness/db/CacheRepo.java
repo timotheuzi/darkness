@@ -1,8 +1,8 @@
 package com.darkness.db;
 
 import org.springframework.data.repository.CrudRepository;
-
+import java.util.Optional;
 
 public interface CacheRepo extends CrudRepository<CacheDB, Integer> {
-	CacheDB findById(int intValue);
+    Optional<CacheDB> findByMapName(String mapName);
 }
