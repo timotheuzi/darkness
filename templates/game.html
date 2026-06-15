@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Darkness BBS - MajorMUD CyberRPG Terminal</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <style>
+        /* MajorMUD / ANSI 16 Color Palette */
+        :root {
+            --ansi-black: #000000;
+            --ansi-red: #bb0000;
+            --ansi-green: #00bb00;
+            --ansi-yellow: #bbbb00;
+            --ansi-blue: #0000bb;
+            --ansi-magenta: #bb00bb;
+            --ansi-cyan: #00bbbb;
+            --ansi-white: #bbbbbb;
+            --ansi-bright-black: #555555;
+            --ansi-bright-red: #ff5555;
+            --ansi-bright-green: #55ff55;
+            --ansi-bright-yellow: #ffff55;
+            --ansi-bright-blue: #5555ff;
+            --ansi-bright-magenta: #ff55ff;
+            --ansi-bright-cyan: #55ffff;
+            --ansi-bright-white: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background: #000;
+            color: var(--ansi-white);
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.2;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Scanline Effect */
+        body::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 100;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        /* Login Screen */
+        #loginScreen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 20px;
+            text-align: center;
+            z-index: 10;
+        }
+        #asciiArt {
+            color: var(--ansi-bright-green);
+            font-size: 8px;
+            white-space: pre;
+            margin-bottom: 20px;
+            font-weight: bold;
+            overflow-x: auto;
+            width: 100%;
+            text-shadow: 0 0 5px var(--ansi-green);
+        }
+        .subtitle {
+            color: var(--ansi-bright-yellow);
+            margin-bottom: 30px;
+            letter-spacing: 2px;
+            font-weight: bold;
+            text-shadow: 0 0 3px var(--ansi-yellow);
+        }
+        .box {
+            border: 2px solid var(--ansi-green);
+            padding: 20px;
+            background: #000;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 0 15px var(--ansi-green);
+        }
+        .box h2 {
+            color: var(--ansi-bright-cyan);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+        .box label {
+            display: block;
+            color: var(--ansi-cyan);
+            text-align: left;
+            margin: 10px 0 5px;
+            font-size: 12px;
+        }
+        .box input, .box select {
+            width: 100%;
+            background: #000;
+            border: 1px solid var(--ansi-green);
+            color: var(--ansi-bright-green);
+            padding: 10px;
+            font-family: inherit;
+            outline: none;
+        }
+        .box button {
+            width: 100%;
+            margin-top: 20px;
+            background: var(--ansi-green);
+            color: #000;
+            border: none;
+            padding: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+        .box button:active {
+            background: var(--ansi-bright-green);
+        }
+        .toggle-link {
+            margin-top: 20px;
+            color: var(--ansi-bright-blue);
+            cursor: pointer;
+            text-decoration: underline;
+            font-size: 12px;
+        }
+
+        /* Game Screen */
+        #gameScreen {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+            z-index: 10;
+        }
+        #headerBar {
+            background: var(--ansi-bright-black);
+            color: #000;
+            padding: 2px 10px;
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        #chatOutput {
+            flex: 1;
+            overflow-y: scroll;
+            padding: 10px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            scroll-behavior: smooth;
+        }
+        #inputArea {
+            border-top: 1px solid var(--ansi-bright-black);
+            background: #000;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+        }
+        .prompt {
+            color: var(--ansi-bright-green);
+            font-weight: bold;
+            white-space: nowrap;
+            margin-right: 5px;
+        }
+        #commandInput {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--ansi-bright-white);
+            font-family: inherit;
+            font-size: 16px;
+            outline: none;
+            width: 100%;
+        }
+
+        /* Status colors */
+        .msg-room-name { color: var(--ansi-bright-cyan); font-weight: bold; text-shadow: 0 0 2px var(--ansi-cyan); }
+        .msg-room-desc { color: var(--ansi-white); }
+        .msg-exits { color: var(--ansi-cyan); }
+        .msg-npc { color: var(--ansi-bright-red); }
+        .msg-player { color: var(--ansi-bright-green); }
+        .msg-system { color: var(--ansi-bright-yellow); }
+        .msg-combat-hit { color: var(--ansi-bright-red); font-weight: bold; }
+        .msg-gain { color: var(--ansi-bright-yellow); }
+
+        @media (min-width: 768px) {
+            body { font-size: 16px; }
+            #asciiArt { font-size: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loginScreen">
+        <pre id="asciiArt">
+ ██████╗  █████╗ ██████╗ ██╗  ██╗███╗   ██╗███████╗████████╗
+ ██╔══██╗██╔══██╗██╔══██╗██║ ██╔╝████╗  ██║██╔════╝╚══██╔══╝
+ ██║  ██║███████║██████╔╝█████╔╝ ██╔██╗ ██║█████╗     ██║   
+ ██║  ██║██╔══██║██╔══██╗██╔═██╗ ██║╚██╗██║██╔══╝     ██║   
+ ██████╔╝██║  ██║██║  ██║██║  ██╗██║ ╚████║███████╗   ██║   
+ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   
+        </pre>
+        <div class="subtitle">MAJOR BBS SYSTEM - NODE 01</div>
+        <div class="box">
+            <h2 id="formTitle">System Access</h2>
+            <div id="loginFields">
+                <label>USER HANDLE</label>
+                <input type="text" id="charName" autocomplete="off" spellcheck="false">
+                <label>ACCESS CODE</label>
+                <input type="password" id="charPassword">
+            </div>
+            <div id="extraFields" style="display:none;">
+                <label>AUGMENTATION PATH (RACE)</label>
+                <select id="charRace">
+                    <option value="Human">Human</option>
+                    <option value="Cyborg">Cyborg</option>
+                    <option value="Android">Android</option>
+                    <option value="Synth">Synth</option>
+                </select>
+                <label>OPERATIONAL CLASS</label>
+                <select id="charClass">
+                    <option value="Street Samurai">Street Samurai</option>
+                    <option value="Netrunner">Netrunner</option>
+                    <option value="Enforcer">Enforcer</option>
+                    <option value="Fixer">Fixer</option>
+                </select>
+            </div>
+            <button id="actionButton" onclick="doLogin()">Connect</button>
+            <div class="toggle-link" id="toggleForm" onclick="toggleLoginRegister()">Initialize New Profile</div>
+        </div>
+    </div>
+
+    <div id="gameScreen">
+        <div id="headerBar">
+            <span>DARKNESS BBS v1.0 [STABLE]</span>
+            <span id="locDisplay">CONNECTING...</span>
+        </div>
+        <div id="chatOutput"></div>
+        <div id="inputArea">
+            <span id="playerPrompt" class="prompt">[100/100] HP ></span>
+            <input type="text" id="commandInput" autocomplete="off" spellcheck="false" autofocus>
+        </div>
+    </div>
+
+    <script>
+        var isRegistering = false;
+
+        function toggleLoginRegister() {
+            isRegistering = !isRegistering;
+            $('#extraFields').toggle(isRegistering);
+            $('#formTitle').text(isRegistering ? 'User Initialization' : 'System Access');
+            $('#actionButton').text(isRegistering ? 'Initialize' : 'Connect');
+            $('#toggleForm').text(isRegistering ? 'Return to Login' : 'Initialize New Profile');
+        }
+
+        function doLogin() {
+            var name = $('#charName').val().trim();
+            var password = $('#charPassword').val().trim();
+            if (!name || !password) return;
+
+            if (isRegistering) {
+                var race = $('#charRace').val();
+                var charClass = $('#charClass').val();
+                $.post('/register/', { name: name, password: password, race: race, gameClass: charClass }, function(res) {
+                    appendMessage('<span class="msg-system">' + res.message + '</span>');
+                    toggleLoginRegister();
+                }).fail(function(res) { 
+                    alert(res.responseJSON.message); 
+                });
+            } else {
+                $.post('/login/', { name: name, password: password }, function(res) {
+                    if (res.success) {
+                        $('#loginScreen').hide();
+                        $('#gameScreen').css('display', 'flex');
+                        $('#commandInput').focus();
+                        appendMessage('<span class="msg-system">LINK ESTABLISHED. WELCOME TO DARKNESS.</span>');
+                        sendCommand('look');
+                    } else alert(res.message);
+                });
+            }
+        }
+
+        function sendCommand(cmdText) {
+            if (!cmdText) return;
+            var parts = cmdText.split(' ');
+            var cmd = parts[0];
+
+            $.ajax({
+                url: '/command/',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ command: cmdText }),
+                headers: { 'X-CSRFToken': getCookie('csrftoken') },
+                success: function(res) {
+                    if (cmd !== 'look' && cmd !== 'l') {
+                        appendMessage('\n<span style="color:var(--ansi-bright-white)">' + cmdText + '</span>');
+                    }
+                    appendMessage(res.output);
+                    updatePrompt(res.status);
+                }
+            });
+        }
+
+        function appendMessage(text) {
+            var chat = $('#chatOutput');
+            var formatted = formatOutput(text);
+            chat.append('<div>' + formatted + '</div>');
+            chat.scrollTop(chat[0].scrollHeight);
+        }
+
+        function formatOutput(text) {
+            // ANSI-style highlighting
+            text = text.replace(/\[Location\] (.*)/g, '<span class="msg-room-name">$1</span>');
+            text = text.replace(/\[Exits: (.*)\]/g, '<span class="msg-exits">[Exits: $1]</span>');
+            text = text.replace(/\[Entity\] (.*) is here\./g, '<span class="msg-npc">$1 is here.</span>');
+            text = text.replace(/\[User\] (.*) is here\./g, '<span class="msg-player">$1 is here.</span>');
+            text = text.replace(/You hit (.*) for (.*) damage\./g, '<span class="msg-combat-hit">You hit $1 for $2 damage.</span>');
+            text = text.replace(/(.*) hits you for (.*) damage\./g, '<span class="msg-combat-hit">$1 hits you for $2 damage.</span>');
+            text = text.replace(/Gained (.*) exp and (.*) credits\./g, '<span class="msg-gain">Gained $1 exp and $2 credits.</span>');
+            
+            // Extract location for header
+            var locMatch = text.match(/<span class="msg-room-name">(.*)<\/span>/);
+            if (locMatch) $('#locDisplay').text(locMatch[1].toUpperCase());
+
+            return text.replace(/\n/g, '<br>');
+        }
+
+        function updatePrompt(statusStr) {
+            // Format: HP:100/100|MA:20/20|LV:1|CR:25|BSY:0
+            var parts = statusStr.split('|');
+            var hp = "", ma = "";
+            parts.forEach(function(p) {
+                var kv = p.split(':');
+                if (kv[0] === 'HP') hp = kv[1];
+                if (kv[0] === 'MA') ma = kv[1];
+            });
+            $('#playerPrompt').text('[' + hp + '] HP [' + ma + '] MA >');
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        $('#commandInput').on('keydown', function(e) {
+            if (e.key === 'Enter') {
+                var val = $(this).val().trim();
+                if (val) sendCommand(val);
+                $(this).val('');
+            }
+        });
+
+        // Focus input on click anywhere in game screen
+        $('#gameScreen').on('click', function() {
+            $('#commandInput').focus();
+        });
+    </script>
+</body>
+</html>

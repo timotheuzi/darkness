@@ -1,0 +1,193 @@
+/* MajorMUD / ANSI 16 Color Palette */
+:root {
+    --ansi-black: #000000;
+    --ansi-red: #bb0000;
+    --ansi-green: #00bb00;
+    --ansi-yellow: #bbbb00;
+    --ansi-blue: #0000bb;
+    --ansi-magenta: #bb00bb;
+    --ansi-cyan: #00bbbb;
+    --ansi-white: #bbbbbb;
+    --ansi-bright-black: #555555;
+    --ansi-bright-red: #ff5555;
+    --ansi-bright-green: #55ff55;
+    --ansi-bright-yellow: #ffff55;
+    --ansi-bright-blue: #5555ff;
+    --ansi-bright-magenta: #ff55ff;
+    --ansi-bright-cyan: #55ffff;
+    --ansi-bright-white: #ffffff;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+body {
+    background: #000;
+    color: var(--ansi-white);
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.2;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Scanline Effect */
+body::before {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0; left: 0; bottom: 0; right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    z-index: 100;
+    background-size: 100% 2px, 3px 100%;
+    pointer-events: none;
+}
+
+/* Login Screen */
+#loginScreen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 20px;
+    text-align: center;
+    z-index: 10;
+}
+#asciiArt {
+    color: var(--ansi-bright-green);
+    font-size: 8px;
+    white-space: pre;
+    margin-bottom: 20px;
+    font-weight: bold;
+    overflow-x: auto;
+    width: 100%;
+    text-shadow: 0 0 5px var(--ansi-green);
+}
+.subtitle {
+    color: var(--ansi-bright-yellow);
+    margin-bottom: 30px;
+    letter-spacing: 2px;
+    font-weight: bold;
+    text-shadow: 0 0 3px var(--ansi-yellow);
+}
+.box {
+    border: 2px solid var(--ansi-green);
+    padding: 20px;
+    background: #000;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 0 15px var(--ansi-green);
+}
+.box h2 {
+    color: var(--ansi-bright-cyan);
+    margin-bottom: 20px;
+    text-transform: uppercase;
+}
+.box label {
+    display: block;
+    color: var(--ansi-cyan);
+    text-align: left;
+    margin: 10px 0 5px;
+    font-size: 12px;
+}
+.box input, .box select {
+    width: 100%;
+    background: #000;
+    border: 1px solid var(--ansi-green);
+    color: var(--ansi-bright-green);
+    padding: 10px;
+    font-family: inherit;
+    outline: none;
+}
+.box button {
+    width: 100%;
+    margin-top: 20px;
+    background: var(--ansi-green);
+    color: #000;
+    border: none;
+    padding: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+.box button:active {
+    background: var(--ansi-bright-green);
+}
+.toggle-link {
+    margin-top: 20px;
+    color: var(--ansi-bright-blue);
+    cursor: pointer;
+    text-decoration: underline;
+    font-size: 12px;
+}
+
+/* Game Screen */
+#gameScreen {
+    display: none;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    z-index: 10;
+}
+#headerBar {
+    background: var(--ansi-bright-black);
+    color: #000;
+    padding: 2px 10px;
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    font-size: 12px;
+}
+#chatOutput {
+    flex: 1;
+    overflow-y: scroll;
+    padding: 10px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    scroll-behavior: smooth;
+}
+#inputArea {
+    border-top: 1px solid var(--ansi-bright-black);
+    background: #000;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+}
+.prompt {
+    color: var(--ansi-bright-green);
+    font-weight: bold;
+    white-space: nowrap;
+    margin-right: 5px;
+}
+#commandInput {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--ansi-bright-white);
+    font-family: inherit;
+    font-size: 16px;
+    outline: none;
+    width: 100%;
+}
+
+/* Status colors */
+.msg-room-name { color: var(--ansi-bright-cyan); font-weight: bold; text-shadow: 0 0 2px var(--ansi-cyan); }
+.msg-room-desc { color: var(--ansi-white); }
+.msg-exits { color: var(--ansi-cyan); }
+.msg-npc { color: var(--ansi-bright-red); }
+.msg-player { color: var(--ansi-bright-green); }
+.msg-system { color: var(--ansi-bright-yellow); }
+.msg-combat-hit { color: var(--ansi-bright-red); font-weight: bold; }
+.msg-gain { color: var(--ansi-bright-yellow); }
+
+@media (min-width: 768px) {
+    body { font-size: 16px; }
+    #asciiArt { font-size: 10px; }
+}

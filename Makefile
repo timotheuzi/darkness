@@ -1,14 +1,10 @@
-# DarknessMUD Makefile
+# DarknessMUD Django Makefile
 
-.PHONY: help lint clean build run purge stop repair
+.PHONY: help setup lint clean migrate init run repair stop test
 
-# Use local gradle home to bypass global cache corruption
-LOCAL_GRADLE_HOME := .gradle_home
-GRADLE_OPTS := --gradle-user-home $(LOCAL_GRADLE_HOME) --no-daemon --stacktrace
-
-# Automatically detect Gradle
-GRADLE_BIN := $(shell [ -f ./gradlew ] && echo ./gradlew || echo gradle)
-GRADLE := $(GRADLE_BIN) $(GRADLE_OPTS)
+PYTHON := python3
+MANAGE := $(PYTHON) manage.py
+SETTINGS := darkness_django.settings.local
 
 help: ## Show this help message
 	@echo "Usage: make [target]"
@@ -16,33 +12,40 @@ help: ## Show this help message
 	@echo "Targets:"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
 
-lint: stop ## Run static analysis
-	rm -rf build
-	$(GRADLE) check
+setup: ## Install dependencies
+	$(PYTHON) -m pip install -r requirements/dev.txt
 
-clean: ## Clean build artifacts
-	$(GRADLE) clean
-	rm -rf build
+lint: ## Run static analysis
+	@echo "Running lint (flake8)..."
+	flake8 . --exclude=*/migrations/*,*/settings/*
+	@echo "Running type check (optional)..."
+	# mypy .
 
-build: stop ## Build the application
-	rm -rf build
-	$(GRADLE) build -x test
+clean: ## Clean python cache files
+	find . -type d -name "__pycache__" -exec rm -rf {} +
+	find . -type f -name "*.pyc" -delete
+	rm -rf .pytest_cache
+	rm -rf .coverage
+	rm -rf htmlcov
 
-run: stop ## Run the application (Uses local cache to fix truncation errors)
-	rm -rf build
-	$(GRADLE) bootRun --refresh-dependencies
+migrate: ## Run database migrations
+	$(MANAGE) makemigrations --settings=$(SETTINGS)
+	$(MANAGE) migrate --settings=$(SETTINGS)
 
-repair: stop ## Nuclear option: Wipe everything and rebuild cache
-	$(GRADLE) --stop || true
-	@pkill -f gradle || true
-	rm -rf build .gradle $(LOCAL_GRADLE_HOME)
-	@echo "Environment reset. Run 'make run' to rebuild."
+init: migrate ## Initialize game world data
+	$(MANAGE) init_game --settings=$(SETTINGS)
 
-stop: ## Force stop the Gradle daemon and kill lingering processes
-	$(GRADLE_BIN) --stop || true
-	@pkill -f java || true
-	@pkill -f gradle || true
+run: stop migrate ## Run the Django development server
+	$(MANAGE) runserver 0.0.0.0:8000 --settings=$(SETTINGS)
 
-test: stop ## Run unit tests
-	rm -rf build
-	$(GRADLE) test
+repair: stop ## Reset database and migrations
+	rm -f db.sqlite3
+	find . -path "*/migrations/*.py" -not -name "__init__.py" -delete
+	$(MAKE) init
+	@echo "Environment reset and re-initialized."
+
+stop: ## Kill running django processes
+	@pkill -f runserver || true
+
+test: ## Run django tests
+	$(MANAGE) test --settings=$(SETTINGS)
