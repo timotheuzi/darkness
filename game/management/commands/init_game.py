@@ -1,9 +1,13 @@
+#!/usr/bin/env python3
 import random
+
 from django.core.management.base import BaseCommand
-from game.models import Room, NPC, Item
+
+from game.models import NPC, Item, Room
+
 
 class Command(BaseCommand):
-    help = 'Procedurally generate the CyberMUD world'
+    help = "Procedurally generate the CyberMUD world"
 
     def handle(self, *args, **kwargs):
         self.stdout.write("Purging existing grid data...")
@@ -13,27 +17,99 @@ class Command(BaseCommand):
 
         # 1. Base Hardware (Items)
         weapons = [
-            Item.objects.create(name="Stun Baton", description="Standard issue security baton.", item_type="weapon", attack_bonus=5, price=50),
-            Item.objects.create(name="Mono-Blade", description="Vibrating edge for clean cuts.", item_type="weapon", attack_bonus=12, price=300),
-            Item.objects.create(name="Heavy Slugger", description="High-caliber kinetic pistol.", item_type="weapon", attack_bonus=20, price=750),
-            Item.objects.create(name="Laser Drill", description="Industrial tool repurposed for violence.", item_type="weapon", attack_bonus=15, price=450),
+            Item.objects.create(
+                name="Stun Baton",
+                description="Standard issue security baton.",
+                item_type="weapon",
+                attack_bonus=5,
+                price=50,
+            ),
+            Item.objects.create(
+                name="Mono-Blade",
+                description="Vibrating edge for clean cuts.",
+                item_type="weapon",
+                attack_bonus=12,
+                price=300,
+            ),
+            Item.objects.create(
+                name="Heavy Slugger",
+                description="High-caliber kinetic pistol.",
+                item_type="weapon",
+                attack_bonus=20,
+                price=750,
+            ),
+            Item.objects.create(
+                name="Laser Drill",
+                description="Industrial tool repurposed for violence.",
+                item_type="weapon",
+                attack_bonus=15,
+                price=450,
+            ),
         ]
         armors = [
-            Item.objects.create(name="Mesh Vest", description="Basic kinetic protection.", item_type="armor", defense_bonus=8, price=150),
-            Item.objects.create(name="Riot Shield", description="Heavily reinforced alloy.", item_type="armor", defense_bonus=20, price=1000),
-            Item.objects.create(name="Synth-Leathers", description="Tough fabric for street life.", item_type="armor", defense_bonus=4, price=80),
+            Item.objects.create(
+                name="Mesh Vest",
+                description="Basic kinetic protection.",
+                item_type="armor",
+                defense_bonus=8,
+                price=150,
+            ),
+            Item.objects.create(
+                name="Riot Shield",
+                description="Heavily reinforced alloy.",
+                item_type="armor",
+                defense_bonus=20,
+                price=1000,
+            ),
+            Item.objects.create(
+                name="Synth-Leathers",
+                description="Tough fabric for street life.",
+                item_type="armor",
+                defense_bonus=4,
+                price=80,
+            ),
         ]
         consumables = [
-            Item.objects.create(name="Health Stim", description="Nanobot healing injection.", item_type="consumable", price=25),
-            Item.objects.create(name="Data Spike", description="Temporary buffer boost.", item_type="consumable", price=60),
+            Item.objects.create(
+                name="Health Stim",
+                description="Nanobot healing injection.",
+                item_type="consumable",
+                price=25,
+            ),
+            Item.objects.create(
+                name="Data Spike",
+                description="Temporary buffer boost.",
+                item_type="consumable",
+                price=60,
+            ),
         ]
 
         # 2. Procedural Generation Config
         sectors = [
-            {"name": "The Slums", "desc": "Gritty, rain-soaked streets and rusted pipes.", "min_lvl": 1, "max_lvl": 3},
-            {"name": "Industrial Zone", "desc": "Hissing steam, clanking machinery, and toxic fumes.", "min_lvl": 3, "max_lvl": 6},
-            {"name": "Corporate Plaza", "desc": "Clean, sterile, and heavily guarded glass towers.", "min_lvl": 6, "max_lvl": 10},
-            {"name": "The Under-Grid", "desc": "Scrambled data-scapes and flickering holograms.", "min_lvl": 8, "max_lvl": 12},
+            {
+                "name": "The Slums",
+                "desc": "Gritty, rain-soaked streets and rusted pipes.",
+                "min_lvl": 1,
+                "max_lvl": 3,
+            },
+            {
+                "name": "Industrial Zone",
+                "desc": "Hissing steam, clanking machinery, and toxic fumes.",
+                "min_lvl": 3,
+                "max_lvl": 6,
+            },
+            {
+                "name": "Corporate Plaza",
+                "desc": "Clean, sterile, and heavily guarded glass towers.",
+                "min_lvl": 6,
+                "max_lvl": 10,
+            },
+            {
+                "name": "The Under-Grid",
+                "desc": "Scrambled data-scapes and flickering holograms.",
+                "min_lvl": 8,
+                "max_lvl": 12,
+            },
         ]
 
         # Create The Neon Hub (Spawn)
@@ -42,9 +118,9 @@ class Command(BaseCommand):
             name="The Neon Hub",
             description="The central nerve center of the grid. All nodes start here. Terminals flicker with green text.",
             safe_zone=True,
-            shop_name="Central Exchange"
+            shop_name="Central Exchange",
         )
-        hub.items.add(consumables[0]) # Start with stims in shop
+        hub.items.add(consumables[0])  # Start with stims in shop
 
         def connect_rooms(r1, r2, direction):
             opp = {"north": "south", "south": "north", "east": "west", "west": "east"}
@@ -65,25 +141,25 @@ class Command(BaseCommand):
         for sector_cfg in sectors:
             sector_rooms = []
             num_rooms = random.randint(5, 8)
-            
+
             # Create first room of sector and connect to previous entry
             first_room = Room.objects.create(
                 name=f"{sector_cfg['name']} - Entry Way",
-                description=f"Entry point to {sector_cfg['name']}. {sector_cfg['desc']}"
+                description=f"Entry point to {sector_cfg['name']}. {sector_cfg['desc']}",
             )
             d = get_random_dir(current_entry.exits)
             if d:
                 connect_rooms(current_entry, first_room, d)
-            
+
             sector_rooms.append(first_room)
             prev_room = first_room
-            
+
             for i in range(num_rooms - 1):
                 new_room = Room.objects.create(
-                    name=f"{sector_cfg['name']} - Node {chr(65+i)}",
-                    description=f"A sector of {sector_cfg['name']}. {sector_cfg['desc']}"
+                    name=f"{sector_cfg['name']} - Node {chr(65 + i)}",
+                    description=f"A sector of {sector_cfg['name']}. {sector_cfg['desc']}",
                 )
-                
+
                 d = get_random_dir(prev_room.exits)
                 if d:
                     connect_rooms(prev_room, new_room, d)
@@ -93,10 +169,10 @@ class Command(BaseCommand):
                     d = get_random_dir(retry_room.exits)
                     if d:
                         connect_rooms(retry_room, new_room, d)
-                
+
                 # Populating NPCs
                 if random.random() > 0.4:
-                    lvl = random.randint(sector_cfg['min_lvl'], sector_cfg['max_lvl'])
+                    lvl = random.randint(sector_cfg["min_lvl"], sector_cfg["max_lvl"])
                     npc = NPC.objects.create(
                         name=f"{sector_cfg['name']} Drone #{random.randint(100, 999)}",
                         description=f"A hostile entity patrolling {sector_cfg['name']}.",
@@ -108,7 +184,7 @@ class Command(BaseCommand):
                         lvl=lvl,
                         money_drop=lvl * 10,
                         exp_drop=lvl * 15,
-                        aggressive=(lvl > 2)
+                        aggressive=(lvl > 2),
                     )
                     # Random loot
                     if random.random() > 0.7:
@@ -116,9 +192,13 @@ class Command(BaseCommand):
 
                 sector_rooms.append(new_room)
                 prev_room = new_room
-            
+
             all_rooms.extend(sector_rooms)
             # Entry for next sector is a random room from this sector
             current_entry = random.choice(sector_rooms)
 
-        self.stdout.write(self.style.SUCCESS(f"Successfully generated grid with {Room.objects.count()} nodes and {NPC.objects.count()} entities."))
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"Successfully generated grid with {Room.objects.count()} nodes and {NPC.objects.count()} entities."
+            )
+        )
