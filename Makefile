@@ -1,8 +1,9 @@
 # DarknessMUD Django Makefile
 
-.PHONY: help setup lint clean migrate init run repair stop test
+.PHONY: help venv setup lint clean migrate init run repair stop test
 
-PYTHON := python3
+VENV := .venv
+PYTHON := $(VENV)/bin/python
 MANAGE := $(PYTHON) manage.py
 SETTINGS := darkness_django.settings.local
 
@@ -12,8 +13,11 @@ help: ## Show this help message
 	@echo "Targets:"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
 
-setup: ## Install dependencies
-	$(PYTHON) -m pipx install requirements/dev.txt
+venv: ## Create virtual environment
+	$(PYTHON) -m venv $(VENV)
+
+setup: venv ## Install dependencies
+	$(VENV)/bin/pip install -r requirements/dev.txt
 
 lint: ## Run static analysis
 	@echo "Running lint (flake8)..."

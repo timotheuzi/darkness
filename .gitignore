@@ -11,3 +11,8 @@ gradlew
 *.iws
 *.iml
 *.ipr
+
+### Python ###
+.venv/
+__pycache__/
+*.pyc
