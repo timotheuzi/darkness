@@ -1,9 +1,11 @@
 import json
+import random
 from django.utils import timezone
 from .models import Player, Room, NPC, Item, InventoryItem, ChatMessage
 
 def get_status_str(player):
-    return f"HP:{player.hp}/{player.hp_max}|MA:{player.mana}/{player.mana_max}|LV:{player.lvl}|CR:{player.money}|BSY:0"
+    return (f"HP:{player.hp}/{player.hp_max}|MA:{player.mana}/{player.mana_max}"
+            f"|LV:{player.lvl}|CR:{player.money}|EXP:{player.exp}")
 
 def get_help(player):
     room = player.location
@@ -15,9 +17,11 @@ def get_help(player):
     sb.append("ST/STATUS     : Detailed user profile data")
     sb.append("SAY <msg>     : Broadcast to current sector")
     sb.append("HELP/?        : Display this manual")
+    sb.append("MAP           : Show local grid map")
+    sb.append("USE <item>    : Use a consumable item")
 
     if room.exits:
-        sb.append(f"MOV/DIRS      : Navigation available: {', '.join(room.exits.keys()).upper()}")
+        sb.append(f"MOV/DIRS      : Navigation: {', '.join(room.exits.keys()).upper()}")
     
     if room.items.exists():
         sb.append("G/GET <item>  : Retrieve hardware from ground")
@@ -76,34 +80,64 @@ def move_player(player, direction):
     except Room.DoesNotExist:
         return "NAVIGATION ERROR."
 
+def check_level_up(player):
+    """Check if player has enough exp to level up."""
+    output = ""
+    while player.exp >= player.lvl * 100:
+        player.exp -= player.lvl * 100
+        player.lvl += 1
+        player.hp_max += 10
+        player.hp = player.hp_max
+        player.mana_max += 5
+        player.mana = player.mana_max
+        player.attack += 2
+        player.defense += 1
+        player.str_stat += 1
+        player.int_stat += 1
+        player.wil_stat += 1
+        player.agi_stat += 1
+        player.hea_stat += 1
+        player.save()
+        output += f"\n*** LEVEL UP! Now level {player.lvl}! ***"
+    return output
+
 def attack_npc(player, target_name):
-    if not target_name: return "Specify target."
-    npc = NPC.objects.filter(location=player.location, name__icontains=target_name, hp__gt=0).first()
-    if not npc: return "Target not found."
-    
-    dmg = max(1, player.attack - npc.defense // 2)
+    if not target_name:
+        return "Specify target."
+    npc = NPC.objects.filter(
+        location=player.location, name__icontains=target_name, hp__gt=0
+    ).first()
+    if not npc:
+        return "Target not found."
+
+    base_dmg = max(1, player.attack - npc.defense // 2)
+    dmg = random.randint(max(1, base_dmg - 3), base_dmg + 3)
     npc.hp -= dmg
     npc.save()
     output = f"You hit {npc.name} for {dmg} damage."
-    
+
     if npc.hp <= 0:
         player.exp += npc.exp_drop
         player.money += npc.money_drop
         player.save()
-        output += f"\nTarget neutralized! Gained {npc.exp_drop} exp and {npc.money_drop} credits."
+        output += f"\nTarget neutralized! +{npc.exp_drop} exp, +{npc.money_drop} credits."
         for item in npc.drops.all():
             InventoryItem.objects.create(player=player, item=item)
             output += f"\nRetrieved: {item.name}"
+        output += check_level_up(player)
     else:
         npc_dmg = max(1, npc.attack - player.defense // 2)
+        npc_dmg = random.randint(max(1, npc_dmg - 2), npc_dmg + 2)
         player.hp -= npc_dmg
         player.save()
         output += f"\n{npc.name} hits you for {npc_dmg} damage."
         if player.hp <= 0:
             output += "\nCRITICAL ERROR: SYSTEM RESET."
             player.hp = player.hp_max // 2
+            player.money = max(0, player.money - 10)
             player.location = Room.objects.get(id=1)
             player.save()
+            output += "\nRespawned at The Neon Hub. Lost 10 credits."
     return output
 
 def handle_say(player, message):
@@ -119,10 +153,12 @@ def get_recent_chat(player):
 
 def get_inventory(player):
     items = InventoryItem.objects.filter(player=player)
-    if not items.exists(): return "Memory slots empty."
+    if not items.exists():
+        return "Memory slots empty."
     sb = ["\n=== Hardware Inventory ==="]
     for ii in items:
-        sb.append(f"  {ii.item.name} {'(EQUIPPED)' if ii.equipped else ''}")
+        eq = " [E]" if ii.equipped else ""
+        sb.append(f"  {ii.item.name}{eq}")
     return "\n".join(sb)
 
 def get_status_detailed(player):
@@ -203,13 +239,97 @@ def buy_item(player, item_name):
     return f"Purchased {item.name}."
 
 def sell_item(player, item_name):
-    if not player.location.shop_name: return "No shop here."
+    if not player.location.shop_name:
+        return "No shop here."
     ii = InventoryItem.objects.filter(player=player, item__name__icontains=item_name).first()
-    if not ii: return "You don't have that."
-    if ii.equipped: return "Unequip first."
+    if not ii:
+        return "You don't have that."
+    if ii.equipped:
+        return "Unequip first."
     price = ii.item.price // 2
     player.money += price
     player.save()
     name = ii.item.name
     ii.delete()
     return f"Sold {name} for {price} credits."
+
+def use_item(player, item_name):
+    """Use a consumable item."""
+    if not item_name:
+        return "Use what?"
+    ii = InventoryItem.objects.filter(
+        player=player, item__name__icontains=item_name, item__item_type='consumable'
+    ).first()
+    if not ii:
+        return "Not a usable item."
+    output = f"You use {ii.item.name}."
+    if ii.item.heal_amount > 0:
+        old_hp = player.hp
+        player.hp = min(player.hp_max, player.hp + ii.item.heal_amount)
+        healed = player.hp - old_hp
+        output += f"\nRestored {healed} HP. ({player.hp}/{player.hp_max})"
+    else:
+        output += "\nThe effect courses through your system."
+    ii.quantity -= 1
+    if ii.quantity <= 0:
+        ii.delete()
+    else:
+        ii.save()
+    player.save()
+    return output
+
+def get_map_data(player):
+    """Generate ASCII map of nearby rooms."""
+    room = player.location
+    if not room:
+        return "[NO MAP DATA]"
+
+    # Get all rooms within 2 hops
+    visited = set()
+    to_visit = [(room, 0)]
+    room_data = []
+    while to_visit:
+        r, depth = to_visit.pop(0)
+        if r.id in visited or depth > 3:
+            continue
+        visited.add(r.id)
+        is_current = (r.id == room.id)
+        others_here = Player.objects.filter(location=r, online=True).count()
+        npcs_here = NPC.objects.filter(location=r, hp__gt=0).count()
+        room_data.append({
+            'id': r.id, 'name': r.name, 'x': r.map_x, 'y': r.map_y,
+            'current': is_current, 'players': others_here, 'npcs': npcs_here,
+            'zone': r.zone, 'safe': r.safe_zone,
+        })
+        for direction, rid in r.exits.items():
+            try:
+                next_room = Room.objects.get(id=rid)
+                if next_room.id not in visited:
+                    to_visit.append((next_room, depth + 1))
+            except Room.DoesNotExist:
+                pass
+
+    return json.dumps(room_data)
+
+def get_poll_data(player):
+    """Get data for polling: recent chat, room changes, status."""
+    cutoff = timezone.now() - timezone.timedelta(seconds=3)
+    msgs = ChatMessage.objects.filter(
+        room=player.location, timestamp__gt=cutoff
+    ).order_by('timestamp')
+    chat = [{"player": m.sender.user.username, "message": m.message} for m in msgs]
+
+    npcs = list(NPC.objects.filter(location=player.location, hp__gt=0).values('id', 'name', 'hp', 'hp_max', 'lvl'))
+    room_items = list(room.items.all().values('id', 'name')) if (room := player.location) else []
+    players_here = list(Player.objects.filter(
+        location=player.location, online=True
+    ).exclude(id=player.id).values('id', 'user__username', 'lvl', 'game_class'))
+
+    return {
+        "chat": chat,
+        "npcs": npcs,
+        "items": room_items,
+        "players": players_here,
+        "status": get_status_str(player),
+        "location": room.name if room else "Unknown",
+    }

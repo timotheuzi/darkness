@@ -2,7 +2,7 @@ from .base import *
 
 DEBUG = True
 
-SECRET_KEY = 'django-insecure-dev-secret-key'
+SECRET_KEY = 'welcome123'
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
 

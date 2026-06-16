@@ -195,9 +195,26 @@
         .msg-combat-hit { color: var(--ansi-bright-red); font-weight: bold; }
         .msg-gain { color: var(--ansi-bright-yellow); }
 
+        #mainArea { display:flex; flex:1; overflow:hidden; }
+        #sidePanel {
+            width:220px; background:#0a0a0a; border-left:1px solid var(--ansi-bright-black);
+            padding:8px; overflow-y:auto; font-size:11px; display:none;
+        }
+        #sidePanel h3 { color:var(--ansi-bright-cyan); font-size:12px; margin:8px 0 4px; border-bottom:1px solid var(--ansi-bright-black); padding-bottom:2px; }
+        .side-npc { color:var(--ansi-bright-red); padding:1px 0; }
+        .side-player { color:var(--ansi-bright-green); padding:1px 0; }
+        .side-item { color:var(--ansi-bright-yellow); padding:1px 0; }
+        .side-status { color:var(--ansi-white); padding:1px 0; }
+        #mapCanvas { width:100%; height:140px; background:#050505; border:1px solid var(--ansi-bright-black); margin-top:4px; }
+        #pollIndicator { position:fixed; top:5px; right:5px; z-index:200; font-size:10px; padding:2px 6px; border-radius:3px; }
+        .poll-on { background:#003300; color:#00ff00; }
+        .poll-off { background:#330000; color:#ff0000; }
+        .msg-chat { color:var(--ansi-bright-magenta); }
+        .msg-levelup { color:var(--ansi-bright-yellow); font-weight:bold; text-shadow:0 0 5px var(--ansi-yellow); }
         @media (min-width: 768px) {
             body { font-size: 16px; }
             #asciiArt { font-size: 10px; }
+            #sidePanel { display:block; }
         }
     </style>
 </head>
@@ -242,12 +259,27 @@
         </div>
     </div>
 
+    <div id="pollIndicator" class="poll-on">POLL</div>
     <div id="gameScreen">
         <div id="headerBar">
             <span>DARKNESS BBS v1.0 [STABLE]</span>
             <span id="locDisplay">CONNECTING...</span>
         </div>
-        <div id="chatOutput"></div>
+        <div id="mainArea">
+            <div id="chatOutput"></div>
+            <div id="sidePanel">
+                <h3>STATUS</h3>
+                <div id="sideStatus" class="side-status">Loading...</div>
+                <h3>ENTITIES</h3>
+                <div id="sideNpcs"></div>
+                <h3>USERS</h3>
+                <div id="sidePlayers"></div>
+                <h3>ITEMS</h3>
+                <div id="sideItems"></div>
+                <h3>MAP</h3>
+                <canvas id="mapCanvas" width="200" height="140"></canvas>
+            </div>
+        </div>
         <div id="inputArea">
             <span id="playerPrompt" class="prompt">[100/100] HP ></span>
             <input type="text" id="commandInput" autocomplete="off" spellcheck="false" autofocus>
@@ -287,6 +319,7 @@
                         $('#commandInput').focus();
                         appendMessage('<span class="msg-system">LINK ESTABLISHED. WELCOME TO DARKNESS.</span>');
                         sendCommand('look');
+                        startPolling();
                     } else alert(res.message);
                 });
             }
@@ -364,17 +397,206 @@
             return cookieValue;
         }
 
-        $('#commandInput').on('keydown', function(e) {
-            if (e.key === 'Enter') {
-                var val = $(this).val().trim();
-                if (val) sendCommand(val);
-                $(this).val('');
-            }
-        });
-
         // Focus input on click anywhere in game screen
         $('#gameScreen').on('click', function() {
             $('#commandInput').focus();
+        });
+
+        // ── Polling System (like chat.js) ──
+        var pollInterval = null;
+        var pollIntervalMs = 2000;
+        var lastChatCount = 0;
+        var commandHistory = [];
+        var historyIndex = -1;
+
+        function startPolling() {
+            if (pollInterval) clearInterval(pollInterval);
+            pollInterval = setInterval(pollServer, pollIntervalMs);
+            $('#pollIndicator').addClass('poll-on').removeClass('poll-off').text('POLL');
+        }
+
+        function stopPolling() {
+            if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+            $('#pollIndicator').addClass('poll-off').removeClass('poll-on').text('OFF');
+        }
+
+        function pollServer() {
+            $.ajax({
+                url: '/poll/',
+                method: 'GET',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                success: function(data) {
+                    // Update side panel
+                    if (data.status) updatePrompt(data.status);
+                    if (data.location) $('#locDisplay').text(data.location.toUpperCase());
+                    updateSidePanel(data);
+                    // Update map
+                    fetchMap();
+                },
+                error: function() {
+                    $('#pollIndicator').addClass('poll-off').removeClass('poll-on').text('ERR');
+                }
+            });
+        }
+
+        function updateSidePanel(data) {
+            // Status
+            var statusParts = (data.status || '').split('|');
+            var statusHtml = '';
+            statusParts.forEach(function(p) {
+                var kv = p.split(':');
+                if (kv.length === 2) statusHtml += kv[0] + ': ' + kv[1] + '<br>';
+            });
+            $('#sideStatus').html(statusHtml);
+
+            // NPCs
+            var npcHtml = '';
+            if (data.npcs && data.npcs.length > 0) {
+                data.npcs.forEach(function(n) {
+                    npcHtml += '<div class="side-npc">[Lvl ' + n.lvl + '] ' + n.name + ' (' + n.hp + '/' + n.hp_max + ')</div>';
+                });
+            } else {
+                npcHtml = '<div class="side-status" style="color:#555">None</div>';
+            }
+            $('#sideNpcs').html(npcHtml);
+
+            // Players
+            var playerHtml = '';
+            if (data.players && data.players.length > 0) {
+                data.players.forEach(function(p) {
+                    playerHtml += '<div class="side-player">' + p.user__username + ' (Lvl ' + p.lvl + ')</div>';
+                });
+            } else {
+                playerHtml = '<div class="side-status" style="color:#555">None</div>';
+            }
+            $('#sidePlayers').html(playerHtml);
+
+            // Items
+            var itemHtml = '';
+            if (data.items && data.items.length > 0) {
+                data.items.forEach(function(it) {
+                    itemHtml += '<div class="side-item">' + it.name + '</div>';
+                });
+            } else {
+                itemHtml = '<div class="side-status" style="color:#555">None</div>';
+            }
+            $('#sideItems').html(itemHtml);
+        }
+
+        function fetchMap() {
+            $.ajax({
+                url: '/map/',
+                method: 'GET',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                success: function(data) {
+                    if (data.rooms) renderMap(data.rooms);
+                }
+            });
+        }
+
+        function renderMap(rooms) {
+            var canvas = document.getElementById('mapCanvas');
+            if (!canvas) return;
+            var ctx = canvas.getContext('2d');
+            var w = canvas.width, h = canvas.height;
+            ctx.clearRect(0, 0, w, h);
+            if (!rooms || rooms.length === 0) return;
+
+            // Find bounds
+            var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+            rooms.forEach(function(r) {
+                if (r.x < minX) minX = r.x;
+                if (r.x > maxX) maxX = r.x;
+                if (r.y < minY) minY = r.y;
+                if (r.y > maxY) maxY = r.y;
+            });
+
+            var cols = maxX - minX + 1;
+            var rows = maxY - minY + 1;
+            var cellW = Math.min(30, (w - 20) / Math.max(cols, 1));
+            var cellH = Math.min(20, (h - 20) / Math.max(rows, 1));
+            var offsetX = (w - cols * cellW) / 2;
+            var offsetY = (h - rows * cellH) / 2;
+
+            // Draw connections
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            rooms.forEach(function(r) {
+                var x1 = offsetX + (r.x - minX) * cellW + cellW / 2;
+                var y1 = offsetY + (r.y - minY) * cellH + cellH / 2;
+                // Draw to neighbors based on exits
+                if (r.y < maxY) { // south connection
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x1, y1 + cellH);
+                    ctx.stroke();
+                }
+                if (r.x < maxX) { // east connection
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x1 + cellW, y1);
+                    ctx.stroke();
+                }
+            });
+
+            // Draw rooms
+            rooms.forEach(function(r) {
+                var x = offsetX + (r.x - minX) * cellW + cellW / 2;
+                var y = offsetY + (r.y - minY) * cellH + cellH / 2;
+                var sz = 4;
+
+                if (r.current) {
+                    ctx.fillStyle = '#00ff00';
+                    ctx.shadowColor = '#00ff00';
+                    ctx.shadowBlur = 5;
+                    sz = 6;
+                } else if (r.safe) {
+                    ctx.fillStyle = '#55ffff';
+                    ctx.shadowColor = '#55ffff';
+                    ctx.shadowBlur = 3;
+                } else if (r.npcs > 0) {
+                    ctx.fillStyle = '#ff5555';
+                    ctx.shadowColor = '#ff5555';
+                    ctx.shadowBlur = 3;
+                } else if (r.players > 0) {
+                    ctx.fillStyle = '#55ff55';
+                    ctx.shadowColor = '#55ff55';
+                    ctx.shadowBlur = 3;
+                } else {
+                    ctx.fillStyle = '#555555';
+                    ctx.shadowBlur = 0;
+                }
+                ctx.fillRect(x - sz / 2, y - sz / 2, sz, sz);
+                ctx.shadowBlur = 0;
+            });
+        }
+
+        // Command history
+        $('#commandInput').on('keydown', function(e) {
+            if (e.key === 'Enter') {
+                var val = $(this).val().trim();
+                if (val) {
+                    sendCommand(val);
+                    commandHistory.push(val);
+                    historyIndex = commandHistory.length;
+                }
+                $(this).val('');
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (historyIndex > 0) {
+                    historyIndex--;
+                    $(this).val(commandHistory[historyIndex]);
+                }
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (historyIndex < commandHistory.length - 1) {
+                    historyIndex++;
+                    $(this).val(commandHistory[historyIndex]);
+                } else {
+                    historyIndex = commandHistory.length;
+                    $(this).val('');
+                }
+            }
         });
     </script>
 </body>

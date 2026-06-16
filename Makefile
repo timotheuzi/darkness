@@ -1,6 +1,6 @@
 # DarknessMUD Django Makefile
 
-.PHONY: help venv setup lint clean migrate init run repair stop test
+.PHONY: help venv setup lint clean migrate init run repair test
 
 VENV := .venv
 PYTHON := $(VENV)/bin/python
@@ -39,17 +39,17 @@ migrate: ## Run database migrations
 init: migrate ## Initialize game world data
 	$(MANAGE) init_game --settings=$(SETTINGS)
 
-run: stop migrate ## Run the Django development server
+run: migrate ## Run the Django development server
 	$(MANAGE) runserver 0.0.0.0:8008 --settings=$(SETTINGS)
 
-repair: stop ## Reset database and migrations
+repair: #stop ## Reset database and migrations
 	rm -f db.sqlite3
 	find . -path "*/migrations/*.py" -not -name "__init__.py" -delete
 	$(MAKE) init
 	@echo "Environment reset and re-initialized."
 
-stop: ## Kill running django processes
-	@pkill -f runserver || true
+#stop: ## Kill running django processes
+#	@pkill -f runserver || true
 
 test: ## Run django tests
 	$(MANAGE) test --settings=$(SETTINGS)

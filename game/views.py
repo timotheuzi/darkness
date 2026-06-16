@@ -7,8 +7,10 @@ from django.views.decorators.csrf import csrf_exempt
 from .models import Player, Room
 from . import services
 
+
 def index(request):
     return render(request, 'game/game.html')
+
 
 @csrf_exempt
 def register_view(request):
@@ -17,18 +19,31 @@ def register_view(request):
         password = request.POST.get('password')
         race = request.POST.get('race')
         game_class = request.POST.get('gameClass')
-        
+
+        if not name or not password:
+            return JsonResponse({'message': 'Name and password required.'}, status=400)
         if User.objects.filter(username=name).exists():
             return JsonResponse({'message': 'Handle already in use.'}, status=400)
-        
+
         user = User.objects.create_user(username=name, password=password)
-        start_room = Room.objects.get_or_create(id=1, defaults={'name': 'The Neon Hub', 'description': 'Central Hub.'})[0]
+        start_room = Room.objects.get_or_create(
+            id=1,
+            defaults={
+                'name': 'The Neon Hub',
+                'description': 'Central Hub.',
+                'zone': 'hub',
+                'theme': 'urban',
+            }
+        )[0]
         Player.objects.create(
-            user=user, race=race, game_class=game_class, 
+            user=user, race=race, game_class=game_class,
             location=start_room, hp=100, hp_max=100,
             attack=10, defense=5
         )
-        return JsonResponse({'message': 'Character initialized! Welcome to the grid, ' + name + '.'})
+        return JsonResponse({
+            'message': f'Character initialized! Welcome to the grid, {name}.'
+        })
+
 
 @csrf_exempt
 def login_view(request):
@@ -44,16 +59,20 @@ def login_view(request):
             return JsonResponse({'success': True})
         return JsonResponse({'success': False, 'message': 'Invalid credentials'})
 
+
 @csrf_exempt
 def command_view(request):
     if not request.user.is_authenticated:
         return JsonResponse({'message': 'Not authenticated'}, status=401)
-    
+
     player = request.user.player
     cmd_data = json.loads(request.body)
     full_cmd = cmd_data.get('command', '').strip()
     if not full_cmd:
-        return JsonResponse({'output': '', 'status': services.get_status_str(player)})
+        return JsonResponse({
+            'output': '',
+            'status': services.get_status_str(player)
+        })
 
     if full_cmd.startswith("'"):
         command = "'"
@@ -70,7 +89,10 @@ def command_view(request):
         output = services.move_player(player, command)
     elif command == 'who':
         online_players = Player.objects.filter(online=True)
-        output = "\n=== Nodes Currently Linked ===\n" + "\n".join([f"  {p.user.username} (Lvl {p.lvl}) - {p.game_class}" for p in online_players])
+        lines = ["\n=== Nodes Currently Linked ==="]
+        for p in online_players:
+            lines.append(f"  {p.user.username} (Lvl {p.lvl}) - {p.game_class}")
+        output = "\n".join(lines)
     elif command in ['attack', 'a', 'kill', 'k']:
         output = services.attack_npc(player, args)
     elif command in ['inventory', 'i']:
@@ -93,6 +115,11 @@ def command_view(request):
         output = services.handle_say(player, args)
     elif command in ['help', '?']:
         output = services.get_help(player)
+    elif command == 'map':
+        map_data = services.get_map_data(player)
+        output = map_data  # Return JSON for client-side rendering
+    elif command == 'use':
+        output = services.use_item(player, args)
     else:
         output = "COMMAND ERROR: UNKNOWN INSTRUCTION."
 
@@ -104,4 +131,44 @@ def command_view(request):
     return JsonResponse({
         'output': output,
         'status': services.get_status_str(player)
+    })
+
+
+@csrf_exempt
+def poll_view(request):
+    """Polling endpoint for real-time updates (like chat.js pattern)."""
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Not authenticated'}, status=401)
+
+    player = request.user.player
+    data = services.get_poll_data(player)
+    return JsonResponse(data)
+
+
+@csrf_exempt
+def map_api_view(request):
+    """API endpoint for map data."""
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Not authenticated'}, status=401)
+
+    player = request.user.player
+    map_json = services.get_map_data(player)
+    try:
+        map_data = json.loads(map_json)
+    except (json.JSONDecodeError, TypeError):
+        map_data = []
+    return JsonResponse({'rooms': map_data})
+
+
+@csrf_exempt
+def player_info_view(request):
+    """API endpoint for player info (used by chat.js-style polling)."""
+    if not request.user.is_authenticated:
+        return JsonResponse({'player_name': 'Unknown'})
+
+    return JsonResponse({
+        'player_name': request.user.username,
+        'level': request.user.player.lvl,
+        'hp': request.user.player.hp,
+        'hp_max': request.user.player.hp_max,
     })
