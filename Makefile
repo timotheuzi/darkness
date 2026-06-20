@@ -1,11 +1,17 @@
 # DarknessMUD Django Makefile
 
-.PHONY: help venv setup lint clean migrate init run repair test
+.PHONY: help venv setup lint clean migrate init run repair test deploy-init
 
 VENV := .venv
 PYTHON := $(VENV)/bin/python
 MANAGE := $(PYTHON) manage.py
 SETTINGS := darkness_django.settings.local
+
+# PythonAnywhere uses 'venv' instead of '.venv'
+PYTHONANYWHERE_VENV := venv
+PYTHONANYWHERE_PYTHON := $(PYTHONANYWHERE_VENV)/bin/python
+PYTHONANYWHERE_MANAGE := $(PYTHONANYWHERE_PYTHON) manage.py
+PYTHONANYWHERE_SETTINGS := darkness_django.settings.production
 
 help: ## Show this help message
 	@echo "Usage: make [target]"
@@ -32,15 +38,25 @@ clean: ## Clean python cache files
 	rm -rf .coverage
 	rm -rf htmlcov
 
-migrate: ## Run database migrations
+migrate: ## Run database migrations (local)
 	$(MANAGE) makemigrations --settings=$(SETTINGS)
 	$(MANAGE) migrate --settings=$(SETTINGS)
 
-init: migrate ## Initialize game world data
+init: migrate ## Initialize game world data (local)
 	$(MANAGE) init_game --settings=$(SETTINGS)
+
+deploy-migrate: ## Run database migrations (PythonAnywhere/production)
+	$(PYTHONANYWHERE_MANAGE) makemigrations --settings=$(PYTHONANYWHERE_SETTINGS)
+	$(PYTHONANYWHERE_MANAGE) migrate --settings=$(PYTHONANYWHERE_SETTINGS)
+
+deploy-init: deploy-migrate ## Initialize game world data (PythonAnywhere/production)
+	$(PYTHONANYWHERE_MANAGE) init_game --settings=$(PYTHONANYWHERE_SETTINGS)
 
 run: migrate ## Run the Django development server
 	$(MANAGE) runserver 0.0.0.0:8008 --settings=$(SETTINGS)
+
+deploy-run: ## Run the Django development server (PythonAnywhere/production)
+	$(PYTHONANYWHERE_MANAGE) runserver 0.0.0.0:8008 --settings=$(PYTHONANYWHERE_SETTINGS)
 
 repair: #stop ## Reset database and migrations
 	rm -f db.sqlite3

@@ -14,7 +14,7 @@ if project_home not in sys.path:
     sys.path.insert(0, project_home)
 
 # set environment variable to tell django where your settings.py is
-os.environ['DJANGO_SETTINGS_MODULE'] = 'darknesses.settings'
+os.environ['DJANGO_SETTINGS_MODULE'] = 'darkness_django.settings'
 
 
 # serve django via WSGI

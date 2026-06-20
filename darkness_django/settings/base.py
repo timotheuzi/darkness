@@ -1,13 +1,21 @@
 import os
 from pathlib import Path
+import environ
+
+env = environ.Env(
+    DEBUG=(bool, False)
+)
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-mud-secret-key')
+# Read .env file if it exists
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
-DEBUG = False
+SECRET_KEY = env('DJANGO_SECRET_KEY', default='django-insecure-mud-secret-key')
 
-ALLOWED_HOSTS = []
+DEBUG = env('DEBUG', default=False)
+
+ALLOWED_HOSTS = env.list('DJANGO_ALLOWED_HOSTS', default=[])
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -51,11 +59,14 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'darkness_django.wsgi.application'
 
+# Database
+# Defaults to SQLite for local development
+# For PythonAnywhere, set DATABASE_URL environment variable to use PostgreSQL
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': env.db(
+        'DATABASE_URL',
+        default='sqlite:///' + str(BASE_DIR / 'db.sqlite3')
+    )
 }
 
 AUTH_PASSWORD_VALIDATORS = [
