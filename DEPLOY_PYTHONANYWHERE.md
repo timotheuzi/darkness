@@ -137,22 +137,24 @@ import os
 import sys
 
 # Add your project directory to the sys.path
-project_home = '/home/yourusername/darknesses'
+project_home = '/home/darknesses/darknesses'
 if project_home not in sys.path:
     sys.path.insert(0, project_home)
 
 # Set environment variables
 os.environ['DJANGO_SETTINGS_MODULE'] = 'darkness_django.settings.production'
 os.environ['DJANGO_SECRET_KEY'] = 'your-very-secure-secret-key-here'
-os.environ['DJANGO_ALLOWED_HOSTS'] = 'yourusername.pythonanywhere.com'
+os.environ['DJANGO_ALLOWED_HOSTS'] = 'darknesses.pythonanywhere.com'
 
 # If using MySQL, also set:
 # os.environ['DATABASE_URL'] = 'mysql://username:password@username.mysql.pythonanywhere.com/username$darkness'
 
-# Activate virtual environment
-activate_this = '/home/yourusername/darknesses/venv/bin/activate_this.py'
-with open(activate_this) as f:
-    exec(f.read(), dict(__file__=activate_this))
+# Activate virtual environment (Python 3.11+ compatible)
+import sys, os, glob
+venv_path = '/home/darknesses/darknesses/venv'
+sp = glob.glob(os.path.join(venv_path, 'lib', 'python*', 'site-packages'))
+if sp:
+    sys.path.insert(0, sp[0])
 
 # Serve Django via WSGI
 from django.core.wsgi import get_wsgi_application

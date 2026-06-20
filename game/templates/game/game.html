@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Darkness BBS - MajorMUD CyberRPG Terminal</title>
+    <title>Darknesses BBS - MajorMUD CyberRPG Terminal</title>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <style>
         /* MajorMUD / ANSI 16 Color Palette */
@@ -262,7 +262,7 @@
     <div id="pollIndicator" class="poll-on">POLL</div>
     <div id="gameScreen">
         <div id="headerBar">
-            <span>DARKNESS BBS v1.0 [STABLE]</span>
+            <span>DARKNESSES BBS v1.0 [STABLE]</span>
             <span id="locDisplay">CONNECTING...</span>
         </div>
         <div id="mainArea">
@@ -317,7 +317,7 @@
                         $('#loginScreen').hide();
                         $('#gameScreen').css('display', 'flex');
                         $('#commandInput').focus();
-                        appendMessage('<span class="msg-system">LINK ESTABLISHED. WELCOME TO DARKNESS.</span>');
+                        appendMessage('<span class="msg-system">LINK ESTABLISHED. WELCOME TO DARKNESSES.</span>');
                         sendCommand('look');
                         startPolling();
                     } else alert(res.message);
