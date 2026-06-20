@@ -30,15 +30,16 @@ def register_view(request):
             id=1,
             defaults={
                 'name': 'The Neon Hub',
-                'description': 'Central Hub.',
+                'description': 'A bustling intersection of neon lights and rainy streets. The center of the grid.',
                 'zone': 'hub',
                 'theme': 'urban',
+                'safe_zone': True
             }
         )[0]
         Player.objects.create(
             user=user, race=race, game_class=game_class,
             location=start_room, hp=100, hp_max=100,
-            attack=10, defense=5
+            attack=12, defense=6
         )
         return JsonResponse({
             'message': f'Character initialized! Welcome to the grid, {name}.'
@@ -66,23 +67,24 @@ def command_view(request):
         return JsonResponse({'message': 'Not authenticated'}, status=401)
 
     player = request.user.player
-    cmd_data = json.loads(request.body)
-    full_cmd = cmd_data.get('command', '').strip()
+    try:
+        cmd_data = json.loads(request.body)
+        full_cmd = cmd_data.get('command', '').strip()
+    except (json.JSONDecodeError, AttributeError):
+        full_cmd = ""
+
     if not full_cmd:
         return JsonResponse({
             'output': '',
             'status': services.get_status_str(player)
         })
 
-    if full_cmd.startswith("'"):
-        command = "'"
-        args = full_cmd[1:]
-    else:
-        parts = full_cmd.split(' ', 1)
-        command = parts[0].lower()
-        args = parts[1] if len(parts) > 1 else ""
+    parts = full_cmd.split(' ', 1)
+    command = parts[0].lower()
+    args = parts[1] if len(parts) > 1 else ""
 
     output = ""
+    # Standard Commands
     if command in ['look', 'l']:
         output = services.get_look(player)
     elif command in ['n', 'north', 's', 'south', 'e', 'east', 'w', 'west']:
@@ -115,15 +117,16 @@ def command_view(request):
         output = services.handle_say(player, args)
     elif command in ['help', '?']:
         output = services.get_help(player)
-    elif command == 'map':
-        map_data = services.get_map_data(player)
-        output = map_data  # Return JSON for client-side rendering
     elif command == 'use':
         output = services.use_item(player, args)
+    
+    # Class Abilities
+    elif command in ['blade', 'oni_strike', 'hack', 'overload', 'patch', 'detox', 'scheme', 'calibrate', 'turret', 'call_in']:
+        output = services.use_ability(player, command, args)
+        
     else:
         output = "COMMAND ERROR: UNKNOWN INSTRUCTION."
 
-    # Include recent chat messages in every output if any
     chat_output = services.get_recent_chat(player)
     if chat_output:
         output = chat_output + "\n" + output
@@ -136,39 +139,31 @@ def command_view(request):
 
 @csrf_exempt
 def poll_view(request):
-    """Polling endpoint for real-time updates (like chat.js pattern)."""
     if not request.user.is_authenticated:
         return JsonResponse({'error': 'Not authenticated'}, status=401)
-
     player = request.user.player
-    data = services.get_poll_data(player)
-    return JsonResponse(data)
+    return JsonResponse(services.get_poll_data(player))
 
 
 @csrf_exempt
 def map_api_view(request):
-    """API endpoint for map data."""
     if not request.user.is_authenticated:
         return JsonResponse({'error': 'Not authenticated'}, status=401)
-
     player = request.user.player
     map_json = services.get_map_data(player)
-    try:
-        map_data = json.loads(map_json)
-    except (json.JSONDecodeError, TypeError):
-        map_data = []
-    return JsonResponse({'rooms': map_data})
+    return JsonResponse({'rooms': json.loads(map_json)})
 
 
 @csrf_exempt
 def player_info_view(request):
-    """API endpoint for player info (used by chat.js-style polling)."""
+    """API endpoint for player info."""
     if not request.user.is_authenticated:
         return JsonResponse({'player_name': 'Unknown'})
 
+    player = request.user.player
     return JsonResponse({
         'player_name': request.user.username,
-        'level': request.user.player.lvl,
-        'hp': request.user.player.hp,
-        'hp_max': request.user.player.hp_max,
+        'level': player.lvl,
+        'hp': player.hp,
+        'hp_max': player.hp_max,
     })

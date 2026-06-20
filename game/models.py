@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 class Item(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
-    item_type = models.CharField(max_length=50)  # weapon, armor, consumable, misc
+    item_type = models.CharField(max_length=50)  # weapon, armor, consumable, misc, drug, scroll
     price = models.IntegerField(default=0)
     rarity = models.CharField(max_length=20, default='common')  # common, uncommon, rare, epic, legendary
 
@@ -13,6 +13,13 @@ class Item(models.Model):
     attack_bonus = models.IntegerField(default=0)
     defense_bonus = models.IntegerField(default=0)
     heal_amount = models.IntegerField(default=0)
+    
+    # Elemental stats
+    element = models.CharField(max_length=20, default='physical') # physical, fire, water, earth, air
+    
+    # Drug/Scroll effects
+    addiction_chance = models.FloatField(default=0.0)
+    warp_to_room = models.ForeignKey('Room', on_delete=models.SET_NULL, null=True, blank=True, related_name='warp_items')
 
     def __str__(self):
         return self.name
@@ -60,8 +67,8 @@ class Player(models.Model):
     defense = models.IntegerField(default=5)
 
     location = models.ForeignKey(Room, on_delete=models.SET_NULL, null=True)
-    race = models.CharField(max_length=50)
-    game_class = models.CharField(max_length=50)
+    race = models.CharField(max_length=50) # Cyborg, Bio-hacked, Android, Mutant, PureBlood
+    game_class = models.CharField(max_length=50) # Street Samurai, Netrunner, Techie, Medie, Fixer
     online = models.BooleanField(default=False)
     last_seen = models.DateTimeField(auto_now=True)
 
@@ -69,6 +76,14 @@ class Player(models.Model):
     karma = models.IntegerField(default=0)
 
     inventory = models.ManyToManyField(Item, through='InventoryItem')
+    
+    # Drug/Addiction System
+    addiction_points = models.IntegerField(default=0) # 0 to 100
+    withdrawal_timer = models.IntegerField(default=0) # ticks since last use
+    
+    # Combat/Stalking state
+    last_combat_npc = models.ForeignKey('NPC', on_delete=models.SET_NULL, null=True, blank=True, related_name='stalking_players')
+    stalk_count = models.IntegerField(default=0)
 
     def __str__(self):
         return self.user.username
@@ -95,6 +110,11 @@ class NPC(models.Model):
     aggressive = models.BooleanField(default=True)
     npc_type = models.CharField(max_length=50, default='drone')  # drone, gang, corporate, boss
     respawnable = models.BooleanField(default=True)
+    
+    # Elemental system
+    element = models.CharField(max_length=20, default='physical')
+    weakness = models.CharField(max_length=20, default='none')
+    resistance = models.CharField(max_length=20, default='none')
 
     drops = models.ManyToManyField(Item, blank=True)
 
