@@ -33,11 +33,11 @@ clean: ## Clean cache, database, and migrations (safely excluding .venv)
 	@echo "Cleaning generated files..."
 	# Skip .venv directory and delete __pycache__ and .pyc files
 	find . -name "$(VENV)" -prune -o -type d -name "__pycache__" -exec rm -rf {} +
-	find . -name "$(VENV)" -prune -o -type f -name "*.pyc" -delete
+	find . -name "$(VENV)" -prune -o -type f -name "*.pyc" -exec rm -f {} +
 	rm -rf .pytest_cache .coverage htmlcov staticfiles db.sqlite3
 	@echo "Cleaning app migrations..."
 	# Skip .venv directory and delete migration files (except __init__.py)
-	find . -name "$(VENV)" -prune -o -path "*/migrations/*.py" -not -name "__init__.py" -delete
+	find . -name "$(VENV)" -prune -o -path "*/migrations/*.py" -not -name "__init__.py" -exec rm -f {} +
 
 migrate: setup ## Run database migrations (local)
 	$(MANAGE) makemigrations --settings=$(SETTINGS)
