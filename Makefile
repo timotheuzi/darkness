@@ -19,26 +19,27 @@ help: ## Show this help message
 	@echo "Targets:"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
 
-venv: ## Create virtual environment
-	$(PYTHON) -m venv $(VENV)
+venv: $(VENV)/bin/python ## Create virtual environment
 
-setup: venv ## Install dependencies
-	$(VENV)/bin/pip install -r requirements/dev.txt
+$(VENV)/bin/python:
+	@echo "Creating virtual environment..."
+	python3 -m venv $(VENV)
+	$(PYTHON) -m pip install --upgrade pip
 
-lint: ## Run static analysis
-	@echo "Running lint (flake8)..."
-	flake8 . --exclude=*/migrations/*,*/settings/*
-	@echo "Running type check (optional)..."
-	# mypy .
+setup: $(VENV)/bin/python ## Install dependencies
+	$(PYTHON) -m pip install -r requirements/dev.txt
 
-clean: ## Clean python cache files
-	find . -type d -name "__pycache__" -exec rm -rf {} +
-	find . -type f -name "*.pyc" -delete
-	rm -rf .pytest_cache
-	rm -rf .coverage
-	rm -rf htmlcov
+clean: ## Clean cache, database, and migrations (safely excluding .venv)
+	@echo "Cleaning generated files..."
+	# Skip .venv directory and delete __pycache__ and .pyc files
+	find . -name "$(VENV)" -prune -o -type d -name "__pycache__" -exec rm -rf {} +
+	find . -name "$(VENV)" -prune -o -type f -name "*.pyc" -delete
+	rm -rf .pytest_cache .coverage htmlcov staticfiles db.sqlite3
+	@echo "Cleaning app migrations..."
+	# Skip .venv directory and delete migration files (except __init__.py)
+	find . -name "$(VENV)" -prune -o -path "*/migrations/*.py" -not -name "__init__.py" -delete
 
-migrate: ## Run database migrations (local)
+migrate: setup ## Run database migrations (local)
 	$(MANAGE) makemigrations --settings=$(SETTINGS)
 	$(MANAGE) migrate --settings=$(SETTINGS)
 
@@ -52,20 +53,20 @@ deploy-migrate: ## Run database migrations (PythonAnywhere/production)
 deploy-init: deploy-migrate ## Initialize game world data (PythonAnywhere/production)
 	$(PYTHONANYWHERE_MANAGE) init_game --settings=$(PYTHONANYWHERE_SETTINGS)
 
-run: migrate ## Run the Django development server
+run: clean init ## Full clean, build/initialize, and run the Django development server
 	$(MANAGE) runserver 0.0.0.0:8008 --settings=$(SETTINGS)
 
 deploy-run: ## Run the Django development server (PythonAnywhere/production)
 	$(PYTHONANYWHERE_MANAGE) runserver 0.0.0.0:8008 --settings=$(PYTHONANYWHERE_SETTINGS)
 
-repair: #stop ## Reset database and migrations
-	rm -f db.sqlite3
-	find . -path "*/migrations/*.py" -not -name "__init__.py" -delete
-	$(MAKE) init
-	@echo "Environment reset and re-initialized."
+repair: ## Deep repair: Nuke venv and start over
+	@echo "Performing deep repair..."
+	rm -rf $(VENV)
+	$(MAKE) run
 
-#stop: ## Kill running django processes
-#	@pkill -f runserver || true
-
-test: ## Run django tests
+test: setup ## Run django tests
 	$(MANAGE) test --settings=$(SETTINGS)
+
+lint: setup ## Run static analysis
+	@echo "Running lint (flake8)..."
+	$(PYTHON) -m flake8 . --exclude=*/migrations/*,*/settings/*,$(VENV)/*

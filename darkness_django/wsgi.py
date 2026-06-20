@@ -1,22 +1,16 @@
-"""WSGI entry point for PythonAnywhere deployment."""
+"""
+WSGI config for darkness_django project.
 
-import sys
+It exposes the WSGI callable as a module-level variable named ``application``.
+
+For more information on this file, see
+https://docs.djangoproject.com/en/stable/howto/deployment/wsgi/
+"""
+
 import os
+from django.core.wsgi import get_wsgi_application
 
-# Try multiple possible project locations
-possible_paths = [
-    '/home/darknesses/darknesses/',
-]
+# We set the default settings module, but it can be overridden by environment variables
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'darkness_django.settings.local')
 
-for path in possible_paths:
-    if os.path.exists(path) and path not in sys.path:
-        sys.path.insert(0, path)
-        break
-
-# Also try to find the src directory relative to the WSGI file
-wsgi_dir = os.path.dirname(os.path.abspath(__file__))
-src_dir = os.path.join(os.path.dirname(wsgi_dir), 'src')
-if os.path.exists(src_dir) and src_dir not in sys.path:
-    sys.path.insert(0, src_dir)
-
-from app import app as application
+application = get_wsgi_application()
