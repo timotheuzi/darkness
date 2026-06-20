@@ -1,23 +1,22 @@
-# This file contains the WSGI configuration required to serve up your
-# web application at http://darknesses.pythonanywhere.com/
-# It works by setting the variable 'application' to a WSGI handler of some
-# description.
-#
-# The below has been auto-generated for your Django project
+"""WSGI entry point for PythonAnywhere deployment."""
 
-import os
 import sys
+import os
 
-# add your project directory to the sys.path
-project_home = '/home/darknesses/darknesses'
-if project_home not in sys.path:
-    sys.path.insert(0, project_home)
+# Try multiple possible project locations
+possible_paths = [
+    '/home/darknesses/darknesses/',
+]
 
-# set environment variable to tell django where your settings.py is
-os.environ['DJANGO_SETTINGS_MODULE'] = 'darkness_django.settings'
+for path in possible_paths:
+    if os.path.exists(path) and path not in sys.path:
+        sys.path.insert(0, path)
+        break
 
+# Also try to find the src directory relative to the WSGI file
+wsgi_dir = os.path.dirname(os.path.abspath(__file__))
+src_dir = os.path.join(os.path.dirname(wsgi_dir), 'src')
+if os.path.exists(src_dir) and src_dir not in sys.path:
+    sys.path.insert(0, src_dir)
 
-# serve django via WSGI
-from django.core.wsgi import get_wsgi_application
-application = get_wsgi_application()
-
+from app import app as application
