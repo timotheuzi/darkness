@@ -29,7 +29,7 @@ $(VENV)/bin/python:
 setup: $(VENV)/bin/python ## Install dependencies
 	$(PYTHON) -m pip install -r requirements/dev.txt
 
-clean: ## Clean cache, database, and migrations (safely excluding .venv)
+clean: setup ## Clean cache, database, and migrations, then recreate a blank DB with latest models
 	@echo "Cleaning generated files..."
 	# Skip .venv directory and delete __pycache__ and .pyc files
 	find . -name "$(VENV)" -prune -o -type d -name "__pycache__" -exec rm -rf {} +
@@ -38,6 +38,9 @@ clean: ## Clean cache, database, and migrations (safely excluding .venv)
 	@echo "Cleaning app migrations..."
 	# Skip .venv directory and delete migration files (except __init__.py)
 	find . -name "$(VENV)" -prune -o -path "*/migrations/*.py" -not -name "__init__.py" -exec rm -f {} +
+	@echo "Recreating blank database with latest models..."
+	$(MANAGE) makemigrations --settings=$(SETTINGS)
+	$(MANAGE) migrate --settings=$(SETTINGS)
 
 migrate: setup ## Run database migrations (local)
 	$(MANAGE) makemigrations --settings=$(SETTINGS)
