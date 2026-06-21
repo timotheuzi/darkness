@@ -212,7 +212,8 @@ def command_view(request):
 @csrf_exempt
 def poll_view(request):
     if not request.user.is_authenticated:
-        return JsonResponse({'error': 'Not authenticated'}, status=401)
+        # Return 200 with an idle flag to stop "Unauthorized" logs in production
+        return JsonResponse({'status': 'idle', 'authenticated': False})
     player = request.user.player
     return JsonResponse(services.get_poll_data(player))
 
@@ -220,7 +221,7 @@ def poll_view(request):
 @csrf_exempt
 def map_api_view(request):
     if not request.user.is_authenticated:
-        return JsonResponse({'error': 'Not authenticated'}, status=401)
+        return JsonResponse({'rooms': [], 'authenticated': False})
     player = request.user.player
     map_json = services.get_map_data(player)
     return JsonResponse({'rooms': json.loads(map_json)})
@@ -230,7 +231,7 @@ def map_api_view(request):
 def player_info_view(request):
     """API endpoint for player info."""
     if not request.user.is_authenticated:
-        return JsonResponse({'player_name': 'Unknown'})
+        return JsonResponse({'player_name': 'Unknown', 'authenticated': False})
 
     player = request.user.player
     return JsonResponse({

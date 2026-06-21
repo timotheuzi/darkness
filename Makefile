@@ -36,7 +36,7 @@ clean: setup ## Clean cache, database, and migrations, then recreate a blank DB 
 	find . -name "$(VENV)" -prune -o -type f -name "*.pyc" -exec rm -f {} +
 	rm -rf .pytest_cache .coverage htmlcov staticfiles db.sqlite3
 	@echo "Cleaning app migrations..."
-	# Skip .venv directory and delete migration files (except __init__.py)
+	# Explicitly delete all numbered migrations (including 0001_initial.py) to avoid collisions
 	find . -name "$(VENV)" -prune -o -path "*/migrations/*.py" -not -name "__init__.py" -exec rm -f {} +
 	@echo "Recreating blank database with latest models..."
 	$(MANAGE) makemigrations --settings=$(SETTINGS)
