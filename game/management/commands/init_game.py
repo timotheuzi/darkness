@@ -5,8 +5,8 @@ Generates rooms, items, NPCs, and maps with seeded RNG.
 """
 import random
 from django.core.management.base import BaseCommand
-from django.utils import timezone
-from game.models import NPC, Item, Room, GameWorld
+from django.db import transaction
+from game.models import NPC, Item, Room, GameWorld, Player
 
 
 # ── Data Tables ──────────────────────────────────────────────────────────────
@@ -325,26 +325,54 @@ class Command(BaseCommand):
 
         self.stdout.write(f"Seed: {seed}")
         self.stdout.write("Purging existing grid data...")
-        NPC.objects.all().delete()
-        Room.objects.all().delete()
-        Item.objects.all().delete()
+        
+        with transaction.atomic():
+            NPC.objects.all().delete()
+            Room.objects.all().delete()
+            Item.objects.all().delete()
 
-        items = self._create_items()
-        zones = ZONE_TEMPLATES[:num_zones]
-        rooms = self._create_rooms(zones, num_rooms)
-        self._create_npcs(rooms, zones, items)
+            items = self._create_items()
+            zones = ZONE_TEMPLATES[:num_zones]
+            rooms = self._create_rooms(zones, num_rooms)
+            self._create_npcs(rooms, zones, items)
 
-        GameWorld.objects.all().delete()
-        GameWorld.objects.create(
-            seed=seed,
-            total_rooms=Room.objects.count(),
-            total_npcs=NPC.objects.count(),
-            total_items=Item.objects.count(),
-        )
+            # --- HARDCORE CONNECTIVITY VERIFICATION ---
+            hub = Room.objects.get(id=1)
+            
+            # Re-fetch everything to ensure Hub is linked
+            hub.refresh_from_db()
+            if not hub.exits:
+                self.stdout.write(self.style.WARNING("Hub isolation detected. Force-reconnecting entries..."))
+                for zone_id in [z['zone_id'] for z in zones]:
+                    entry = Room.objects.filter(zone=zone_id, name__icontains="Entry").first()
+                    if entry and entry.map_x == 1:
+                        self._connect_rooms(hub, entry, "east", "west")
+                        break
+            
+            # Final fallback
+            hub.refresh_from_db()
+            if not hub.exits:
+                any_room = Room.objects.exclude(id=1).first()
+                if any_room:
+                    self.stdout.write(self.style.ERROR("FATAL CONNECTIVITY FAILURE. Panic-connecting Hub to first available room."))
+                    self._connect_rooms(hub, any_room, "north", "south")
 
+            # ENSURE ALL PLAYERS ARE MOVED TO THE HUB
+            Player.objects.all().update(location=hub)
+
+            GameWorld.objects.all().delete()
+            GameWorld.objects.create(
+                seed=seed,
+                total_rooms=Room.objects.count(),
+                total_npcs=NPC.objects.count(),
+                total_items=Item.objects.count(),
+            )
+
+        hub.refresh_from_db()
         self.stdout.write(self.style.SUCCESS(
             f"Done: {Room.objects.count()} rooms, "
-            f"{NPC.objects.count()} NPCs, {Item.objects.count()} items"
+            f"{NPC.objects.count()} NPCs, {Item.objects.count()} items. "
+            f"Hub exits: {list(hub.exits.keys())}. All players synced to Hub."
         ))
 
     def _create_items(self):
@@ -369,6 +397,22 @@ class Command(BaseCommand):
                 price=price, rarity=rarity))
         return pool
 
+    def _connect_rooms(self, r1, r2, d1, d2):
+        """Safely connect two rooms ensuring JSONField mutation is detected and saved."""
+        r1.refresh_from_db()
+        r2.refresh_from_db()
+        
+        exits1 = dict(r1.exits)
+        exits1[d1] = r2.id
+        r1.exits = exits1
+        
+        exits2 = dict(r2.exits)
+        exits2[d2] = r1.id
+        r2.exits = exits2
+        
+        r1.save()
+        r2.save()
+
     def _create_rooms(self, zones, target_count):
         all_rooms = []
         opp = {"north": "south", "south": "north", "east": "west", "west": "east"}
@@ -383,7 +427,6 @@ class Command(BaseCommand):
         all_rooms.append(hub)
 
         rooms_per_zone = max(10, target_count // len(zones))
-        current_entry = hub
         x_pos = 0
 
         for zone in zones:
@@ -403,22 +446,17 @@ class Command(BaseCommand):
 
             # Connect hub to entry (hub is at 0,0)
             if x_pos == 1:
-                hub.exits["east"] = entry.id
-                entry.exits["west"] = hub.id
-                hub.save()
-                entry.save()
+                self._connect_rooms(hub, entry, "east", "west")
             else:
                 # Find a room in the previous zone to connect to
                 prev_zone_rooms = [r for r in all_rooms if r.zone == zones[x_pos-2]['zone_id']]
                 if prev_zone_rooms:
                     prev_r = random.choice(prev_zone_rooms)
                     dirs = [d for d in ["north", "south", "east", "west"] if d not in prev_r.exits]
-                    if dirs:
-                        d = random.choice(dirs)
-                        prev_r.exits[d] = entry.id
-                        entry.exits[opp[d]] = prev_r.id
-                        prev_r.save()
-                        entry.save()
+                    if not dirs: # Fallback if random choice has no dirs
+                        dirs = ["north", "south", "east", "west"]
+                    d = random.choice(dirs)
+                    self._connect_rooms(prev_r, entry, d, opp[d])
 
             zone_rooms.append(entry)
             prev = entry
@@ -436,25 +474,22 @@ class Command(BaseCommand):
                     zone=zone['zone_id'], theme=zone['theme'],
                     map_x=x_pos, map_y=i)
 
+                prev.refresh_from_db()
                 dirs = [d for d in ["north", "south", "east", "west"] if d not in prev.exits]
-                if dirs:
-                    d = random.choice(dirs)
-                    prev.exits[d] = new_room.id
-                    new_room.exits[opp[d]] = prev.id
-                    prev.save()
-                    new_room.save()
+                if not dirs: dirs = ["north", "south", "east", "west"]
+                d = random.choice(dirs)
+                self._connect_rooms(prev, new_room, d, opp[d])
 
                 # Random cross-link
                 if len(zone_rooms) > 2 and random.random() > 0.4:
                     other = random.choice(zone_rooms[:-1])
+                    other.refresh_from_db()
+                    new_room.refresh_from_db()
                     avail = [d for d in ["north", "south", "east", "west"]
                              if d not in new_room.exits and d not in other.exits]
                     if avail:
                         d = random.choice(avail)
-                        new_room.exits[d] = other.id
-                        other.exits[opp[d]] = new_room.id
-                        new_room.save()
-                        other.save()
+                        self._connect_rooms(new_room, other, d, opp[d])
 
                 zone_rooms.append(new_room)
                 prev = new_room
