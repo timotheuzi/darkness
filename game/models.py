@@ -12,7 +12,16 @@ class Item(models.Model):
     # Weapon/Armor stats
     attack_bonus = models.IntegerField(default=0)
     defense_bonus = models.IntegerField(default=0)
+    speed_bonus = models.IntegerField(default=0)
     heal_amount = models.IntegerField(default=0)
+
+    # Stat bonuses
+    str_bonus = models.IntegerField(default=0)
+    int_bonus = models.IntegerField(default=0)
+    wil_bonus = models.IntegerField(default=0)
+    agi_bonus = models.IntegerField(default=0)
+    hea_bonus = models.IntegerField(default=0)
+    cha_bonus = models.IntegerField(default=0)
     
     # Elemental stats
     element = models.CharField(max_length=20, default='physical') # physical, fire, water, earth, air
@@ -62,6 +71,8 @@ class Player(models.Model):
     agi_stat = models.IntegerField(default=10)
     hea_stat = models.IntegerField(default=10)
     cha_stat = models.IntegerField(default=10)
+    
+    stat_points = models.IntegerField(default=0)
 
     attack = models.IntegerField(default=10)
     defense = models.IntegerField(default=5)

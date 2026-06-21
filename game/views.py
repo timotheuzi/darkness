@@ -1,4 +1,5 @@
 import json
+import random
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.contrib.auth import authenticate, login
@@ -17,8 +18,8 @@ def register_view(request):
     if request.method == 'POST':
         name = request.POST.get('name')
         password = request.POST.get('password')
-        race = request.POST.get('race')
-        game_class = request.POST.get('gameClass')
+        race = request.POST.get('race', 'PureBlood')
+        game_class = request.POST.get('gameClass', 'Street Samurai')
 
         if not name or not password:
             return JsonResponse({'message': 'Name and password required.'}, status=400)
@@ -36,10 +37,78 @@ def register_view(request):
                 'safe_zone': True
             }
         )[0]
+        
+        # Base stats
+        stats = {
+            'hp': 100, 'hp_max': 100, 'mana': 20, 'mana_max': 20,
+            'str_stat': 10, 'int_stat': 10, 'wil_stat': 10, 'agi_stat': 10, 'hea_stat': 10, 'cha_stat': 10,
+            'attack': 10, 'defense': 5
+        }
+        
+        # Race Modifiers
+        race_mods = {
+            'Cyborg': {'str_stat': 5, 'hea_stat': 2, 'agi_stat': -2, 'int_stat': 2},
+            'Bio-hacked': {'hea_stat': 5, 'str_stat': 2, 'cha_stat': -2},
+            'Android': {'int_stat': 8, 'wil_stat': 2, 'cha_stat': -5, 'hea_stat': -2},
+            'Mutant': {'str_stat': 3, 'hea_stat': 8, 'wil_stat': -3, 'cha_stat': -4},
+            'PureBlood': {'cha_stat': 10, 'wil_stat': 5, 'str_stat': -5, 'hea_stat': -5},
+            'Void-Walker': {'wil_stat': 12, 'agi_stat': 5, 'str_stat': -8, 'hea_stat': -4},
+            'Synth-Soul': {'int_stat': 15, 'cha_stat': -10},
+            'Chrome-Crawler': {'str_stat': 10, 'agi_stat': 10, 'int_stat': -10, 'cha_stat': -5},
+            'Elf': {'agi_stat': 8, 'wil_stat': 4, 'hea_stat': -5},
+            'Goblin': {'cha_stat': 10, 'agi_stat': 5, 'str_stat': -8},
+        }
+        
+        # Special Mutant logic: Random and Balanced
+        if race == 'Mutant':
+            # Create a balanced set of random modifiers that sum to +7
+            keys = ['str_stat', 'int_stat', 'wil_stat', 'agi_stat', 'hea_stat', 'cha_stat']
+            mods = {k: 0 for k in keys}
+            points_to_distribute = 7
+            for _ in range(points_to_distribute):
+                mods[random.choice(keys)] += 1
+            # Add some flavor variance
+            for _ in range(3):
+                mods[random.choice(keys)] -= 1
+                mods[random.choice(keys)] += 1
+            race_mods['Mutant'] = mods
+
+        # Class Modifiers
+        class_mods = {
+            'Street Samurai': {'attack': 5, 'str_stat': 3, 'agi_stat': 2},
+            'Netrunner': {'int_stat': 5, 'mana_max': 20},
+            'Techie': {'int_stat': 3, 'wil_stat': 2, 'defense': 3},
+            'Medie': {'hea_stat': 3, 'hp_max': 20},
+            'Fixer': {'cha_stat': 5, 'money': 50},
+            'Infiltrator': {'agi_stat': 6, 'attack': 2},
+            'Heavy': {'str_stat': 5, 'hea_stat': 5, 'defense': 5, 'hp_max': 30},
+            'Psycher': {'wil_stat': 8, 'mana_max': 40},
+            'Warlock': {'int_stat': 5, 'wil_stat': 5, 'mana_max': 30},
+            'Priest': {'wil_stat': 6, 'hea_stat': 4, 'hp_max': 25},
+            'Trickster': {'cha_stat': 15, 'agi_stat': 5},
+        }
+        
+        mods = race_mods.get(race, {})
+        for k, v in mods.items():
+            if k in stats: stats[k] += v
+            
+        c_mods = class_mods.get(game_class, {})
+        for k, v in c_mods.items():
+            if k in stats: stats[k] += v
+            
+        # Derive final combat stats from modified base stats
+        stats['attack'] += stats['str_stat'] // 2
+        stats['defense'] += stats['hea_stat'] // 2
+        stats['hp_max'] += stats['hea_stat'] * 2
+        stats['hp'] = stats['hp_max']
+        stats['mana_max'] += stats['wil_stat'] * 2
+        stats['mana'] = stats['mana_max']
+        
+        initial_money = 25 + c_mods.get('money', 0)
+
         Player.objects.create(
             user=user, race=race, game_class=game_class,
-            location=start_room, hp=100, hp_max=100,
-            attack=12, defense=6
+            location=start_room, money=initial_money, **stats
         )
         return JsonResponse({
             'message': f'Character initialized! Welcome to the grid, {name}.'
@@ -96,7 +165,7 @@ def command_view(request):
             lines.append(f"  {p.user.username} (Lvl {p.lvl}) - {p.game_class}")
         output = "\n".join(lines)
     elif command in ['attack', 'a', 'kill', 'k']:
-        output = services.attack_npc(player, args)
+        output = services.attack_target(player, args)
     elif command in ['inventory', 'i']:
         output = services.get_inventory(player)
     elif command in ['status', 'st']:
@@ -119,9 +188,12 @@ def command_view(request):
         output = services.get_help(player)
     elif command == 'use':
         output = services.use_item(player, args)
+    elif command == 'train':
+        output = services.train_stat(player, args)
     
     # Class Abilities
-    elif command in ['blade', 'oni_strike', 'hack', 'overload', 'patch', 'detox', 'scheme', 'calibrate', 'turret', 'call_in']:
+    elif command in ['blade', 'oni_strike', 'hack', 'overload', 'patch', 'detox', 'scheme', 'calibrate', 'turret', 'call_in', 
+                    'stab', 'vanish', 'smash', 'taunt', 'mind_bolt', 'soul_drain', 'curse', 'chaos_bolt', 'heal', 'bless', 'bamboozle', 'jackpot']:
         output = services.use_ability(player, command, args)
         
     else:
