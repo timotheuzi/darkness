@@ -12,7 +12,6 @@ from game.models import NPC, Item, Room, GameWorld, Player
 # ── Data Tables ──────────────────────────────────────────────────────────────
 
 WEAPON_TABLE = [
-    # name, desc, atk, price, rarity, speed, bonuses{str, int, agi...}
     ("Stun Baton", "Standard issue security baton.", 5, 50, "common", 2, {}),
     ("Mono-Blade", "Vibrating edge for clean cuts.", 12, 300, "uncommon", 5, {"agi_bonus": 2}),
     ("Heavy Slugger", "High-caliber kinetic pistol.", 20, 750, "uncommon", -2, {"str_bonus": 1}),
@@ -30,6 +29,16 @@ WEAPON_TABLE = [
     ("Shock Gloves", "Deliver lethal voltage on contact.", 15, 800, "uncommon", 8, {"str_bonus": 2, "agi_bonus": 2}),
     ("Sniper Rail", "Long-range magnetic projectile.", 55, 6000, "epic", -10, {"int_bonus": 8, "agi_bonus": 4}),
     ("Toxic Dart Gun", "Injects neurotoxins silently.", 22, 1800, "rare", 5, {"int_bonus": 6, "cha_bonus": 3}),
+]
+
+DRUG_TABLE = [
+    # 5-6 New Drugs with bonuses and penalties across stats
+    ("Neuro-Jack", "Sharpens the mind but rots the body.", 150, "uncommon", 0.25, {"int_bonus": 5, "wil_bonus": 3, "str_bonus": -2, "hea_bonus": -2}),
+    ("Combat-Rush", "Unlocks raw power at the cost of sanity.", 200, "uncommon", 0.30, {"str_bonus": 6, "agi_bonus": 4, "wil_bonus": -3, "cha_bonus": -3}),
+    ("Synth-Ghost", "Phase slightly out of reality. Evasive but frail.", 300, "rare", 0.20, {"agi_bonus": 8, "hea_bonus": -5, "str_bonus": -3}),
+    ("Neon-Glow", "Radiate charismatic energy, but suffer memory leaks.", 150, "uncommon", 0.15, {"cha_bonus": 10, "int_bonus": -4, "wil_bonus": -2}),
+    ("Over-Clock", "Maximum performance across all systems. Lethal dependency.", 600, "epic", 0.50, {"str_bonus": 4, "int_bonus": 4, "wil_bonus": 4, "agi_bonus": 4, "hea_bonus": 4, "cha_bonus": 4}),
+    ("Iron-Skin", "Hardens tissue into armor. Slows reflexes.", 250, "rare", 0.35, {"hea_bonus": 10, "agi_bonus": -5, "cha_bonus": -2}),
 ]
 
 BOSS_WEAPONS = {
@@ -290,7 +299,6 @@ ZONE_TEMPLATES = [
     },
 ]
 
-# NPC name parts for procedural generation
 NPC_ADJECTIVES = [
     "Abend", "Chromeo", "Neon", "Shadow", "Binary", "Cyber", "Dark", "Electric",
     "Glitch", "Hollow", "Iron", "Jacked", "Knotted", "Laser-brain", "Malware",
@@ -336,28 +344,19 @@ class Command(BaseCommand):
             rooms = self._create_rooms(zones, num_rooms)
             self._create_npcs(rooms, zones, items)
 
-            # --- HARDCORE CONNECTIVITY VERIFICATION ---
             hub = Room.objects.get(id=1)
-            
-            # Re-fetch everything to ensure Hub is linked
             hub.refresh_from_db()
             if not hub.exits:
-                self.stdout.write(self.style.WARNING("Hub isolation detected. Force-reconnecting entries..."))
+                self.stdout.write(self.style.WARNING("Hub isolation detected. Reconnecting..."))
                 for zone_id in [z['zone_id'] for z in zones]:
                     entry = Room.objects.filter(zone=zone_id, name__icontains="Entry").first()
-                    if entry and entry.map_x == 1:
-                        self._connect_rooms(hub, entry, "east", "west")
-                        break
+                    if entry:
+                        if abs(entry.map_x) <= 2 and abs(entry.map_y) <= 2:
+                            dir_to_entry = "east" if entry.map_x > 0 else "west" if entry.map_x < 0 else "south" if entry.map_y > 0 else "north"
+                            opp_dir = {"east":"west", "west":"east", "south":"north", "north":"south"}[dir_to_entry]
+                            self._connect_rooms(hub, entry, dir_to_entry, opp_dir)
+                            break
             
-            # Final fallback
-            hub.refresh_from_db()
-            if not hub.exits:
-                any_room = Room.objects.exclude(id=1).first()
-                if any_room:
-                    self.stdout.write(self.style.ERROR("FATAL CONNECTIVITY FAILURE. Panic-connecting Hub to first available room."))
-                    self._connect_rooms(hub, any_room, "north", "south")
-
-            # ENSURE ALL PLAYERS ARE MOVED TO THE HUB
             Player.objects.all().update(location=hub)
 
             GameWorld.objects.all().delete()
@@ -372,7 +371,7 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(
             f"Done: {Room.objects.count()} rooms, "
             f"{NPC.objects.count()} NPCs, {Item.objects.count()} items. "
-            f"Hub exits: {list(hub.exits.keys())}. All players synced to Hub."
+            f"Hub exits: {list(hub.exits.keys())}."
         ))
 
     def _create_items(self):
@@ -391,6 +390,11 @@ class Command(BaseCommand):
             pool.append(Item.objects.create(
                 name=name, description=desc, item_type='consumable',
                 price=price, rarity=rarity, heal_amount=heal))
+        for name, desc, price, rarity, addic, bonuses in DRUG_TABLE:
+            pool.append(Item.objects.create(
+                name=name, description=desc, item_type='drug',
+                price=price, rarity=rarity, addiction_chance=addic,
+                **bonuses))
         for name, desc, price, rarity in MISC_TABLE:
             pool.append(Item.objects.create(
                 name=name, description=desc, item_type='misc',
@@ -398,164 +402,144 @@ class Command(BaseCommand):
         return pool
 
     def _connect_rooms(self, r1, r2, d1, d2):
-        """Safely connect two rooms ensuring JSONField mutation is detected and saved."""
         r1.refresh_from_db()
         r2.refresh_from_db()
-        
         exits1 = dict(r1.exits)
         exits1[d1] = r2.id
         r1.exits = exits1
-        
         exits2 = dict(r2.exits)
         exits2[d2] = r1.id
         r2.exits = exits2
-        
         r1.save()
         r2.save()
 
     def _create_rooms(self, zones, target_count):
         all_rooms = []
         opp = {"north": "south", "south": "north", "east": "west", "west": "east"}
+        dir_coords = {
+            "north": (0, -1),
+            "south": (0, 1),
+            "east": (1, 0),
+            "west": (-1, 0)
+        }
 
-        # Hub
         hub = Room.objects.create(
             id=1, name="The Neon Hub",
-            description="Central nerve center. Terminals flicker with green text. "
-                        "The air hums with data. All paths lead outward from here.",
+            description="Central nerve center. Terminals flicker with green text. All paths lead outward from here.",
             safe_zone=True, shop_name="Central Exchange",
             zone="hub", theme="urban", map_x=0, map_y=0)
         all_rooms.append(hub)
 
         rooms_per_zone = max(10, target_count // len(zones))
-        x_pos = 0
+        occupied_coords = {(0, 0)}
 
         for zone in zones:
-            x_pos += 1
             zone_rooms = []
-            count = rooms_per_zone
-
-            # Entry room
-            entry = Room.objects.create(
-                name=f"{zone['name']} - Entry",
-                description=f"Entry to {zone['name']}. {zone['desc']}",
-                zone=zone['zone_id'], theme=zone['theme'],
-                map_x=x_pos, map_y=0)
-            if zone.get('shop'):
-                entry.shop_name = zone['shop']
-            entry.save()
-
-            # Connect hub to entry (hub is at 0,0)
-            if x_pos == 1:
-                self._connect_rooms(hub, entry, "east", "west")
-            else:
-                # Find a room in the previous zone to connect to
-                prev_zone_rooms = [r for r in all_rooms if r.zone == zones[x_pos-2]['zone_id']]
-                if prev_zone_rooms:
-                    prev_r = random.choice(prev_zone_rooms)
-                    dirs = [d for d in ["north", "south", "east", "west"] if d not in prev_r.exits]
-                    if not dirs: # Fallback if random choice has no dirs
-                        dirs = ["north", "south", "east", "west"]
-                    d = random.choice(dirs)
-                    self._connect_rooms(prev_r, entry, d, opp[d])
-
+            start_room = random.choice(all_rooms)
+            entry = None
+            dirs = ["east", "west", "north", "south"]
+            random.shuffle(dirs)
+            for d in dirs:
+                dx, dy = dir_coords[d]
+                new_x, new_y = start_room.map_x + dx, start_room.map_y + dy
+                if (new_x, new_y) not in occupied_coords:
+                    entry = Room.objects.create(
+                        name=f"{zone['name']} - Entry",
+                        description=f"Entry to {zone['name']}. {zone['desc']}",
+                        zone=zone['zone_id'], theme=zone['theme'],
+                        map_x=new_x, map_y=new_y)
+                    if zone.get('shop'):
+                        entry.shop_name = zone['shop']
+                    entry.save()
+                    self._connect_rooms(start_room, entry, d, opp[d])
+                    occupied_coords.add((new_x, new_y))
+                    break
+            
+            if not entry: continue
             zone_rooms.append(entry)
             prev = entry
 
-            for i in range(1, count):
-                is_boss_room = (i >= count - 2) # Two boss rooms at end
+            for i in range(1, rooms_per_zone):
+                is_boss_room = (i >= rooms_per_zone - 2)
                 rname = f"{zone['name']} - {random.choice(zone['room_names'])} {chr(65+i)}"
                 if is_boss_room:
                     rname = f"{zone['name']} - BOSS LAIR {chr(65+i)}"
-                
                 detail = random.choice(zone['room_details'])
                 rdesc = f"{zone['desc']} {detail}"
-                new_room = Room.objects.create(
-                    name=rname, description=rdesc,
-                    zone=zone['zone_id'], theme=zone['theme'],
-                    map_x=x_pos, map_y=i)
+                
+                new_room = None
+                dirs = ["north", "south", "east", "west"]
+                random.shuffle(dirs)
+                for d in dirs:
+                    dx, dy = dir_coords[d]
+                    new_x, new_y = prev.map_x + dx, prev.map_y + dy
+                    if (new_x, new_y) not in occupied_coords:
+                        new_room = Room.objects.create(
+                            name=rname, description=rdesc,
+                            zone=zone['zone_id'], theme=zone['theme'],
+                            map_x=new_x, map_y=new_y)
+                        occupied_coords.add((new_x, new_y))
+                        self._connect_rooms(prev, new_room, d, opp[d])
+                        break
+                
+                if new_room:
+                    zone_rooms.append(new_room)
+                    prev = new_room
+                else:
+                    prev = random.choice(zone_rooms)
 
-                prev.refresh_from_db()
-                dirs = [d for d in ["north", "south", "east", "west"] if d not in prev.exits]
-                if not dirs: dirs = ["north", "south", "east", "west"]
-                d = random.choice(dirs)
-                self._connect_rooms(prev, new_room, d, opp[d])
-
-                # Random cross-link
-                if len(zone_rooms) > 2 and random.random() > 0.4:
-                    other = random.choice(zone_rooms[:-1])
-                    other.refresh_from_db()
-                    new_room.refresh_from_db()
-                    avail = [d for d in ["north", "south", "east", "west"]
-                             if d not in new_room.exits and d not in other.exits]
-                    if avail:
-                        d = random.choice(avail)
-                        self._connect_rooms(new_room, other, d, opp[d])
-
-                zone_rooms.append(new_room)
-                prev = new_room
-
+                if len(zone_rooms) > 3 and random.random() > 0.4:
+                    r1 = random.choice(zone_rooms)
+                    r2 = random.choice(zone_rooms)
+                    if r1 != r2:
+                        for d in ["north", "south", "east", "west"]:
+                            dx, dy = dir_coords[d]
+                            if r1.map_x + dx == r2.map_x and r1.map_y + dy == r2.map_y:
+                                if d not in r1.exits:
+                                    self._connect_rooms(r1, r2, d, opp[d])
+                                break
             all_rooms.extend(zone_rooms)
-            
         return all_rooms
 
     def _create_npcs(self, rooms, zones, items):
         zone_map = {z['zone_id']: z for z in zones}
-        
         for room in rooms:
-            if room.safe_zone:
-                continue
-            
+            if room.safe_zone: continue
             zone = zone_map.get(room.zone)
             if not zone: continue
-
             is_boss_room = "BOSS LAIR" in room.name
-            
             if is_boss_room:
                 lvl = zone['max_lvl'] + 2
-                boss_list = zone['bosses']
-                # Pick one of the two bosses
-                boss_info = boss_list[0] if "A" in room.name or "C" in room.name else boss_list[1]
-                
-                # Boss weapons
+                boss_info = zone['bosses'][0] if "A" in room.name or "C" in room.name else zone['bosses'][1]
                 bw_list = BOSS_WEAPONS.get(room.zone, [])
-                bw_info = bw_list[0] if boss_info == boss_list[0] else bw_list[1]
-                
+                bw_info = bw_list[0] if boss_info == zone['bosses'][0] else bw_list[1]
                 name, bdesc, batk, bprice, brarity, bspeed, bbonuses = bw_info
-                
                 unique_weapon = Item.objects.create(
                     name=name, description=bdesc, item_type='weapon',
                     attack_bonus=batk, price=bprice, rarity=brarity, 
                     speed_bonus=bspeed, **bbonuses
                 )
-                
                 boss = NPC.objects.create(
-                    name=boss_info['name'],
-                    description=boss_info['desc'],
+                    name=boss_info['name'], description=boss_info['desc'],
                     location=room, attack=lvl * 8, defense=lvl * 4,
                     hp=lvl * 50, hp_max=lvl * 50, lvl=lvl,
                     money_drop=lvl * 50, exp_drop=lvl * 100,
                     aggressive=True, npc_type='boss')
                 boss.drops.add(unique_weapon)
                 continue
-
-            # Populate regular rooms
             prob = 0.5 if "Entry" not in room.name else 0.2
             if random.random() < prob:
                 num_npcs = random.randint(1, 3)
                 for _ in range(num_npcs):
                     lvl = random.randint(zone['min_lvl'], zone['max_lvl'])
                     npc_type = random.choice(zone['npc_types'])
-                    adj = random.choice(NPC_ADJECTIVES)
-                    noun = random.choice(NPC_NOUNS)
-                    name = f"{zone['npc_prefix']} {adj} {noun}"
-
+                    adj, noun = random.choice(NPC_ADJECTIVES), random.choice(NPC_NOUNS)
                     npc = NPC.objects.create(
-                        name=name,
+                        name=f"{zone['npc_prefix']} {adj} {noun}",
                         description=f"A hostile {npc_type} patrolling {zone['name']}.",
                         location=room, attack=lvl * 5, defense=lvl * 2,
                         hp=lvl * 20, hp_max=lvl * 20, lvl=lvl,
                         money_drop=lvl * 10, exp_drop=lvl * 15,
                         aggressive=(lvl > 1), npc_type=npc_type)
-                    
                     if random.random() > 0.8:
                         npc.drops.add(random.choice(items))

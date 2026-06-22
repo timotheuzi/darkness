@@ -10,487 +10,194 @@
 6. [World Structure](#world-structure)
 7. [Combat System](#combat-system)
 8. [Items & Equipment](#items--equipment)
-9. [Shops & Economy](#shops--economy)
-10. [Multi-User Features](#multi-user-features)
-11. [Map System](#map-system)
-12. [Character Progression](#character-progression)
-13. [Server Administration](#server-administration)
-14. [Architecture & Technical Details](#architecture--technical-details)
+9. [Character Progression](#character-progression)
+10. [Server Administration](#server-administration)
 
 ---
 
 ## Overview
 
-Darkness BBS is a multi-user, terminal-style cyberpunk RPG inspired by classic BBS games like MajorMUD. Players connect through a web-based terminal interface, explore a procedurally generated world, fight hostile entities, collect hardware (items), and interact with other players in real-time.
+**Darkness BBS** is a multi-user, terminal-style cyberpunk RPG inspired by classic BBS games like MajorMUD. Players explore a procedurally generated grid, engage in tactical combat, customize their builds via manual stat training, and compete with other users in a gritty, neon-soaked world.
 
-The game features:
-- **Procedurally generated world** — rooms, NPCs, items, and maps are generated with seeded RNG
-- **Real-time multi-user** — see other players, chat in rooms, fight in the same zones
-- **Polling-based architecture** — fast async updates every 2 seconds (no WebSockets required)
-- **Cyberpunk theme** — every element is flavored with cyberpunk lore (chrome, neon, data-streams)
-- **ASCII mini-map** — live canvas rendering of nearby rooms with color-coded indicators
+Key Features:
+- **Massive Procedural World**: 8 distinct sectors with 200+ rooms.
+- **Deep Character Customization**: 10 races and 11 classes with unique abilities.
+- **Manual Stat Training**: Earn 5 points per level to spend on specific attributes.
+- **Tactical Combat**: PvP support (+/- 3 levels), weapon speed, and elemental damage.
+- **Boss Encounters**: Sector-specific bosses with unique legendary loot.
 
 ---
 
 ## Getting Started
 
-1. Open the game in your browser
-2. You'll see the **Darkness BBS** login screen with ASCII art
-3. Click **"Initialize New Profile"** to create a new character
-4. Choose your **Augmentation Path** (race) and **Operational Class** (job)
-5. Click **"Initialize"** to register
-6. Log in with your handle and access code
-7. You'll appear in **The Neon Hub** — the central spawn point
+1. Navigate to the terminal in your browser.
+2. Click **"Initialize New Profile"** to create a character.
+3. Select your **Augmentation Path** (Race) and **Operational Class**.
+4. Log in and arrive at **The Neon Hub**, the grid's central safe zone.
 
 ---
 
 ## Installation
 
 ### Prerequisites
-
-- Python 3.13+
+- Python 3.11+
 - pip
-- make (optional, for convenience commands)
+- make (optional)
 
-### Setup
-
+### Local Setup
 ```bash
-# Clone the repository
+# Clone and enter directory
 git clone https://github.com/timotheuzi/darkness.git
 cd darkness
 
-# Create virtual environment
-python -m venv .venv
+# Create environment
+make venv
 source .venv/bin/activate
 
 # Install dependencies
-pip install -r requirements/dev.txt
+make setup
 
-# Run migrations
-make migrate
+# Nuke database and build fresh schema
+make clean
 
-# Initialize the game world
+# Generate world data
 make init
 
-# Start the server
+# Start the grid
 make run
 ```
 
-The server starts at `http://localhost:8008`.
-
 ### Make Commands
-
-| Command | Description |
-|---------|-------------|
-| `make run` | Run database migrations and start the dev server on port 8008 |
-| `make init` | Run migrations and regenerate the game world |
-| `make repair` | Delete the database, regenerate migrations, and reinitialize everything |
-| `make migrate` | Run makemigrations and migrate only |
-| `make clean` | Remove Python cache files |
-| `make lint` | Run flake8 linting |
-| `make test` | Run Django tests |
+- `make clean`: **Destructive**. Nukes the DB, clears migration history, and rebuilds the schema.
+- `make init`: Procedurally generates 200+ rooms, NPCs, bosses, and items.
+- `make run`: Launches the Django development server on port 8008.
 
 ---
 
 ## Login & Registration
 
-### Creating a Character
+### Augmentation Paths (Races)
+| Race | Key Stats | Description |
+|------|-----------|-------------|
+| **PureBlood** | CHA / WIL | High social influence, physically frail. |
+| **Elf** | AGI / WIL | Quick and mentally resilient. |
+| **Goblin** | CHA / AGI | Small, charming, and evasive. |
+| **Mutant** | **Random** | Randomized yet balanced stat distribution. |
+| **Cyborg** | STR / HEA | Enhanced physical power. |
+| **Android** | INT / WIL | High processing capability. |
+| **Void-Walker**| WIL / AGI | Masters of the ethereal data-stream. |
+| **Synth-Soul** | INT | Extreme technical capability. |
+| **Chrome-Crawler**| STR / AGI| Specialized in high-speed physical combat. |
 
-When registering, you choose:
-
-**Augmentation Path (Race):**
-| Path | Description |
-|------|-------------|
-| Human | Baseline. Balanced stats. |
-| Cyborg | Enhanced with cybernetic implants. |
-| Android | Fully synthetic body. |
-| Synth | Bio-synthetic hybrid. |
-
-**Operational Class:**
-| Class | Description |
-|-------|-------------|
-| Street Samurai | Melee and close-quarters combat specialist. |
-| Netrunner | Data intrusion and hacking expert. |
-| Enforcer | Heavy weapons and brute force. |
-| Fixer | Deal-making and resourceful survivor. |
-
-Your character starts at **Level 1** with:
-- 100 HP
-- 20 Mana
-- 10 Attack / 5 Defense
-- 25 Credits
-- All base stats at 10
+### Operational Classes
+| Class | Unique Ability | Focus |
+|-------|----------------|-------|
+| **Street Samurai** | `BLADE` / `ONI_STRIKE` | Physical Melee |
+| **Netrunner** | `HACK` / `OVERLOAD` | Intelligence/Mana |
+| **Trickster** | `BAMBOOZLE` / `JACKPOT`| **Charm Specialist** |
+| **Warlock** | `CURSE` / `CHAOS_BOLT` | Debuffs / Elemental |
+| **Priest** | `HEAL` / `BLESS` | Restoration |
+| **Heavy** | `SMASH` / `TAUNT` | Tanking |
+| **Psycher** | `MIND_BOLT` / `SOUL_DRAIN`| Willpower/Psychic |
+| **Infiltrator** | `STAB` / `VANISH` | Stealth & Criticals |
+| **Fixer** | `SCHEME` / `CALL_IN` | Credits & Air Strikes |
+| **Techie** | `CALIBRATE` / `TURRET` | Drone Warfare |
+| **Medie** | `PATCH` / `DETOX` | Healing & Addiction |
 
 ---
 
 ## Game Commands
 
-### Navigation
-
-| Command | Description |
-|---------|-------------|
-| `N` / `NORTH` | Move north |
-| `S` / `SOUTH` | Move south |
-| `E` / `EAST` | Move east |
-| `W` / `WEST` | Move west |
-
-Short forms: `n`, `s`, `e`, `w`
+### Navigation & Session
+- `N`, `S`, `E`, `W`: Standard movement (North, South, East, West).
+- `EXIT`: Safely logs out and returns to the login screen, clearing local cache.
 
 ### Information
+- `LOOK` / `L`: Scans the sector for entities, players, items, and exits.
+- `WHO`: Lists all active users currently linked to the grid.
+- `ST` / `STATUS`: Detailed profile view showing base stats and available **Stat Points**.
+- `I` / `INVENTORY`: Lists equipped [E] and stored hardware.
 
-| Command | Description |
-|---------|-------------|
-| `LOOK` / `L` | Scan current sector. Shows room name, description, exits, items, players, and NPCs. |
-| `WHO` | List all active terminal nodes (online players). |
-| `I` / `INVENTORY` | List equipped and stored hardware (items). |
-| `ST` / `STATUS` | Detailed user profile with all stats. |
-| `MAP` | Display ASCII mini-map of nearby rooms. |
-| `HELP` / `?` | Display all available commands. |
-
-### Interaction
-
-| Command | Description |
-|---------|-------------|
-| `SAY <message>` / `'<message>` | Broadcast a message to all players in the current room. |
-
-### Combat
-
-| Command | Description |
-|---------|-------------|
-| `A/KILL <target>` | Attack a target NPC. Use partial name matching (e.g., `k chrome` to attack any NPC with "chrome" in its name). |
-
-### Items
-
-| Command | Description |
-|---------|-------------|
-| `GET <item>` / `G <item>` | Pick up hardware from the ground. |
-| `DROP <item>` | Drop hardware in the current sector. |
-| `EQUIP <item>` | Attach or detach hardware. Auto-unequips previous weapon/armor. |
-| `USE <item>` | Use a consumable item (e.g., Health Stim, Med-Kit). |
-
-### Shops
-
-| Command | Description |
-|---------|-------------|
-| `LIST` / `LI` | View shop inventory (only works in rooms with shops). |
-| `BUY <item>` | Purchase hardware from the shop. |
-| `SELL <item>` | Sell hardware for credits (50% of purchase price). |
+### Action & Progression
+- `A` / `KILL <target>`: Engage an NPC or Player in combat.
+- `TRAIN <stat>`: Spend points on **STR, INT, WIL, AGI, HEA,** or **CHA**.
+- `<ABILITY> <target>`: Execute a class-specific ability (e.g., `HACK DRONE`).
+- `USE <item>`: Trigger a consumable effect.
+- `GET <item>`: Retrieve hardware from the ground.
 
 ---
 
 ## World Structure
 
-The game world is procedurally generated with a hub-and-spoke layout:
-
-```
-                    [The Neon Hub] (Spawn / Safe Zone)
-                         |
-            +------------+------------+
-            |            |            |
-      [Slums]    [Neon District]  [Industrial Zone]
-         |                         |
-   [Corporate Plaza]        [The Under-Grid]
-         |                         |
-      [The Wastes]          [Data Nexus]
-                                   |
-                           [The Undercity]
-```
-
-### Zones
-
-| Zone | Level Range | Theme | Shop |
-|------|-------------|-------|------|
-| The Neon Hub | 1 | Urban (safe) | Central Exchange |
-| The Slums | 1–3 | Urban | Black Market Stall |
-| Neon District | 2–5 | Neon | Neon Bazaar |
-| Industrial Zone | 3–6 | Industrial | Scrapyard Exchange |
-| Corporate Plaza | 6–10 | Corporate | Corp Supply Depot |
-| The Under-Grid | 8–12 | Cyber | Data Market |
-| The Wastes | 10–15 | Wasteland | None |
-| Data Nexus | 12–18 | Cyber | Data Exchange |
-| The Undercity | 15–20 | Underground | Shadow Market |
-
-Each zone contains 5–10 rooms connected in a network with cross-links for non-linear navigation.
-
-### Room Types
-
-- **Entry Room** — First room in each zone, usually has a shop
-- **Inner Rooms** — Combat areas with NPCs and loot
-- **Hub** — Safe zone where players respawn after death
+The grid contains 8 distinct sectors, each with unique themes and level ranges:
+1. **The Slums** (Lv 1-3)
+2. **Neon District** (Lv 2-5)
+3. **Industrial Zone** (Lv 3-6)
+4. **Corporate Plaza** (Lv 6-10)
+5. **The Under-Grid** (Lv 8-12)
+6. **The Wastes** (Lv 10-15)
+7. **Data Nexus** (Lv 12-18)
+8. **The Undercity** (Lv 15-20)
 
 ---
 
 ## Combat System
 
-### How Combat Works
+### Damage & Weapon Speed
+Combat rounds are influenced by your equipped weapon's **Speed Bonus**.
+- **+10 Speed**: Grants +1 additional attack per combat round.
+- **Stat Scaling**: Your Attack scales with **STR**, and Defense scales with **AGI**.
 
-1. Use `LOOK` or `L` to see NPCs in your room
-2. Use `A/KILL <npc_name>` to attack (partial name matching)
-3. Damage is calculated: `ATK - (NPC_DEF / 2) ± random(3)`
-4. NPC retaliates if still alive: `NPC_ATK - (your_DEF / 2) ± random(2)`
-5. If NPC dies: gain EXP + credits + possible item drops
-6. If you die: respawn at The Neon Hub, lose 10 credits
+### PvP Protocol
+- Combat is allowed in all sectors except **The Neon Hub**.
+- You can only attack players within **3 levels** of your own.
+- Winning a PvP fight steals **25% of the target's credits** and yields high EXP.
 
-### Damage Formula
-
-```
-Player damage = random(ATK - 3, ATK + 3) - NPC_DEF/2
-NPC damage   = random(NPC_ATK - 2, NPC_ATK + 2) - player_DEF/2
-```
-
-### Death
-
-When HP reaches 0:
-- Respawn at The Neon Hub
-- HP restored to 50% of max
-- Lose 10 credits
-- All equipped items are preserved
+### Death & Reset
+If your HP reaches 0:
+- You respawn at **The Neon Hub**.
+- HP is restored to 50% of maximum.
+- You lose 10 credits (PvE) or 25% of credits (PvP).
 
 ---
 
 ## Items & Equipment
 
-### Item Types
+### Stat Modifiers
+Modern hardware provides direct boosts to your base attributes. Equipping a *Reflective Trenchcoat* may increase your **CHA**, while a *Void Blade* might grant massive **AGI** and **WIL** bonuses.
 
-| Type | Description |
-|------|-------------|
-| Weapon | Increases attack damage. One weapon equipped at a time. |
-| Armor | Increases defense. One armor equipped at a time. |
-| Consumable | Single-use items (healing, buffs). |
-| Misc | Tradeable items, quest tokens, data chips. |
-
-### Rarity Tiers
-
-| Rarity | Color | Example |
-|--------|-------|---------|
-| Common | White | Stun Baton, Mesh Vest |
-| Uncommon | Green | Mono-Blade, Riot Shield |
-| Rare | Blue | Plasma Caster, Ghost Cloak |
-| Epic | Purple | Railgun, Adamantine Plate |
-| Legendary | Gold | Void Blade |
-
-### Notable Items
-
-**Weapons:**
-- Stun Baton (ATK +5, 50 CR) — Starter weapon
-- Mono-Blade (ATK +12, 300 CR) — Solid mid-tier
-- Railgun (ATK +50, 5000 CR) — End-game powerhouse
-- Void Blade (ATK +80, 15000 CR) — Legendary
-
-**Armor:**
-- Synth-Leathers (DEF +4, 80 CR) — Light stealth
-- Mesh Vest (DEF +8, 150 CR) — Standard protection
-- Adamantine Plate (DEF +50, 8000 CR) — Near-indestructible
-
-**Consumables:**
-- Health Stim (30 HP, 25 CR) — Basic healing
-- Med-Kit (50 HP, 75 CR) — Standard medical
-- Nano Repair Kit (100 HP, 200 CR) — Full repair
-
----
-
-## Shops & Economy
-
-### Credits
-
-Credits (CR) are earned by:
-- Killing NPCs (level × 10 credits)
-- Selling items (50% of buy price)
-- Starting bonus: 25 credits
-
-Credits are spent at shops to buy equipment and consumables.
-
-### Shop Locations
-
-Each zone (except The Wastes) has a shop at its entry room. You must be in the shop room to use `LIST`, `BUY`, or `SELL`.
-
----
-
-## Multi-User Features
-
-### Real-Time Updates
-
-The game uses **polling** (every 2 seconds) to update:
-- Room state (items, NPCs, their HP)
-- Other players in the room
-- Chat messages
-
-### Side Panel (Desktop)
-
-On desktop browsers, a side panel shows:
-- **STATUS** — HP, Mana, Level, Credits, EXP
-- **ENTITIES** — NPCs in current room with HP bars
-- **USERS** — Other players in the room
-- **ITEMS** — Items on the ground
-- **MAP** — Canvas-rendered mini-map
-
-### Chat
-
-Use `SAY <message>` or `'<message>` to broadcast to the current room. Messages appear in real-time for all players in the same room.
-
-### Command History
-
-Use **Arrow Up/Down** to cycle through previously entered commands.
-
----
-
-## Map System
-
-The `MAP` command displays an ASCII mini-map on the side panel canvas:
-
-| Dot Color | Meaning |
-|-----------|---------|
-| Bright Green | Your current location |
-| Cyan | Safe zone |
-| Red | Room contains hostile NPCs |
-| Green (dim) | Room contains other players |
-| Gray | Empty/unknown room |
-
-The map shows rooms within 3 hops of your current location, with connection lines between adjacent rooms.
+### Unique Boss Drops
+Every sector features a **Boss Lair** with high-level guardians. They drop unique weapons that cannot be purchased in shops:
+- **CEO's Golden Handgun** (Corporate)
+- **Shadow's Embrace** (Undercity)
+- **Source Code Fragment** (Under-Grid)
 
 ---
 
 ## Character Progression
 
 ### Leveling Up
-
-- Earn EXP by killing NPCs (level × 15 EXP per kill)
-- Level up requires: `current_level × 100` EXP
-- Each level grants:
-  +10 max HP (and full heal)
-  +5 max Mana (and full restore)
-  +2 Attack
-  +1 Defense
-  +1 to all stats (STR, INT, WIL, AGI, HEA)
-
-### Stats
-
-| Stat | Effect |
-|------|--------|
-| STR | Physical power |
-| INT | Technical ability |
-| WIL | Mental resilience |
-| AGI | Speed and evasion |
-| HEA | Physical endurance |
-| CHA | Social interaction |
+- Neutralizing targets grants EXP.
+- Each level-up grants **5 Stat Points**.
+- Attributes can be improved manually using the `TRAIN` command:
+    - **STR**: Increases Attack.
+    - **INT/WIL**: Increases Max Mana and Ability Damage.
+    - **AGI**: Increases Defense.
+    - **HEA**: Increases Max HP.
+    - **CHA**: Increases Trickster ability success.
 
 ---
 
 ## Server Administration
 
-### Regenerating the World
-
+### Atomic Reset
+If you update the models or wish to generate a new map layout:
 ```bash
-make init    # Re-run migrations and generate a new random world
-make repair  # Complete reset: delete DB, regenerate everything
+# Completely nuke and rebuild the database/migrations
+make clean
+
+# Generate a new random world (default 200 rooms)
+make init
 ```
 
-### Custom Seed
-
-To generate a reproducible world:
-
-```bash
-.venv/bin/python manage.py init_game --seed=12345 --settings=darkness_django.settings.local
-```
-
-### World Parameters
-
-```bash
-.venv/bin/python manage.py init_game --rooms=60 --zones=8 --settings=darkness_django.settings.local
-```
-
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| `--seed` | Random | RNG seed for reproducible worlds |
-| `--rooms` | 40 | Approximate number of rooms |
-| `--zones` | 5 | Number of zones (max 8) |
-
-### Database
-
-The game uses SQLite by default (`db.sqlite3`). The database stores:
-- User accounts and player data
-- Generated rooms, NPCs, items
-- Chat messages
-- World metadata (seed, version)
-
----
-
-## Architecture & Technical Details
-
-### Backend
-
-- **Framework:** Django 4.2.18
-- **Database:** SQLite3
-- **Python:** 3.13+
-- **Async model:** HTTP polling (no WebSockets)
-
-### Frontend
-
-- **jQuery 3.7.1** for AJAX requests
-- **Vanilla JS** for map rendering (Canvas API)
-- **CSS** with ANSI color palette and scanline effects
-- **No external dependencies** beyond jQuery CDN
-
-### API Endpoints
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/` | GET | Game page |
-| `/login/` | POST | Authenticate player |
-| `/register/` | POST | Create new character |
-| `/command/` | POST | Execute game command (JSON body: `{command: "..."}`) |
-| `/poll/` | GET | Real-time room state (chat, NPCs, players, items) |
-| `/map/` | GET | Map data for canvas rendering |
-| `/player/info/` | GET | Current player info |
-
-### Polling Architecture
-
-The client polls `/poll/` every 2 seconds to receive:
-```json
-{
-  "chat": [{"player": "name", "message": "text"}],
-  "npcs": [{"id": 1, "name": "...", "hp": 100, "hp_max": 100, "lvl": 3}],
-  "items": [{"id": 1, "name": "..."}],
-  "players": [{"id": 1, "user__username": "...", "lvl": 5, "game_class": "Netrunner"}],
-  "status": "HP:100/100|MA:20/20|LV:1|CR:25|EXP:0",
-  "location": "The Neon Hub"
-}
-```
-
-### Procedural Generation
-
-The world generator uses Python's `random` module with optional seeded RNG:
-1. Creates item pool (32 items across 4 types)
-2. Generates zone structures (8 zone templates with themes)
-3. Creates rooms with procedural names and descriptions
-4. Connects rooms with bidirectional exits and cross-links
-5. Spawns NPCs with zone-appropriate types and levels
-6. Stores world metadata in GameWorld singleton model
-
-### File Structure
-
-```
-darkness/
-├── darkness_django/          # Django project settings
-│   ├── settings/             # Environment-specific settings
-│   ├── urls.py               # Root URL configuration
-│   └── wsgi.py / asgi.py     # Server entry points
-├── game/                     # Main game app
-│   ├── management/commands/
-│   │   └── init_game.py      # Procedural world generator
-│   ├── migrations/           # Database migrations
-│   ├── models.py             # Data models (Player, Room, NPC, Item, etc.)
-│   ├── services.py           # Game logic (combat, movement, inventory, etc.)
-│   ├── views.py              # HTTP endpoints
-│   └── urls.py               # App URL routes
-├── static/game/
-│   └── css/style.css         # ANSI terminal styles
-├── templates/
-│   └── game.html             # Main game page (also in game/templates/)
-├── requirements/
-│   ├── base.txt              # Core dependencies
-│   ├── dev.txt               # Development dependencies
-│   └── prod.txt              # Production dependencies
-├── Makefile                  # Build and run commands
-├── manage.py                 # Django management script
-└── USER_GUIDE.md             # This file
+The `init_game` algorithm ensures the central Hub is always linked to every sector entry point, preventing player isolation.

@@ -67,6 +67,7 @@
             padding: 20px;
             text-align: center;
             z-index: 10;
+            overflow-y: auto;
         }
         #asciiArt {
             color: var(--ansi-bright-green);
@@ -90,7 +91,7 @@
             padding: 20px;
             background: #000;
             width: 100%;
-            max-width: 400px;
+            max-width: 450px;
             box-shadow: 0 0 15px var(--ansi-green);
         }
         .box h2 {
@@ -135,6 +136,36 @@
             text-decoration: underline;
             font-size: 12px;
         }
+
+        /* Stat customization */
+        .stat-customizer {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-top: 10px;
+            border-top: 1px solid var(--ansi-green);
+            padding-top: 10px;
+        }
+        .stat-item {
+            width: 48%;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .stat-item label { margin: 0; width: 40px; }
+        .stat-controls { display: flex; align-items: center; }
+        .stat-btn {
+            background: var(--ansi-green);
+            color: #000;
+            border: none;
+            width: 24px;
+            height: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .stat-val { width: 30px; text-align: center; color: var(--ansi-bright-white); }
+        .points-remaining { color: var(--ansi-bright-yellow); font-weight: bold; margin-bottom: 10px; display: block; text-align: left; }
 
         /* Game Screen */
         #gameScreen {
@@ -266,6 +297,58 @@
                     <option value="Priest">Priest</option>
                     <option value="Trickster">Trickster</option>
                 </select>
+
+                <div class="stat-customizer">
+                    <span class="points-remaining">Points to Assign: <span id="poolPoints">20</span></span>
+                    <div class="stat-item">
+                        <label>STR</label>
+                        <div class="stat-controls">
+                            <button class="stat-btn" onclick="changeStat('str', -1)">-</button>
+                            <span class="stat-val" id="val-str">10</span>
+                            <button class="stat-btn" onclick="changeStat('str', 1)">+</button>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <label>INT</label>
+                        <div class="stat-controls">
+                            <button class="stat-btn" onclick="changeStat('int', -1)">-</button>
+                            <span class="stat-val" id="val-int">10</span>
+                            <button class="stat-btn" onclick="changeStat('int', 1)">+</button>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <label>WIL</label>
+                        <div class="stat-controls">
+                            <button class="stat-btn" onclick="changeStat('wil', -1)">-</button>
+                            <span class="stat-val" id="val-wil">10</span>
+                            <button class="stat-btn" onclick="changeStat('wil', 1)">+</button>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <label>AGI</label>
+                        <div class="stat-controls">
+                            <button class="stat-btn" onclick="changeStat('agi', -1)">-</button>
+                            <span class="stat-val" id="val-agi">10</span>
+                            <button class="stat-btn" onclick="changeStat('agi', 1)">+</button>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <label>HEA</label>
+                        <div class="stat-controls">
+                            <button class="stat-btn" onclick="changeStat('hea', -1)">-</button>
+                            <span class="stat-val" id="val-hea">10</span>
+                            <button class="stat-btn" onclick="changeStat('hea', 1)">+</button>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <label>CHA</label>
+                        <div class="stat-controls">
+                            <button class="stat-btn" onclick="changeStat('cha', -1)">-</button>
+                            <span class="stat-val" id="val-cha">10</span>
+                            <button class="stat-btn" onclick="changeStat('cha', 1)">+</button>
+                        </div>
+                    </div>
+                </div>
             </div>
             <button id="actionButton" onclick="doLogin()">Connect</button>
             <div class="toggle-link" id="toggleForm" onclick="toggleLoginRegister()">Initialize New Profile</div>
@@ -301,6 +384,26 @@
 
     <script>
         var isRegistering = false;
+        var statPool = 20;
+        var stats = { str: 10, int: 10, wil: 10, agi: 10, hea: 10, cha: 10 };
+
+        function changeStat(stat, delta) {
+            if (delta > 0 && statPool > 0) {
+                stats[stat]++;
+                statPool--;
+            } else if (delta < 0 && stats[stat] > 3) {
+                stats[stat]--;
+                statPool++;
+            }
+            updateStatDisplay();
+        }
+
+        function updateStatDisplay() {
+            $('#poolPoints').text(statPool);
+            for (var s in stats) {
+                $('#val-' + s).text(stats[s]);
+            }
+        }
 
         function toggleLoginRegister() {
             isRegistering = !isRegistering;
@@ -318,7 +421,14 @@
             if (isRegistering) {
                 var race = $('#charRace').val();
                 var charClass = $('#charClass').val();
-                $.post('/register/', { name: name, password: password, race: race, gameClass: charClass }, function(res) {
+                var data = { 
+                    name: name, 
+                    password: password, 
+                    race: race, 
+                    gameClass: charClass,
+                    stats: JSON.stringify(stats)
+                };
+                $.post('/register/', data, function(res) {
                     appendMessage('<span class="msg-system">' + res.message + '</span>');
                     toggleLoginRegister();
                 }).fail(function(res) { 
@@ -350,6 +460,10 @@
                 data: JSON.stringify({ command: cmdText }),
                 headers: { 'X-CSRFToken': getCookie('csrftoken') },
                 success: function(res) {
+                    if (res.action === 'exit') {
+                        location.reload();
+                        return;
+                    }
                     if (cmd !== 'look' && cmd !== 'l') {
                         appendMessage('\n<span style="color:var(--ansi-bright-white)">' + cmdText + '</span>');
                     }
@@ -384,7 +498,7 @@
         }
 
         function updatePrompt(statusStr) {
-            // Format: HP:100/100|MA:20/20|LV:1|CR:25|BSY:0
+            if (statusStr === 'OFFLINE') return;
             var parts = statusStr.split('|');
             var hp = "", ma = "";
             parts.forEach(function(p) {
@@ -439,6 +553,11 @@
                 method: 'GET',
                 headers: { 'X-Requested-With': 'XMLHttpRequest' },
                 success: function(data) {
+                    if (data.authenticated === false) {
+                        stopPolling();
+                        location.reload();
+                        return;
+                    }
                     // Update side panel
                     if (data.status) updatePrompt(data.status);
                     if (data.location) $('#locDisplay').text(data.location.toUpperCase());
@@ -502,6 +621,7 @@
                 method: 'GET',
                 headers: { 'X-Requested-With': 'XMLHttpRequest' },
                 success: function(data) {
+                    if (data.authenticated === false) return;
                     if (data.rooms) renderMap(data.rooms);
                 }
             });

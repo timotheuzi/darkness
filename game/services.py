@@ -23,6 +23,7 @@ def get_help(player):
     sb.append("HELP/?        : Display this manual")
     sb.append("USE <item>    : Use hardware/consumable/drug/scroll")
     sb.append("TRAIN <stat>  : Spend stat points (STR, INT, WIL, AGI, HEA, CHA)")
+    sb.append("EXIT          : Log out and disconnect from the grid")
 
     if room.exits:
         sb.append(f"MOV/DIRS      : Navigation: {', '.join(room.exits.keys()).upper()}")
@@ -85,7 +86,7 @@ def get_look(player):
     room = player.location
     if not room: return "THE VOID."
     
-    sb = [f"\n[SECTOR] {room.name}"]
+    sb = [f"\n[Location] {room.name}"]
     sb.append(f"DATA: {room.description}")
     
     npcs = NPC.objects.filter(location=room, hp__gt=0)
@@ -95,7 +96,7 @@ def get_look(player):
             sb.append(f"  > {n.name} (Lvl {n.lvl}) - {n.description}")
     
     if room.exits:
-        sb.append(f"\n[AVAILABLE EXITS: {', '.join(room.exits.keys()).upper()}]")
+        sb.append(f"\n[Exits: {', '.join(room.exits.keys()).upper()}]")
     
     items = room.items.all()
     for item in items:
@@ -111,20 +112,24 @@ def process_addiction(player):
     output = ""
     if player.addiction_points > 0:
         player.withdrawal_timer += 1
-        if player.withdrawal_timer > 15:
-            dmg = random.randint(1, player.addiction_points // 4 + 1)
+        # If player hasn't used drugs for a while, suffer health loss
+        if player.withdrawal_timer > 10:
+            dmg = random.randint(1, player.addiction_points // 5 + 2)
             player.hp -= dmg
-            output += f"\n[WITHDRAWAL] Your systems are failing. -{dmg} HP."
+            output += f"\n[WITHDRAWAL] Your systems are crashing. -{dmg} HP."
             if player.hp <= 0:
                 output += "\n[CRITICAL ERROR] SYSTEM FAILURE: OVERDOSE/WITHDRAWAL."
                 player.hp = player.hp_max // 2
                 player.money = max(0, player.money - 20)
-                player.addiction_points = max(0, player.addiction_points - 20)
+                player.addiction_points = max(0, player.addiction_points - 10)
                 player.location = Room.objects.get(id=1)
                 output += "\nRebooted at The Neon Hub."
         
-        if player.withdrawal_timer > 30:
+        # Addiction slowly fades over many ticks
+        if player.withdrawal_timer > 50:
             player.addiction_points = max(0, player.addiction_points - 1)
+            player.withdrawal_timer = 40 # Keep in withdrawal zone until 0
+            
     player.save()
     return output
 
@@ -193,9 +198,7 @@ def attack_player(player, target_name):
 
     output = f"\n*** PVP COMBAT INITIATED: {player.user.username} VS {target.user.username} ***"
     
-    # We'll do 3 rounds for PVP
     for _ in range(3):
-        # Player attacks
         equipped_weapon = InventoryItem.objects.filter(player=player, equipped=True, item__item_type='weapon').first()
         speed_bonus = equipped_weapon.item.speed_bonus if equipped_weapon else 0
         p_attacks = 1 + (speed_bonus // 10) if speed_bonus > 0 else 1
@@ -224,7 +227,6 @@ def attack_player(player, target_name):
             output += check_level_up(player)
             return output
             
-        # Target attacks back
         t_weapon = InventoryItem.objects.filter(player=target, equipped=True, item__item_type='weapon').first()
         t_speed = t_weapon.item.speed_bonus if t_weapon else 0
         t_attacks = 1 + (t_speed // 10) if t_speed > 0 else 1
@@ -333,7 +335,6 @@ def use_ability(player, ability_name, target_name):
     
     res = f"You use {ability_name.upper()}."
     
-    # Simple ability logic
     if ability_name in ['blade', 'oni_strike']:
         target = npc or target_player
         if not target: return "Target required."
@@ -430,11 +431,8 @@ def use_ability(player, ability_name, target_name):
     elif ability_name == 'bamboozle':
         target = npc or target_player
         if not target: return "Target required."
-        # Use CHA stat for charm check
         if random.randint(1, 20) + player.cha_stat // 3 > 12:
             res += f"\nYou bamboozle {target_name}! They are confused."
-            # In a more complex system, this might set a 'stun' flag. 
-            # For now, we'll just deal some minor 'emotional' damage and debuff defense.
             target.defense = max(1, target.defense - 15)
             target.save()
         else:
@@ -455,7 +453,6 @@ def use_ability(player, ability_name, target_name):
     else:
         res = "Ability not recognized or not available for your class."
 
-    # Counter attack
     if npc and npc.hp > 0:
         npc_dmg = calculate_damage(npc.attack, player.defense, element=npc.element)
         player.hp -= npc_dmg
@@ -477,12 +474,27 @@ def use_item(player, item_name):
             player.hp = min(player.hp_max, player.hp + item.heal_amount)
             output += f"\nRestored HP. ({player.hp}/{player.hp_max})"
     elif item.item_type == 'drug':
-        player.hp = min(player.hp_max + 10, player.hp + 30)
+        # Apply permanent (or long lasting in this simple model) stat changes
+        player.str_stat += item.str_bonus
+        player.int_stat += item.int_bonus
+        player.wil_stat += item.wil_bonus
+        player.agi_stat += item.agi_bonus
+        player.hea_stat += item.hea_bonus
+        player.cha_stat += item.cha_bonus
+        
+        # Derived updates
+        player.attack += item.str_bonus * 2
+        player.defense += item.agi_bonus
+        player.hp_max += item.hea_bonus * 10
+        player.mana_max += item.int_bonus * 5
+        
+        player.hp = min(player.hp_max, player.hp + 20)
         player.withdrawal_timer = 0
         if random.random() < item.addiction_chance:
-            player.addiction_points += 15
+            player.addiction_points += 20
             output += "\n[DANGER] Neuro-dependency increased."
-        output += "\nNeural spike detected. Efficiency increased."
+        output += "\nNeural spike detected. Systems modified."
+        
     elif item.item_type == 'scroll':
         target_room = item.warp_to_room or Room.objects.get(id=1)
         player.location = target_room
@@ -524,9 +536,9 @@ def get_map_data(player):
         visited.add(r.id)
         room_data.append({
             'id': r.id, 'name': r.name, 
-            'x': r.map_x, 'y': -r.map_y,
+            'x': r.map_x, 'y': r.map_y, # Frontend handles y correctly now
             'current': (r.id == room.id),
-            'players': Player.objects.filter(location=r, online=True).count(),
+            'players': Player.objects.filter(location=r, online=True).exclude(id=player.id).count(),
             'npcs': NPC.objects.filter(location=r, hp__gt=0).count(),
             'safe': r.safe_zone,
         })
@@ -554,14 +566,14 @@ def check_level_up(player):
     while player.exp >= player.lvl * 120:
         player.exp -= player.lvl * 120
         player.lvl += 1
-        player.stat_points += 5
+        player.stat_points += 1 # Only 1 point per level now
         player.hp_max += 20
         player.hp = player.hp_max
         player.mana_max += 10
         player.mana = player.mana_max
         player.save()
         output += f"\n*** LEVEL UP! Now level {player.lvl}! ***"
-        output += f"\nGranted 5 stat points. Use TRAIN <stat> to spend them."
+        output += f"\nGranted 1 stat point. Use TRAIN <stat> to spend it."
         if player.lvl == 5: output += "\n[NEW ABILITIES UNLOCKED! Type HELP for details]"
     return output
 

@@ -39,10 +39,12 @@ clean: setup ## Clean cache, database, and migrations, then recreate a blank DB 
 	# Explicitly delete all numbered migrations (including 0001_initial.py) to avoid collisions
 	find . -name "$(VENV)" -prune -o -path "*/migrations/*.py" -not -name "__init__.py" -exec rm -f {} +
 	@echo "Recreating blank database with latest models..."
+	$(MANAGE) makemigrations game --settings=$(SETTINGS)
 	$(MANAGE) makemigrations --settings=$(SETTINGS)
 	$(MANAGE) migrate --settings=$(SETTINGS)
 
 migrate: setup ## Run database migrations (local)
+	$(MANAGE) makemigrations game --settings=$(SETTINGS)
 	$(MANAGE) makemigrations --settings=$(SETTINGS)
 	$(MANAGE) migrate --settings=$(SETTINGS)
 
@@ -50,6 +52,7 @@ init: migrate ## Initialize game world data (local)
 	$(MANAGE) init_game --settings=$(SETTINGS)
 
 deploy-migrate: ## Run database migrations (PythonAnywhere/production)
+	$(PYTHONANYWHERE_MANAGE) makemigrations game --settings=$(PYTHONANYWHERE_SETTINGS)
 	$(PYTHONANYWHERE_MANAGE) makemigrations --settings=$(PYTHONANYWHERE_SETTINGS)
 	$(PYTHONANYWHERE_MANAGE) migrate --settings=$(PYTHONANYWHERE_SETTINGS)
 
