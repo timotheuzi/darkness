@@ -89,6 +89,9 @@ def get_look(player):
     sb = [f"\n[Location] {room.name}"]
     sb.append(f"DATA: {room.description}")
     
+    if room.shop_name:
+        sb.append(f"\n[TERMINAL] A commerce node is active here: {room.shop_name}")
+    
     npcs = NPC.objects.filter(location=room, hp__gt=0)
     if npcs.exists():
         sb.append("\nDETECTED ENTITIES:")
@@ -112,7 +115,6 @@ def process_addiction(player):
     output = ""
     if player.addiction_points > 0:
         player.withdrawal_timer += 1
-        # If player hasn't used drugs for a while, suffer health loss
         if player.withdrawal_timer > 10:
             dmg = random.randint(1, player.addiction_points // 5 + 2)
             player.hp -= dmg
@@ -125,10 +127,9 @@ def process_addiction(player):
                 player.location = Room.objects.get(id=1)
                 output += "\nRebooted at The Neon Hub."
         
-        # Addiction slowly fades over many ticks
         if player.withdrawal_timer > 50:
             player.addiction_points = max(0, player.addiction_points - 1)
-            player.withdrawal_timer = 40 # Keep in withdrawal zone until 0
+            player.withdrawal_timer = 40 
             
     player.save()
     return output
@@ -474,7 +475,6 @@ def use_item(player, item_name):
             player.hp = min(player.hp_max, player.hp + item.heal_amount)
             output += f"\nRestored HP. ({player.hp}/{player.hp_max})"
     elif item.item_type == 'drug':
-        # Apply permanent (or long lasting in this simple model) stat changes
         player.str_stat += item.str_bonus
         player.int_stat += item.int_bonus
         player.wil_stat += item.wil_bonus
@@ -482,7 +482,6 @@ def use_item(player, item_name):
         player.hea_stat += item.hea_bonus
         player.cha_stat += item.cha_bonus
         
-        # Derived updates
         player.attack += item.str_bonus * 2
         player.defense += item.agi_bonus
         player.hp_max += item.hea_bonus * 10
@@ -536,7 +535,7 @@ def get_map_data(player):
         visited.add(r.id)
         room_data.append({
             'id': r.id, 'name': r.name, 
-            'x': r.map_x, 'y': r.map_y, # Frontend handles y correctly now
+            'x': r.map_x, 'y': r.map_y, 
             'current': (r.id == room.id),
             'players': Player.objects.filter(location=r, online=True).exclude(id=player.id).count(),
             'npcs': NPC.objects.filter(location=r, hp__gt=0).count(),
@@ -566,7 +565,7 @@ def check_level_up(player):
     while player.exp >= player.lvl * 120:
         player.exp -= player.lvl * 120
         player.lvl += 1
-        player.stat_points += 1 # Only 1 point per level now
+        player.stat_points += 1 
         player.hp_max += 20
         player.hp = player.hp_max
         player.mana_max += 10
@@ -680,9 +679,14 @@ def equip_item(player, item_name):
 
 def list_shop(player):
     if not player.location.shop_name: return "No terminal shop detected."
-    items = Item.objects.filter(price__gt=0)
+    items = Item.objects.filter(price__gt=0).order_by('item_type', 'name')
     sb = [f"\n=== {player.location.shop_name} Inventory ==="]
+    
+    current_type = None
     for item in items:
+        if item.item_type != current_type:
+            current_type = item.item_type
+            sb.append(f"\n[{current_type.upper()}]")
         sb.append(f"  {item.name:25} {item.price} CR")
     return "\n".join(sb)
 
