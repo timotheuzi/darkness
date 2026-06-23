@@ -24,6 +24,7 @@ Key Features:
 - **Deep Character Customization**: 10 races and 11 classes with unique abilities.
 - **Manual Stat Training**: Earn 5 points per level to spend on specific attributes.
 - **Tactical Combat**: PvP support (+/- 3 levels), weapon speed, and elemental damage.
+- **Leaderboards**: Competitive ranking of the top adventurers on the grid.
 - **Boss Encounters**: Sector-specific bosses with unique legendary loot.
 
 ---
@@ -88,6 +89,7 @@ make run
 | **Void-Walker**| WIL / AGI | Masters of the ethereal data-stream. |
 | **Synth-Soul** | INT | Extreme technical capability. |
 | **Chrome-Crawler**| STR / AGI| Specialized in high-speed physical combat. |
+| **Bio-hacked** | HEA / STR | Enhanced biological durability. |
 
 ### Operational Classes
 | Class | Unique Ability | Focus |
@@ -115,6 +117,7 @@ make run
 ### Information
 - `LOOK` / `L`: Scans the sector for entities, players, items, and exits.
 - `WHO`: Lists all active users currently linked to the grid.
+- `TOP`: Displays the Top 10 adventurers by level and experience.
 - `ST` / `STATUS`: Detailed profile view showing base stats and available **Stat Points**.
 - `I` / `INVENTORY`: Lists equipped [E] and stored hardware.
 

@@ -197,6 +197,8 @@ def command_view(request):
             for p in online_players:
                 lines.append(f"  {p.user.username} (Lvl {p.lvl}) - {p.game_class}")
             output = "\n".join(lines)
+        elif command == 'top':
+            output = services.get_top_ten()
         elif command in ['attack', 'a', 'kill', 'k']:
             output = services.attack_target(player, args)
         elif command in ['inventory', 'i']:

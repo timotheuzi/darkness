@@ -17,6 +17,7 @@ def get_help(player):
     
     sb.append("L/LOOK        : Scan current sector")
     sb.append("WHO           : List active terminal nodes")
+    sb.append("TOP           : Display top 10 adventurers")
     sb.append("I/INVENTORY   : List equipped and stored hardware")
     sb.append("ST/STATUS     : Detailed user profile data")
     sb.append("SAY <msg>     : Broadcast to current sector")
@@ -80,6 +81,13 @@ def get_help(player):
         sb.append("  BAMBOOZLE (Lv 1) : Charm target to skip their turn")
         if player.lvl >= 5: sb.append("  JACKPOT (Lv 5)   : Massive damage or massive credits")
 
+    return "\n".join(sb)
+
+def get_top_ten():
+    top_players = Player.objects.order_by('-lvl', '-exp')[:10]
+    sb = ["\n=== TOP 10 ADVENTURERS ==="]
+    for i, p in enumerate(top_players, 1):
+        sb.append(f"{i:2}. {p.user.username:15} | Lvl: {p.lvl:2} | Class: {p.game_class}")
     return "\n".join(sb)
 
 def get_look(player):

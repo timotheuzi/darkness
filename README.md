@@ -41,10 +41,11 @@ The project uses a `Makefile` to simplify setup and maintenance.
 ## Core Features
 
 - **Procedural Sectors**: 8 distinct zones from Corporate Plazas to the Undercity.
-- **Deep Progression**: 11 Races and 11 Classes with unique abilities and stat modifiers.
+- **Deep Progression**: 10 Races and 11 Classes with unique abilities and stat modifiers.
 - **Manual Training**: Earn 5 stat points per level to manually improve STR, INT, WIL, AGI, HEA, or CHA.
 - **Tactical Combat**: PvP support (within 3 levels), weapon speed mechanics, and elemental RPS.
 - **Unique Loot**: Sector bosses drop legendary gear not found in shops.
+- **Leaderboards**: Use the `TOP` command to see the grid's most elite adventurers.
 
 ## Development & Maintenance
 
