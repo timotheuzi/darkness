@@ -499,6 +499,85 @@ class Command(BaseCommand):
                                     self._connect_rooms(r1, r2, d, opp[d])
                                 break
             all_rooms.extend(zone_rooms)
+        
+        # Populate shop inventories with weapons and items after all rooms are created
+        # Also populate the Hub's shop
+        hub = Room.objects.get(id=1)
+        if hub.shop_name:
+            hub_weapons = random.sample(WEAPON_TABLE, min(4, len(WEAPON_TABLE)))
+            for weapon_data in hub_weapons:
+                name, desc, atk, price, rarity, speed, bonuses = weapon_data
+                weapon = Item.objects.create(
+                    name=name, description=desc, item_type='weapon',
+                    attack_bonus=atk, price=price, rarity=rarity,
+                    speed_bonus=speed, **bonuses
+                )
+                hub.shop_inventory.add(weapon)
+            hub_armor = random.sample(ARMOR_TABLE, min(3, len(ARMOR_TABLE)))
+            for armor_data in hub_armor:
+                name, desc, dfn, price, rarity, bonuses = armor_data
+                armor = Item.objects.create(
+                    name=name, description=desc, item_type='armor',
+                    defense_bonus=dfn, price=price, rarity=rarity,
+                    **bonuses
+                )
+                hub.shop_inventory.add(armor)
+            hub_consumables = random.sample(CONSUMABLE_TABLE, min(3, len(CONSUMABLE_TABLE)))
+            for consumable_data in hub_consumables:
+                name, desc, price, rarity, heal = consumable_data
+                consumable = Item.objects.create(
+                    name=name, description=desc, item_type='consumable',
+                    price=price, rarity=rarity, heal_amount=heal
+                )
+                hub.shop_inventory.add(consumable)
+        
+        for zone in zones:
+            if not zone.get('shop'): continue
+            shop_rooms = [r for r in all_rooms if r.zone == zone['zone_id'] and r.shop_name]
+            for shop_room in shop_rooms:
+                # Add 3-5 weapons appropriate for the zone level
+                num_weapons = random.randint(3, 5)
+                zone_avg_lvl = (zone['min_lvl'] + zone['max_lvl']) // 2
+                
+                # Filter weapons by price to match zone difficulty
+                price_max = zone_avg_lvl * 500
+                available_weapons = [w for w in WEAPON_TABLE if w[3] <= price_max]
+                if not available_weapons:
+                    available_weapons = WEAPON_TABLE
+                
+                selected_weapons = random.sample(available_weapons, min(num_weapons, len(available_weapons)))
+                for weapon_data in selected_weapons:
+                    name, desc, atk, price, rarity, speed, bonuses = weapon_data
+                    weapon = Item.objects.create(
+                        name=name, description=desc, item_type='weapon',
+                        attack_bonus=atk, price=price, rarity=rarity,
+                        speed_bonus=speed, **bonuses
+                    )
+                    shop_room.shop_inventory.add(weapon)
+                
+                # Add 2-3 armor pieces
+                num_armor = random.randint(2, 3)
+                selected_armor = random.sample(ARMOR_TABLE, min(num_armor, len(ARMOR_TABLE)))
+                for armor_data in selected_armor:
+                    name, desc, dfn, price, rarity, bonuses = armor_data
+                    armor = Item.objects.create(
+                        name=name, description=desc, item_type='armor',
+                        defense_bonus=dfn, price=price, rarity=rarity,
+                        **bonuses
+                    )
+                    shop_room.shop_inventory.add(armor)
+                
+                # Add 2-3 consumables
+                num_consumables = random.randint(2, 3)
+                selected_consumables = random.sample(CONSUMABLE_TABLE, min(num_consumables, len(CONSUMABLE_TABLE)))
+                for consumable_data in selected_consumables:
+                    name, desc, price, rarity, heal = consumable_data
+                    consumable = Item.objects.create(
+                        name=name, description=desc, item_type='consumable',
+                        price=price, rarity=rarity, heal_amount=heal
+                    )
+                    shop_room.shop_inventory.add(consumable)
+        
         return all_rooms
 
     def _create_npcs(self, rooms, zones, items):

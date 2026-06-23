@@ -45,6 +45,7 @@ class Room(models.Model):
     map_x = models.IntegerField(default=0)  # grid position for map
     map_y = models.IntegerField(default=0)
     items = models.ManyToManyField(Item, blank=True, related_name='rooms')
+    shop_inventory = models.ManyToManyField(Item, blank=True, related_name='shops')
     # Procedural flags
     respawn_npcs = models.BooleanField(default=True)
     respawn_timer = models.IntegerField(default=300)  # seconds until NPC respawn
@@ -78,12 +79,12 @@ class Player(models.Model):
     defense = models.IntegerField(default=5)
 
     location = models.ForeignKey(Room, on_delete=models.SET_NULL, null=True)
-    race = models.CharField(max_length=50) # Cyborg, Bio-hacked, Android, Mutant, PureBlood
+    race = models.CharField(max_length=50) # Cyborg, Bio-hacked, Android, Mutant, Human
     game_class = models.CharField(max_length=50) # Street Samurai, Netrunner, Techie, Medie, Fixer
     online = models.BooleanField(default=False)
     last_seen = models.DateTimeField(auto_now=True)
 
-    # Karma / alignment
+    # Karma / alignment: -100 (Villain) to 100 (Saint)
     karma = models.IntegerField(default=0)
 
     inventory = models.ManyToManyField(Item, through='InventoryItem')
@@ -95,6 +96,9 @@ class Player(models.Model):
     # Combat/Stalking state
     last_combat_npc = models.ForeignKey('NPC', on_delete=models.SET_NULL, null=True, blank=True, related_name='stalking_players')
     stalk_count = models.IntegerField(default=0)
+    
+    # Sneaking state
+    hidden = models.BooleanField(default=False)
 
     def __str__(self):
         return self.user.username
@@ -119,8 +123,12 @@ class NPC(models.Model):
     money_drop = models.IntegerField()
     exp_drop = models.IntegerField()
     aggressive = models.BooleanField(default=True)
-    npc_type = models.CharField(max_length=50, default='drone')  # drone, gang, corporate, boss
+    npc_type = models.CharField(max_length=50, default='drone')  # drone, gang, corporate, boss, dealer, vigilante
     respawnable = models.BooleanField(default=True)
+    
+    # Karma Alignment: -100 to 100. 
+    # Positive alignment NPCs attack negative karma players and vice versa.
+    karma_alignment = models.IntegerField(default=0)
     
     # Elemental system
     element = models.CharField(max_length=20, default='physical')

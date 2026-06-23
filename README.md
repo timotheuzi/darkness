@@ -9,61 +9,59 @@ A professional multi-user, terminal-style cyberpunk RPG (MUD) built with Django.
 - `templates/`: ANSI-themed terminal interface using standard 16-color palettes.
 - `static/`: Frontend assets including CSS scanline effects and terminal fonts.
 
-## Quick Start
-
-The project uses a `Makefile` to simplify setup and maintenance.
-
-1. **Environment Setup**:
-   ```bash
-   make venv
-   source .venv/bin/activate
-   make setup
-   ```
-
-2. **Clean Initialization** (Recommended for first run):
-   ```bash
-   # This nukes the database, clears old migrations, and builds a fresh schema
-   make clean
-   ```
-
-3. **Generate the Grid**:
-   ```bash
-   # Generates 200+ rooms, bosses, and unique items
-   make init
-   ```
-
-4. **Run the Grid**:
-   ```bash
-   make run
-   ```
-   Access the terminal at `http://localhost:8008`.
-
 ## Core Features
 
 - **Procedural Sectors**: 8 distinct zones from Corporate Plazas to the Undercity.
 - **Deep Progression**: 10 Races and 11 Classes with unique abilities and stat modifiers.
-- **Manual Training**: Earn 5 stat points per level to manually improve STR, INT, WIL, AGI, HEA, or CHA.
-- **Tactical Combat**: PvP support (within 3 levels), weapon speed mechanics, and elemental RPS.
+- **Manual Training**: Earn 1 stat point per level to manually improve STR, INT, WIL, AGI, HEA, or CHA.
+- **Tactical Combat**: PvP support (within 3 levels), weapon speed mechanics, and elemental damage (fire > air > earth > water > fire).
+- **Karma System**: Alignment ranges from -100 (Villain) to 100 (Saint), affecting NPC aggression.
+- **Stealth System**: Hide in shadows to perform backstab attacks with bonus damage.
+- **Drug & Addiction System**: Temporary stat boosts with risk of dependency and withdrawal damage.
 - **Unique Loot**: Sector bosses drop legendary gear not found in shops.
 - **Leaderboards**: Use the `TOP` command to see the grid's most elite adventurers.
 
-## Development & Maintenance
+## Setup
 
-- **Reset Environment**: `make clean` (rebuilds DB and migrations from scratch).
-- **Run Tests**: `make test`.
-- **Static Analysis**: `make lint`.
-- **Deep Repair**: `make repair` (reinstalls virtual environment).
+### Prerequisites
+- Python 3.11+
+- pip
+- make (optional)
 
-## Deployment
-
-Detailed instructions for production environments can be found in [DEPLOY_PYTHONANYWHERE.md](DEPLOY_PYTHONANYWHERE.md).
-
-Quick production update:
+### Local Setup
 ```bash
-git pull
-make deploy-init
-python manage.py collectstatic --settings=darkness_django.settings.production --noinput
+# Clone and enter directory
+git clone https://github.com/timotheuzi/darknesses.git
+cd darknesses
+
+# Create environment
+make venv
+source .venv/bin/activate
+
+# Install dependencies
+make setup
+
+# Nuke database and build fresh schema
+make clean
+
+# Generate world data
+make init
+
+# Start the grid
+make run
 ```
+
+### Make Commands
+- `make clean`: **Destructive**. Nukes the DB, clears migration history, and rebuilds the schema.
+- `make init`: Procedurally generates 200+ rooms, NPCs, bosses, and items.
+- `make run`: Launches the Django development server on port 8008.
+
+## Quick Start
+
+1. Navigate to the terminal in your browser.
+2. Click **"Initialize New Profile"** to create a character.
+3. Select your **Race** and **Class**, then optionally customize your 6 base stats.
+4. Log in and arrive at **The Neon Hub**, the grid's central safe zone.
 
 ## Documentation
 

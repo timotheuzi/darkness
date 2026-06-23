@@ -22,7 +22,7 @@ def register_view(request):
     if request.method == 'POST':
         name = request.POST.get('name')
         password = request.POST.get('password')
-        race = request.POST.get('race', 'PureBlood')
+        race = request.POST.get('race', 'Human')
         game_class = request.POST.get('gameClass', 'Street Samurai')
         
         # User customized stats
@@ -74,7 +74,7 @@ def register_view(request):
                 'Bio-hacked': {'hea_stat': 5, 'str_stat': 2, 'cha_stat': -2},
                 'Android': {'int_stat': 8, 'wil_stat': 2, 'cha_stat': -5, 'hea_stat': -2},
                 'Mutant': {'str_stat': 3, 'hea_stat': 8, 'wil_stat': -3, 'cha_stat': -4},
-                'PureBlood': {'cha_stat': 10, 'wil_stat': 5, 'str_stat': -5, 'hea_stat': -5},
+                'Human': {'cha_stat': 10, 'wil_stat': 5, 'str_stat': -5, 'hea_stat': -5},
                 'Void-Walker': {'wil_stat': 12, 'agi_stat': 5, 'str_stat': -8, 'hea_stat': -4},
                 'Synth-Soul': {'int_stat': 15, 'cha_stat': -10},
                 'Chrome-Crawler': {'str_stat': 10, 'agi_stat': 10, 'int_stat': -10, 'cha_stat': -5},
@@ -97,7 +97,7 @@ def register_view(request):
                 'Techie': {'int_stat': 3, 'wil_stat': 2, 'defense': 3},
                 'Medie': {'hea_stat': 3, 'hp_max': 20},
                 'Fixer': {'cha_stat': 5, 'money': 50},
-                'Infiltrator': {'agi_stat': 6, 'attack': 2},
+                'Thief': {'agi_stat': 6, 'attack': 2},
                 'Heavy': {'str_stat': 5, 'hea_stat': 5, 'defense': 5, 'hp_max': 30},
                 'Psycher': {'wil_stat': 8, 'mana_max': 40},
                 'Warlock': {'int_stat': 5, 'wil_stat': 5, 'mana_max': 30},
@@ -188,7 +188,7 @@ def command_view(request):
             })
 
         if command in ['look', 'l']:
-            output = services.get_look(player)
+            output = services.get_look(player, args)
         elif command in ['n', 'north', 's', 'south', 'e', 'east', 'w', 'west']:
             output = services.move_player(player, command)
         elif command == 'who':
@@ -226,7 +226,7 @@ def command_view(request):
         elif command == 'train':
             output = services.train_stat(player, args)
         elif command in ['blade', 'oni_strike', 'hack', 'overload', 'patch', 'detox', 'scheme', 'calibrate', 'turret', 'call_in', 
-                        'stab', 'vanish', 'smash', 'taunt', 'mind_bolt', 'soul_drain', 'curse', 'chaos_bolt', 'heal', 'bless', 'bamboozle', 'jackpot']:
+                        'stealth', 'backstab', 'sneak', 'smash', 'taunt', 'mind_bolt', 'soul_drain', 'curse', 'chaos_bolt', 'heal', 'bless', 'bamboozle', 'jackpot']:
             output = services.use_ability(player, command, args)
         else:
             output = "COMMAND ERROR: UNKNOWN INSTRUCTION."
