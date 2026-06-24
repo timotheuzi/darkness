@@ -1,6 +1,5 @@
-
 ### misc
-/target/
+target/
 /build/
 /gradle/
 gradlew
@@ -16,7 +15,7 @@ gradlew
 *.ipr
 
 ### Python ###
-.venv/Stat point allocation error. Max 25 bonus points.
+.venv/
 __pycache__/
 *.pyc
 *.pyo

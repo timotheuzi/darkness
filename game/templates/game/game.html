@@ -387,16 +387,16 @@
         var statPool = 25;
         var stats = { str: 10, int: 10, wil: 10, agi: 10, hea: 10, cha: 10 };
 
-        function changeStat(stat, delta) {
-            if (delta > 0 && statPool > 0) {
-                stats[stat]++;
-                statPool--;
-            } else if (delta < 0 && stats[stat] > 3) {
-                stats[stat]--;
-                statPool++;
-            }
-            updateStatDisplay();
+    function changeStat(stat, delta) {
+        if (delta > 0 && statPool > 0) {
+            stats[stat]++;
+            statPool--;
+        } else if (delta < 0 && stats[stat] > 10) {
+            stats[stat]--;
+            statPool++;
         }
+        updateStatDisplay();
+    }
 
         function updateStatDisplay() {
             $('#poolPoints').text(statPool);

@@ -6,7 +6,7 @@ var playerName = 'Player';
 var chatPollInterval = null;
 var lastMessageId = 0;
 var isChatInitialized = false;
-var pollIntervalMs = 3000; // Poll every 3 seconds
+var pollIntervalMs = 4000; // Poll every 4 seconds
 
 // Initialize chat when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
