@@ -62,21 +62,21 @@ def register_view(request):
             race_base_stats = {
                 'Cyborg': {'str_stat': 15, 'hea_stat': 12, 'agi_stat': 8, 'int_stat': 12, 'cha_stat': 5, 'wil_stat': 8},
                 'Bio-hacked': {'hea_stat': 15, 'str_stat': 12, 'cha_stat': 8, 'agi_stat': 12, 'int_stat': 8, 'wil_stat': 5},
-                'Android': {'int_stat': 18, 'wil_stat': 12, 'cha_stat': 5, 'hea_stat': 8, 'str_stat': 10, 'agi_stat': 10},
+                'Android': {'int_stat': 17, 'wil_stat': 12, 'cha_stat': 5, 'hea_stat': 8, 'str_stat': 10, 'agi_stat': 8},
                 'Mutant': {'str_stat': 13, 'hea_stat': 18, 'wil_stat': 7, 'cha_stat': 6, 'agi_stat': 11, 'int_stat': 5},
-                'Human': {'cha_stat': 18, 'wil_stat': 13, 'str_stat': 7, 'hea_stat': 7, 'agi_stat': 10, 'int_stat': 10},
+                'Human': {'cha_stat': 15, 'wil_stat': 13, 'str_stat': 7, 'hea_stat': 7, 'agi_stat': 10, 'int_stat': 8},
                 'Void-Walker': {'wil_stat': 20, 'agi_stat': 12, 'str_stat': 5, 'hea_stat': 8, 'int_stat': 10, 'cha_stat': 5},
                 'Synth-Soul': {'int_stat': 22, 'cha_stat': 5, 'wil_stat': 15, 'str_stat': 5, 'hea_stat': 5, 'agi_stat': 8},
                 'Chrome-Crawler': {'str_stat': 18, 'agi_stat': 18, 'int_stat': 5, 'cha_stat': 5, 'hea_stat': 10, 'wil_stat': 4},
-                'Elf': {'agi_stat': 16, 'wil_stat': 12, 'hea_stat': 7, 'cha_stat': 12, 'str_stat': 8, 'int_stat': 10},
-                'Goblin': {'cha_stat': 18, 'agi_stat': 15, 'str_stat': 5, 'int_stat': 12, 'hea_stat': 8, 'wil_stat': 7},
+                'Elf': {'agi_stat': 14, 'wil_stat': 10, 'hea_stat': 7, 'cha_stat': 12, 'str_stat': 8, 'int_stat': 9},
+                'Goblin': {'cha_stat': 15, 'agi_stat': 13, 'str_stat': 5, 'int_stat': 12, 'hea_stat': 8, 'wil_stat': 7},
             }
             
             if race in race_base_stats:
                 stats.update(race_base_stats[race])
             
             # Apply user customized distribution (bonus points added to racial base)
-            # The frontend starts with 60 base points (10 per stat) and 25 bonus pool (Total 85).
+            # The frontend starts with 60 base points (10 per stat) and 20 bonus pool (Total 80).
             if custom_stats:
                 total_sum = 0
                 for s_key in ['str', 'int', 'wil', 'agi', 'hea', 'cha']:
@@ -86,9 +86,9 @@ def register_view(request):
                     delta = val - 10
                     stats[f'{s_key}_stat'] += delta
                 
-                if total_sum > 85:
-                    return JsonResponse({'message': f'Stat point allocation error. Max total points is 85 (You assigned {total_sum}).'}, status=400)
-
+                if total_sum > 80:
+                    return JsonResponse({'message': f'Stat point allocation error. Max total points is 80 (You assigned {total_sum}).'}, status=400)
+            
             # Class Modifiers
             class_mods = {
                 'Street Samurai': {'attack': 5, 'str_stat': 3, 'agi_stat': 2},

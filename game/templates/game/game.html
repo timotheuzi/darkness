@@ -303,7 +303,7 @@
                 </select>
 
                 <div class="stat-customizer">
-                    <span class="points-remaining">Bonus Points to Assign: <span id="poolPoints">25</span></span>
+                    <span class="points-remaining">Bonus Points to Assign: <span id="poolPoints">20</span></span>
                     <div class="stat-item">
                         <label>STR</label>
                         <div class="stat-controls">
@@ -388,16 +388,16 @@
 
     <script>
         var isRegistering = false;
-        var statPool = 25;
+        var statPool = 20;
         var stats = { str: 10, int: 10, wil: 10, agi: 10, hea: 10, cha: 10 };
         
         var raceBaseStats = {
-            'Human': { str: 7, int: 10, wil: 13, agi: 10, hea: 7, cha: 18 },
-            'Elf': { str: 8, int: 10, wil: 12, agi: 16, hea: 7, cha: 12 },
-            'Goblin': { str: 5, int: 12, wil: 7, agi: 15, hea: 8, cha: 18 },
+            'Human': { str: 7, int: 8, wil: 13, agi: 10, hea: 7, cha: 15 },
+            'Elf': { str: 8, int: 9, wil: 10, agi: 14, hea: 7, cha: 12 },
+            'Goblin': { str: 5, int: 12, wil: 7, agi: 13, hea: 8, cha: 15 },
             'Mutant': { str: 13, int: 5, wil: 7, agi: 11, hea: 18, cha: 6 },
             'Cyborg': { str: 15, int: 12, wil: 8, agi: 8, hea: 12, cha: 5 },
-            'Android': { str: 10, int: 18, wil: 12, agi: 10, hea: 8, cha: 5 },
+            'Android': { str: 10, int: 17, wil: 12, agi: 8, hea: 8, cha: 5 },
             'Bio-hacked': { str: 12, int: 8, wil: 5, agi: 12, hea: 15, cha: 8 },
             'Void-Walker': { str: 5, int: 10, wil: 20, agi: 12, hea: 8, cha: 5 },
             'Synth-Soul': { str: 5, int: 22, wil: 15, agi: 8, hea: 5, cha: 5 },
@@ -425,7 +425,7 @@
         function applyRaceStats(race) {
             var base = raceBaseStats[race];
             if (!base) return;
-            statPool = 25;
+            statPool = 20;
             for (var s in base) {
                 stats[s] = base[s];
             }
@@ -436,7 +436,7 @@
             var race = $('#charRace').val();
             var base = raceBaseStats[race];
             if (!base) return;
-            statPool = 25;
+            statPool = 20;
             for (var s in base) {
                 // Randomize +/- 2 points within valid range
                 var roll = base[s] + Math.floor(Math.random() * 5) - 2;

@@ -29,15 +29,20 @@ $(VENV)/bin/python:
 setup: $(VENV)/bin/python ## Install dependencies
 	$(PYTHON) -m pip install -r requirements/dev.txt
 
-clean: setup ## Clean cache, database, and migrations, then recreate a blank DB with latest models
+clean: ## Wipe .venv, cache, database, and migrations, then recreate everything fresh
+	@echo "Nuking virtual environment..."
+	rm -rf $(VENV)
 	@echo "Cleaning generated files..."
-	# Skip .venv directory and delete __pycache__ and .pyc files
-	find . -name "$(VENV)" -prune -o -type d -name "__pycache__" -exec rm -rf {} +
-	find . -name "$(VENV)" -prune -o -type f -name "*.pyc" -exec rm -f {} +
+	find . -type d -name "__pycache__" -exec rm -rf {} +
+	find . -type f -name "*.pyc" -exec rm -f {} +
 	rm -rf .pytest_cache .coverage htmlcov staticfiles db.sqlite3
 	@echo "Cleaning app migrations..."
 	# Explicitly delete all numbered migrations (including 0001_initial.py) to avoid collisions
-	find . -name "$(VENV)" -prune -o -path "*/migrations/*.py" -not -name "__init__.py" -exec rm -f {} +
+	find . -path "*/migrations/*.py" -not -name "__init__.py" -exec rm -f {} +
+	@echo "Recreating virtual environment..."
+	python3 -m venv $(VENV)
+	$(VENV)/bin/python -m pip install --upgrade pip
+	$(VENV)/bin/python -m pip install -r requirements/dev.txt
 	@echo "Recreating blank database with latest models..."
 	$(MANAGE) makemigrations game --settings=$(SETTINGS)
 	$(MANAGE) makemigrations --settings=$(SETTINGS)
