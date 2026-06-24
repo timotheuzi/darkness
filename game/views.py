@@ -89,19 +89,19 @@ def register_view(request):
                 if total_sum > 80:
                     return JsonResponse({'message': f'Stat point allocation error. Max total points is 80 (You assigned {total_sum}).'}, status=400)
             
-            # Class Modifiers
+            # Class Modifiers (only affect derived stats, not base stats)
             class_mods = {
-                'Street Samurai': {'attack': 5, 'str_stat': 3, 'agi_stat': 2},
-                'Netrunner': {'int_stat': 5, 'mana_max': 20},
-                'Techie': {'int_stat': 3, 'wil_stat': 2, 'defense': 3},
-                'Medie': {'hea_stat': 3, 'hp_max': 20},
-                'Fixer': {'cha_stat': 5, 'money': 50},
-                'Thief': {'agi_stat': 6, 'attack': 2},
-                'Heavy': {'str_stat': 5, 'hea_stat': 5, 'defense': 5, 'hp_max': 30},
-                'Psycher': {'wil_stat': 8, 'mana_max': 40},
-                'Warlock': {'int_stat': 5, 'wil_stat': 5, 'mana_max': 30},
-                'Priest': {'wil_stat': 6, 'hea_stat': 4, 'hp_max': 25},
-                'Trickster': {'cha_stat': 15, 'agi_stat': 5},
+                'Street Samurai': {'attack': 5},
+                'Netrunner': {'mana_max': 20},
+                'Techie': {'defense': 3},
+                'Medie': {'hp_max': 20},
+                'Fixer': {'money': 50},
+                'Thief': {'attack': 2},
+                'Heavy': {'defense': 5, 'hp_max': 30},
+                'Psycher': {'mana_max': 40},
+                'Warlock': {'mana_max': 30},
+                'Priest': {'hp_max': 25},
+                'Trickster': {},
             }
             
             c_mods = class_mods.get(game_class, {})
