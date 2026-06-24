@@ -1087,7 +1087,8 @@ def equip_item(player, item_name):
         if limits:
             allowed_subtypes = limits.get(ii.item.item_type, [])
             if allowed_subtypes and ii.item.subtype not in allowed_subtypes:
-                return f"Incompatible hardware. {player.game_class} cannot use {ii.item.subtype} {ii.item.item_type}."
+                allowed_str = ', '.join(allowed_subtypes)
+                return f"Incompatible hardware. {player.game_class} can only equip {allowed_str} {ii.item.item_type}s ({ii.item.subtype} is not compatible)."
 
     if ii.item.item_type == 'weapon':
         old = InventoryItem.objects.filter(player=player, equipped=True, item__item_type='weapon').first()
