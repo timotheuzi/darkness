@@ -53,44 +53,42 @@ def register_view(request):
                 }
             )[0]
             
-            # Base stats from user customization or defaults
+            # Starting Stats based on Race
+            # Base for everyone is 10, then modified by race
             stats = {
-                'str_stat': int(custom_stats.get('str', 10)),
-                'int_stat': int(custom_stats.get('int', 10)),
-                'wil_stat': int(custom_stats.get('wil', 10)),
-                'agi_stat': int(custom_stats.get('agi', 10)),
-                'hea_stat': int(custom_stats.get('hea', 10)),
-                'cha_stat': int(custom_stats.get('cha', 10)),
+                'str_stat': 10, 'int_stat': 10, 'wil_stat': 10,
+                'agi_stat': 10, 'hea_stat': 10, 'cha_stat': 10,
+            }
+
+            race_base_stats = {
+                'Cyborg': {'str_stat': 15, 'hea_stat': 12, 'agi_stat': 8, 'int_stat': 12, 'cha_stat': 5, 'wil_stat': 8},
+                'Bio-hacked': {'hea_stat': 15, 'str_stat': 12, 'cha_stat': 8, 'agi_stat': 12, 'int_stat': 8, 'wil_stat': 5},
+                'Android': {'int_stat': 18, 'wil_stat': 12, 'cha_stat': 5, 'hea_stat': 8, 'str_stat': 10, 'agi_stat': 10},
+                'Mutant': {'str_stat': 13, 'hea_stat': 18, 'wil_stat': 7, 'cha_stat': 6, 'agi_stat': 11, 'int_stat': 5},
+                'Human': {'cha_stat': 18, 'wil_stat': 13, 'str_stat': 7, 'hea_stat': 7, 'agi_stat': 10, 'int_stat': 10},
+                'Void-Walker': {'wil_stat': 20, 'agi_stat': 12, 'str_stat': 5, 'hea_stat': 8, 'int_stat': 10, 'cha_stat': 5},
+                'Synth-Soul': {'int_stat': 22, 'cha_stat': 5, 'wil_stat': 15, 'str_stat': 5, 'hea_stat': 5, 'agi_stat': 8},
+                'Chrome-Crawler': {'str_stat': 18, 'agi_stat': 18, 'int_stat': 5, 'cha_stat': 5, 'hea_stat': 10, 'wil_stat': 4},
+                'Elf': {'agi_stat': 16, 'wil_stat': 12, 'hea_stat': 7, 'cha_stat': 12, 'str_stat': 8, 'int_stat': 10},
+                'Goblin': {'cha_stat': 18, 'agi_stat': 15, 'str_stat': 5, 'int_stat': 12, 'hea_stat': 8, 'wil_stat': 7},
             }
             
-            # Sanity check: stats should sum to roughly the expected amount
-            total_points = sum(stats.values())
-            if total_points > 85: # Default 60 + 25 points allowed
-                 return JsonResponse({'message': 'Stat point allocation error.'}, status=400)
-
-            # Race Modifiers
-            race_mods = {
-                'Cyborg': {'str_stat': 5, 'hea_stat': 2, 'agi_stat': -2, 'int_stat': 2},
-                'Bio-hacked': {'hea_stat': 5, 'str_stat': 2, 'cha_stat': -2},
-                'Android': {'int_stat': 8, 'wil_stat': 2, 'cha_stat': -5, 'hea_stat': -2},
-                'Mutant': {'str_stat': 3, 'hea_stat': 8, 'wil_stat': -3, 'cha_stat': -4},
-                'Human': {'cha_stat': 10, 'wil_stat': 5, 'str_stat': -5, 'hea_stat': -5},
-                'Void-Walker': {'wil_stat': 12, 'agi_stat': 5, 'str_stat': -8, 'hea_stat': -4},
-                'Synth-Soul': {'int_stat': 15, 'cha_stat': -10},
-                'Chrome-Crawler': {'str_stat': 10, 'agi_stat': 10, 'int_stat': -10, 'cha_stat': -5},
-                'Elf': {'agi_stat': 8, 'wil_stat': 4, 'hea_stat': -5},
-                'Goblin': {'cha_stat': 10, 'agi_stat': 5, 'str_stat': -8},
-            }
+            if race in race_base_stats:
+                stats.update(race_base_stats[race])
             
-            if race == 'Mutant':
-                keys = ['str_stat', 'int_stat', 'wil_stat', 'agi_stat', 'hea_stat', 'cha_stat']
-                mods = {k: 0 for k in keys}
-                for _ in range(7): mods[random.choice(keys)] += 1
-                for _ in range(3):
-                    mods[random.choice(keys)] -= 1
-                    mods[random.choice(keys)] += 1
-                race_mods['Mutant'] = mods
+            # Apply user customized distribution (up to 25 points to add)
+            if custom_stats:
+                added_points = 0
+                for s_key in ['str', 'int', 'wil', 'agi', 'hea', 'cha']:
+                    val = int(custom_stats.get(s_key, 0))
+                    if val > 0:
+                        stats[f'{s_key}_stat'] += val
+                        added_points += val
+                
+                if added_points > 25:
+                    return JsonResponse({'message': 'Stat point allocation error. Max 25 bonus points.'}, status=400)
 
+            # Class Modifiers
             class_mods = {
                 'Street Samurai': {'attack': 5, 'str_stat': 3, 'agi_stat': 2},
                 'Netrunner': {'int_stat': 5, 'mana_max': 20},
@@ -105,10 +103,6 @@ def register_view(request):
                 'Trickster': {'cha_stat': 15, 'agi_stat': 5},
             }
             
-            mods = race_mods.get(race, {})
-            for k, v in mods.items():
-                if k in stats: stats[k] += v
-                
             c_mods = class_mods.get(game_class, {})
             for k, v in c_mods.items():
                 if k in stats: stats[k] += v
@@ -219,6 +213,8 @@ def command_view(request):
             output = services.sell_item(player, args)
         elif command in ['say', "'"]:
             output = services.handle_say(player, args)
+        elif command in ['broadcast', 'bcast']:
+            output = services.handle_broadcast(player, args)
         elif command in ['help', '?']:
             output = services.get_help(player)
         elif command == 'use':

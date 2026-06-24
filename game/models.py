@@ -6,6 +6,7 @@ class Item(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
     item_type = models.CharField(max_length=50)  # weapon, armor, consumable, misc, drug, scroll
+    subtype = models.CharField(max_length=50, default='none') # e.g., 'leather', 'heavy', 'one-handed', 'two-handed'
     price = models.IntegerField(default=0)
     rarity = models.CharField(max_length=20, default='common')  # common, uncommon, rare, epic, legendary
 
@@ -143,7 +144,7 @@ class NPC(models.Model):
 
 class ChatMessage(models.Model):
     sender = models.ForeignKey(Player, on_delete=models.CASCADE)
-    room = models.ForeignKey(Room, on_delete=models.CASCADE)
+    room = models.ForeignKey(Room, on_delete=models.CASCADE, null=True, blank=True)
     message = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
 

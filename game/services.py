@@ -1,6 +1,7 @@
 import json
 import random
 from django.utils import timezone
+from django.db.models import Q
 from .models import Player, Room, NPC, Item, InventoryItem, ChatMessage
 
 # Class Ability Definitions - Learned every 4 levels until Lv 29
@@ -118,6 +119,15 @@ CLASS_MOVES = {
     ]
 }
 
+# Gear Restrictions
+GEAR_LIMITS = {
+    'Thief': {'armor': ['leather'], 'weapon': ['one-handed']},
+    'Netrunner': {'armor': ['leather', 'light'], 'weapon': ['one-handed']},
+    'Trickster': {'armor': ['leather', 'light'], 'weapon': ['one-handed']},
+    'Heavy': {'armor': ['leather', 'light', 'medium', 'heavy'], 'weapon': ['one-handed', 'two-handed']},
+    'Street Samurai': {'armor': ['leather', 'light', 'medium', 'heavy'], 'weapon': ['one-handed', 'two-handed']},
+}
+
 def get_reputation_title(karma):
     if karma >= 80: return "Saint"
     if karma >= 50: return "Paragon"
@@ -146,7 +156,8 @@ def get_help(player):
     sb.append("TOP           : Display top 10 adventurers")
     sb.append("I/INVENTORY   : List equipped and stored hardware")
     sb.append("ST/STATUS     : Detailed user profile data")
-    sb.append("SAY <msg>     : Broadcast to current sector")
+    sb.append("SAY <msg>     : Message to current sector")
+    sb.append("BROADCAST <msg>: Message to the entire world")
     sb.append("HELP/?        : Display this manual")
     sb.append("USE <item>    : Use hardware/consumable/drug/scroll")
     sb.append("TRAIN <stat>  : Spend stat points (STR, INT, WIL, AGI, HEA, CHA)")
@@ -986,13 +997,24 @@ def check_level_up(player):
 def handle_say(player, message):
     if not message: return "Say what?"
     ChatMessage.objects.create(sender=player, room=player.location, message=message)
-    return f"You broadcast: {message}"
+    return f"You say: {message}"
+
+def handle_broadcast(player, message):
+    if not message: return "Broadcast what?"
+    ChatMessage.objects.create(sender=player, room=None, message=message)
+    return f"You broadcast to the world: {message}"
 
 def get_recent_chat(player):
     cutoff = timezone.now() - timezone.timedelta(seconds=30)
-    msgs = ChatMessage.objects.filter(room=player.location, timestamp__gt=cutoff).exclude(sender=player).order_by('timestamp')
+    # Get room messages or world messages
+    msgs = ChatMessage.objects.filter(Q(room=player.location) | Q(room=None), timestamp__gt=cutoff).exclude(sender=player).order_by('timestamp')
     if not msgs: return ""
-    return "\n".join([f"[Broadcast] {m.sender.user.username}: {m.message}" for m in msgs])
+    
+    chat_lines = []
+    for m in msgs:
+        label = "[Local]" if m.room else "[Global]"
+        chat_lines.append(f"{label} {m.sender.user.username}: {m.message}")
+    return "\n".join(chat_lines)
 
 def get_inventory(player):
     items = InventoryItem.objects.filter(player=player)
@@ -1001,7 +1023,7 @@ def get_inventory(player):
     for ii in items:
         eq = " [E]" if ii.equipped else ""
         qty = f" x{ii.quantity}" if ii.quantity > 1 else ""
-        sb.append(f"  {ii.item.name}{qty}{eq}")
+        sb.append(f"  {ii.item.name}{qty}{eq} ({ii.item.subtype})")
     return "\n".join(sb)
 
 def get_item(player, item_name):
@@ -1046,6 +1068,14 @@ def equip_item(player, item_name):
         player.save()
         return f"Unequipped {ii.item.name}."
     
+    # Check restrictions
+    if ii.item.item_type in ['weapon', 'armor']:
+        limits = GEAR_LIMITS.get(player.game_class)
+        if limits:
+            allowed_subtypes = limits.get(ii.item.item_type, [])
+            if allowed_subtypes and ii.item.subtype not in allowed_subtypes:
+                return f"Incompatible hardware. {player.game_class} cannot use {ii.item.subtype} {ii.item.item_type}."
+
     if ii.item.item_type == 'weapon':
         old = InventoryItem.objects.filter(player=player, equipped=True, item__item_type='weapon').first()
         if old:
@@ -1103,7 +1133,7 @@ def list_shop(player):
         if item.item_type != current_type:
             current_type = item.item_type
             sb.append(f"\n[{current_type.upper()}]")
-        sb.append(f"  {item.name:25} {item.price} CR")
+        sb.append(f"  {item.name:25} ({item.subtype:10}) {item.price} CR")
     return "\n".join(sb)
 
 def buy_item(player, item_name):
@@ -1164,8 +1194,9 @@ def sell_item(player, item_name):
 
 def get_poll_data(player):
     cutoff = timezone.now() - timezone.timedelta(seconds=30)
-    msgs = ChatMessage.objects.filter(room=player.location, timestamp__gt=cutoff).order_by('timestamp')
-    chat = [{"player": m.sender.user.username, "message": m.message} for m in msgs]
+    # Poll world chat and local chat
+    msgs = ChatMessage.objects.filter(Q(room=player.location) | Q(room=None), timestamp__gt=cutoff).order_by('timestamp')
+    chat = [{"player": m.sender.user.username, "message": m.message, "world": (m.room is None)} for m in msgs]
     npcs = list(NPC.objects.filter(location=player.location, hp__gt=0).values('id', 'name', 'hp', 'hp_max', 'lvl', 'npc_type'))
     room_items = list(player.location.items.all().values('id', 'name')) if player.location else []
     players_here = list(Player.objects.filter(location=player.location, online=True).exclude(id=player.id).values('id', 'user__username', 'lvl', 'game_class'))
