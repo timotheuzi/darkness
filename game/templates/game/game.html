@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Darknesses BBS - MajorMUD CyberRPG Terminal</title>
+    <link rel="icon" href="data:,">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <style>
         /* MajorMUD / ANSI 16 Color Palette */
@@ -271,18 +272,21 @@
             </div>
             <div id="extraFields" style="display:none;">
                 <label>AUGMENTATION PATH (RACE)</label>
-                <select id="charRace">
-                    <option value="Human">Human</option>
-                    <option value="Elf">Elf</option>
-                    <option value="Goblin">Goblin</option>
-                    <option value="Mutant">Mutant</option>
-                    <option value="Cyborg">Cyborg</option>
-                    <option value="Android">Android</option>
-                    <option value="Bio-hacked">Bio-hacked</option>
-                    <option value="Void-Walker">Void-Walker</option>
-                    <option value="Synth-Soul">Synth-Soul</option>
-                    <option value="Chrome-Crawler">Chrome-Crawler</option>
-                </select>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <select id="charRace" onchange="applyRaceStats(this.value)" style="flex:1;">
+                        <option value="Human">Human</option>
+                        <option value="Elf">Elf</option>
+                        <option value="Goblin">Goblin</option>
+                        <option value="Mutant">Mutant</option>
+                        <option value="Cyborg">Cyborg</option>
+                        <option value="Android">Android</option>
+                        <option value="Bio-hacked">Bio-hacked</option>
+                        <option value="Void-Walker">Void-Walker</option>
+                        <option value="Synth-Soul">Synth-Soul</option>
+                        <option value="Chrome-Crawler">Chrome-Crawler</option>
+                    </select>
+                    <button type="button" class="stat-btn" onclick="rerollRaceStats()" style="width:auto; padding:0 12px; height:36px;" title="Reroll race stats">REROLL</button>
+                </div>
                 <label>OPERATIONAL CLASS</label>
                 <select id="charClass">
                     <option value="Street Samurai">Street Samurai</option>
@@ -386,6 +390,19 @@
         var isRegistering = false;
         var statPool = 25;
         var stats = { str: 10, int: 10, wil: 10, agi: 10, hea: 10, cha: 10 };
+        
+        var raceBaseStats = {
+            'Human': { str: 7, int: 10, wil: 13, agi: 10, hea: 7, cha: 18 },
+            'Elf': { str: 8, int: 10, wil: 12, agi: 16, hea: 7, cha: 12 },
+            'Goblin': { str: 5, int: 12, wil: 7, agi: 15, hea: 8, cha: 18 },
+            'Mutant': { str: 13, int: 5, wil: 7, agi: 11, hea: 18, cha: 6 },
+            'Cyborg': { str: 15, int: 12, wil: 8, agi: 8, hea: 12, cha: 5 },
+            'Android': { str: 10, int: 18, wil: 12, agi: 10, hea: 8, cha: 5 },
+            'Bio-hacked': { str: 12, int: 8, wil: 5, agi: 12, hea: 15, cha: 8 },
+            'Void-Walker': { str: 5, int: 10, wil: 20, agi: 12, hea: 8, cha: 5 },
+            'Synth-Soul': { str: 5, int: 22, wil: 15, agi: 8, hea: 5, cha: 5 },
+            'Chrome-Crawler': { str: 18, int: 5, wil: 4, agi: 18, hea: 10, cha: 5 }
+        };
 
     function changeStat(stat, delta) {
         if (delta > 0 && statPool > 0) {
@@ -404,6 +421,29 @@
                 $('#val-' + s).text(stats[s]);
             }
         }
+        
+        function applyRaceStats(race) {
+            var base = raceBaseStats[race];
+            if (!base) return;
+            statPool = 25;
+            for (var s in base) {
+                stats[s] = base[s];
+            }
+            updateStatDisplay();
+        }
+        
+        function rerollRaceStats() {
+            var race = $('#charRace').val();
+            var base = raceBaseStats[race];
+            if (!base) return;
+            statPool = 25;
+            for (var s in base) {
+                // Randomize +/- 2 points within valid range
+                var roll = base[s] + Math.floor(Math.random() * 5) - 2;
+                stats[s] = Math.max(3, Math.min(20, roll));
+            }
+            updateStatDisplay();
+        }
 
         function toggleLoginRegister() {
             isRegistering = !isRegistering;
@@ -411,6 +451,9 @@
             $('#formTitle').text(isRegistering ? 'User Initialization' : 'System Access');
             $('#actionButton').text(isRegistering ? 'Initialize' : 'Connect');
             $('#toggleForm').text(isRegistering ? 'Return to Login' : 'Initialize New Profile');
+            if (isRegistering) {
+                applyRaceStats($('#charRace').val());
+            }
         }
 
         function doLogin() {

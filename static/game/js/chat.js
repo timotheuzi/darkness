@@ -10,8 +10,6 @@ var pollIntervalMs = 4000; // Poll every 4 seconds
 
 // Initialize chat when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM loaded, initializing polling chat...');
-    
     // Fetch player info from server to get the real player name
     fetchPlayerInfo().then(function() {
         // Small delay to ensure all DOM elements are ready
@@ -36,10 +34,9 @@ function fetchPlayerInfo() {
                             playerName = response.player_name;
                             // Also update window.playerName for other scripts
                             window.playerName = playerName;
-                            console.log('Fetched player name:', playerName);
                         }
                     } catch (e) {
-                        console.error('Error parsing player info:', e);
+                        // Silently fail on parse error
                     }
                 }
                 resolve();
@@ -51,8 +48,6 @@ function fetchPlayerInfo() {
 }
 
 function initPollingChat() {
-    console.log('Initializing polling chat...');
-    
     // Set up chat input handler
     var sendButton = document.getElementById('send-chat');
     var inputField = document.getElementById('chat-input');
@@ -83,7 +78,6 @@ function initPollingChat() {
     updateChatUsersList();
     
     isChatInitialized = true;
-    console.log('Polling chat initialized successfully');
 }
 
 function startPolling() {
@@ -100,14 +94,12 @@ function startPolling() {
         fetchMessages();
     }, pollIntervalMs);
     
-    console.log('Started polling for chat messages every ' + (pollIntervalMs / 1000) + ' seconds');
 }
 
 function stopPolling() {
     if (chatPollInterval) {
         clearInterval(chatPollInterval);
         chatPollInterval = null;
-        console.log('Stopped polling');
     }
 }
 
@@ -129,10 +121,10 @@ function fetchMessages() {
                         });
                     }
                 } catch (e) {
-                    console.error('Error parsing messages:', e);
+                    // Silently fail on parse error
                 }
             } else {
-                console.error('Error fetching messages:', xhr.status);
+                // Silently fail on HTTP error
             }
         }
     };
@@ -187,7 +179,6 @@ function sendChatMessage() {
 function addChatMessage(player, message, timeStr) {
     var chatMessages = document.getElementById('chat-messages');
     if (!chatMessages) {
-        console.warn('Chat messages container not found');
         return;
     }
     
