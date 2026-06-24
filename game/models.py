@@ -100,6 +100,9 @@ class Player(models.Model):
     
     # Sneaking state
     hidden = models.BooleanField(default=False)
+    
+    # PvP notification - message shown to player on next poll
+    notification = models.TextField(default='', blank=True)
 
     def __str__(self):
         return self.user.username

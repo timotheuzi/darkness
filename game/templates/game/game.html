@@ -558,6 +558,10 @@
                         location.reload();
                         return;
                     }
+                    // Show PvP notification
+                    if (data.notification) {
+                        appendMessage('<span class="msg-combat-hit">' + data.notification.replace(/\n/g, '<br>') + '</span>');
+                    }
                     // Update side panel
                     if (data.status) updatePrompt(data.status);
                     if (data.location) $('#locDisplay').text(data.location.toUpperCase());

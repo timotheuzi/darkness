@@ -500,6 +500,9 @@ def attack_player(player, target_name):
         return f"Target level too distant ({target.lvl}). You can only attack users within 3 levels of your own."
 
     output = f"\n*** PVP COMBAT INITIATED: {player.user.username} VS {target.user.username} ***"
+    # Build defender notification
+    defender_output = f"\n*** PVP COMBAT INITIATED: {player.user.username} VS {target.user.username} ***"
+    
     player.karma -= 10 # Murder is bad
     player.save()
     
@@ -509,6 +512,7 @@ def attack_player(player, target_name):
         player.hidden = False
         player.save()
         output += "\n[BACKSTAB] You catch them completely off guard!"
+        defender_output += "\n[BACKSTAB] They caught you completely off guard!"
     
     first_round = True
     for _ in range(3):
@@ -524,6 +528,7 @@ def attack_player(player, target_name):
             target.hp -= dmg
             target.save()
             output += f"\nYou hit {target.user.username} for {dmg} damage."
+            defender_output += f"\n{player.user.username} hits you for {dmg} damage."
             if target.hp <= 0: break
             
         if target.hp <= 0:
@@ -536,6 +541,7 @@ def attack_player(player, target_name):
             target.hp = target.hp_max // 2
             target.money -= stolen
             target.location = hub
+            target.notification = defender_output + f"\nYou were neutralized by {player.user.username}! Lost {stolen} credits."
             target.save()
             output += f"\nYou neutralized {target.user.username}! +{exp_gain} exp, +{stolen} credits."
             output += check_level_up(player)
@@ -558,6 +564,7 @@ def attack_player(player, target_name):
             player.hp -= counter_dmg
             player.save()
             output += f"\n{target.user.username} hits you for {counter_dmg} damage."
+            defender_output += f"\nYou hit {player.user.username} for {counter_dmg} damage."
             if player.hp <= 0: break
 
         if player.hp <= 0:
@@ -572,10 +579,16 @@ def attack_player(player, target_name):
             player.location = hub
             player.save()
             output += f"\nRespawned at The Neon Hub. {target.user.username} took {stolen} credits."
+            # Notify defender they won
+            target.notification = defender_output + f"\nYou neutralized {player.user.username}! +{target.lvl * 50} exp, +{stolen} credits."
+            target.save()
             return output
         
         first_round = False
 
+    # Combat ended without defeat - store partial combat log for defender
+    target.notification = defender_output + "\n[COMBAT] The skirmish ended. Stay alert."
+    target.save()
     return output
 
 def attack_target(player, target_name):
@@ -1200,7 +1213,15 @@ def get_poll_data(player):
     npcs = list(NPC.objects.filter(location=player.location, hp__gt=0).values('id', 'name', 'hp', 'hp_max', 'lvl', 'npc_type'))
     room_items = list(player.location.items.all().values('id', 'name')) if player.location else []
     players_here = list(Player.objects.filter(location=player.location, online=True).exclude(id=player.id).values('id', 'user__username', 'lvl', 'game_class'))
+    
+    # PvP notification
+    notification = player.notification
+    if notification:
+        player.notification = ''
+        player.save(update_fields=['notification'])
+    
     return {
         "chat": chat, "npcs": npcs, "items": room_items, "players": players_here,
         "status": get_status_str(player), "location": player.location.name if player.location else "Unknown",
+        "notification": notification,
     }
