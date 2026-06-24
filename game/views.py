@@ -54,7 +54,6 @@ def register_view(request):
             )[0]
             
             # Starting Stats based on Race
-            # Base for everyone is 10, then modified by race
             stats = {
                 'str_stat': 10, 'int_stat': 10, 'wil_stat': 10,
                 'agi_stat': 10, 'hea_stat': 10, 'cha_stat': 10,
@@ -76,17 +75,19 @@ def register_view(request):
             if race in race_base_stats:
                 stats.update(race_base_stats[race])
             
-            # Apply user customized distribution (up to 25 points to add)
+            # Apply user customized distribution (bonus points added to racial base)
+            # The frontend starts with 60 base points (10 per stat) and 25 bonus pool (Total 85).
             if custom_stats:
-                added_points = 0
+                total_sum = 0
                 for s_key in ['str', 'int', 'wil', 'agi', 'hea', 'cha']:
-                    val = int(custom_stats.get(s_key, 0))
-                    if val > 0:
-                        stats[f'{s_key}_stat'] += val
-                        added_points += val
+                    val = int(custom_stats.get(s_key, 10))
+                    total_sum += val
+                    # Apply the user's deviation from the standard base (10) to the racial base
+                    delta = val - 10
+                    stats[f'{s_key}_stat'] += delta
                 
-                if added_points > 25:
-                    return JsonResponse({'message': 'Stat point allocation error. Max 25 bonus points.'}, status=400)
+                if total_sum > 85:
+                    return JsonResponse({'message': f'Stat point allocation error. Max total points is 85 (You assigned {total_sum}).'}, status=400)
 
             # Class Modifiers
             class_mods = {

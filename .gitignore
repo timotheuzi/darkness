@@ -16,7 +16,7 @@ gradlew
 *.ipr
 
 ### Python ###
-.venv/
+.venv/Stat point allocation error. Max 25 bonus points.
 __pycache__/
 *.pyc
 *.pyo
