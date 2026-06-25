@@ -12,23 +12,23 @@ from game.models import NPC, Item, Room, GameWorld, Player
 # ── Data Tables ──────────────────────────────────────────────────────────────
 
 WEAPON_TABLE = [
-    ("Stun Baton", "Standard issue security baton.", 5, 50, "common", 2, {}),
-    ("Mono-Blade", "Vibrating edge for clean cuts.", 12, 300, "uncommon", 5, {"agi_bonus": 2}),
-    ("Heavy Slugger", "High-caliber kinetic pistol.", 20, 750, "uncommon", -2, {"str_bonus": 1}),
-    ("Laser Drill", "Industrial tool repurposed for violence.", 15, 450, "uncommon", 0, {"int_bonus": 2}),
-    ("Plasma Caster", "Superheated plasma bolt launcher.", 28, 1200, "rare", -3, {"wil_bonus": 3}),
-    ("Neural Spike", "Disrupts cybernetic implants.", 35, 2000, "rare", 8, {"int_bonus": 5}),
-    ("Railgun", "Electromagnetic accelerator.", 50, 5000, "epic", -5, {"str_bonus": 8}),
-    ("Void Blade", "Cuts through dimensions.", 80, 15000, "legendary", 10, {"agi_bonus": 10, "wil_bonus": 10}),
-    ("EMP Grenade", "Disables electronics in radius.", 10, 200, "common", 0, {}),
-    ("Cyber Katana", "Monomolecular edge blade.", 25, 900, "rare", 6, {"agi_bonus": 4}),
-    ("Phase Ripper", "High-frequency claw.", 30, 1500, "rare", 7, {"agi_bonus": 3, "str_bonus": 2}),
-    ("Gravity Hammer", "Crushes armor with ease.", 45, 3500, "epic", -8, {"str_bonus": 12}),
-    ("Hand Cannon", "Massive firepower in a small package.", 35, 2500, "rare", -4, {"str_bonus": 5, "hea_bonus": 2}),
-    ("Vibro-Knife", "Rapid vibration cuts through mesh.", 18, 600, "uncommon", 12, {"agi_bonus": 5}),
-    ("Shock Gloves", "Deliver lethal voltage on contact.", 15, 800, "uncommon", 8, {"str_bonus": 2, "agi_bonus": 2}),
-    ("Sniper Rail", "Long-range magnetic projectile.", 55, 6000, "epic", -10, {"int_bonus": 8, "agi_bonus": 4}),
-    ("Toxic Dart Gun", "Injects neurotoxins silently.", 22, 1800, "rare", 5, {"int_bonus": 6, "cha_bonus": 3}),
+    ("Stun Baton", "Standard issue security baton.", 5, 50, "common", 2, "one-handed", {}),
+    ("Mono-Blade", "Vibrating edge for clean cuts.", 12, 300, "uncommon", 5, "one-handed", {"agi_bonus": 2}),
+    ("Heavy Slugger", "High-caliber kinetic pistol.", 20, 750, "uncommon", -2, "one-handed", {"str_bonus": 1}),
+    ("Laser Drill", "Industrial tool repurposed for violence.", 15, 450, "uncommon", 0, "one-handed", {"int_bonus": 2}),
+    ("Plasma Caster", "Superheated plasma bolt launcher.", 28, 1200, "rare", -3, "two-handed", {"wil_bonus": 3}),
+    ("Neural Spike", "Disrupts cybernetic implants.", 35, 2000, "rare", 8, "one-handed", {"int_bonus": 5}),
+    ("Railgun", "Electromagnetic accelerator.", 50, 5000, "epic", -5, "two-handed", {"str_bonus": 8}),
+    ("Void Blade", "Cuts through dimensions.", 80, 15000, "legendary", 10, "one-handed", {"agi_bonus": 10, "wil_bonus": 10}),
+    ("EMP Grenade", "Disables electronics in radius.", 10, 200, "common", 0, "one-handed", {}),
+    ("Cyber Katana", "Monomolecular edge blade.", 25, 900, "rare", 6, "one-handed", {"agi_bonus": 4}),
+    ("Phase Ripper", "High-frequency claw.", 30, 1500, "rare", 7, "one-handed", {"agi_bonus": 3, "str_bonus": 2}),
+    ("Gravity Hammer", "Crushes armor with ease.", 45, 3500, "epic", -8, "two-handed", {"str_bonus": 12}),
+    ("Hand Cannon", "Massive firepower in a small package.", 35, 2500, "rare", -4, "one-handed", {"str_bonus": 5, "hea_bonus": 2}),
+    ("Vibro-Knife", "Rapid vibration cuts through mesh.", 18, 600, "uncommon", 12, "one-handed", {"agi_bonus": 5}),
+    ("Shock Gloves", "Deliver lethal voltage on contact.", 15, 800, "uncommon", 8, "one-handed", {"str_bonus": 2, "agi_bonus": 2}),
+    ("Sniper Rail", "Long-range magnetic projectile.", 55, 6000, "epic", -10, "two-handed", {"int_bonus": 8, "agi_bonus": 4}),
+    ("Toxic Dart Gun", "Injects neurotoxins silently.", 22, 1800, "rare", 5, "one-handed", {"int_bonus": 6, "cha_bonus": 3}),
 ]
 
 DRUG_TABLE = [
@@ -43,36 +43,36 @@ DRUG_TABLE = [
 
 BOSS_WEAPONS = {
     "slums": [
-        ("Street King's Shiv", "A jagged blade that reeks of the gutters.", 40, 0, "epic", 12, {"agi_bonus": 8, "cha_bonus": 5}),
-        ("Gutter Brawler's Knuckles", "Weighted with lead and street history.", 35, 0, "epic", 8, {"str_bonus": 10, "hea_bonus": 5})
+        ("Street King's Shiv", "A jagged blade that reeks of the gutters.", 40, 0, "epic", 12, "one-handed", {"agi_bonus": 8, "cha_bonus": 5}),
+        ("Gutter Brawler's Knuckles", "Weighted with lead and street history.", 35, 0, "epic", 8, "one-handed", {"str_bonus": 10, "hea_bonus": 5})
     ],
     "industrial": [
-        ("Forge-Master's Wrench", "Massive industrial tool.", 55, 0, "epic", -4, {"str_bonus": 15, "hea_bonus": 5}),
-        ("Steam-Powered Piercer", "Hisses with pressure.", 50, 0, "epic", 2, {"str_bonus": 8, "wil_bonus": 5})
+        ("Forge-Master's Wrench", "Massive industrial tool.", 55, 0, "epic", -4, "two-handed", {"str_bonus": 15, "hea_bonus": 5}),
+        ("Steam-Powered Piercer", "Hisses with pressure.", 50, 0, "epic", 2, "one-handed", {"str_bonus": 8, "wil_bonus": 5})
     ],
     "corporate": [
-        ("CEO's Golden Handgun", "Fires solid gold rounds.", 70, 0, "legendary", 5, {"cha_bonus": 20, "int_bonus": 10}),
-        ("Director's Neural Whip", "Agony in fiber-optic form.", 60, 0, "legendary", 15, {"int_bonus": 15, "cha_bonus": 10})
+        ("CEO's Golden Handgun", "Fires solid gold rounds.", 70, 0, "legendary", 5, "one-handed", {"cha_bonus": 20, "int_bonus": 10}),
+        ("Director's Neural Whip", "Agony in fiber-optic form.", 60, 0, "legendary", 15, "one-handed", {"int_bonus": 15, "cha_bonus": 10})
     ],
     "undergrid": [
-        ("Source Code Fragment", "Pure data manifested as a weapon.", 85, 0, "legendary", 15, {"int_bonus": 25}),
-        ("Malware Spike", "Infects reality itself.", 75, 0, "legendary", 10, {"int_bonus": 20, "wil_bonus": 10})
+        ("Source Code Fragment", "Pure data manifested as a weapon.", 85, 0, "legendary", 15, "one-handed", {"int_bonus": 25}),
+        ("Malware Spike", "Infects reality itself.", 75, 0, "legendary", 10, "one-handed", {"int_bonus": 20, "wil_bonus": 10})
     ],
     "neon": [
-        ("Diva's Sonic Lash", "Vibrates at lethal frequencies.", 50, 0, "rare", 10, {"cha_bonus": 12, "agi_bonus": 5}),
-        ("Club Owner's Cane", "Hidden blade, refined taste.", 45, 0, "rare", 5, {"cha_bonus": 15, "wil_bonus": 5})
+        ("Diva's Sonic Lash", "Vibrates at lethal frequencies.", 50, 0, "rare", 10, "one-handed", {"cha_bonus": 12, "agi_bonus": 5}),
+        ("Club Owner's Cane", "Hidden blade, refined taste.", 45, 0, "rare", 5, "one-handed", {"cha_bonus": 15, "wil_bonus": 5})
     ],
     "wastes": [
-        ("Wasteland Harvester", "A brutal tool of survival.", 65, 0, "epic", -2, {"str_bonus": 10, "hea_bonus": 15}),
-        ("Scavenger's Crossbow", "Fires rusted rebar.", 60, 0, "epic", -5, {"agi_bonus": 12, "hea_bonus": 8})
+        ("Wasteland Harvester", "A brutal tool of survival.", 65, 0, "epic", -2, "two-handed", {"str_bonus": 10, "hea_bonus": 15}),
+        ("Scavenger's Crossbow", "Fires rusted rebar.", 60, 0, "epic", -5, "two-handed", {"agi_bonus": 12, "hea_bonus": 8})
     ],
     "nexus": [
-        ("Nexus Core Blade", "Pulsing with infinite energy.", 95, 0, "legendary", 12, {"int_bonus": 15, "wil_bonus": 15}),
-        ("Protocol Breaker", "A hammer that shatters firewalls.", 90, 0, "legendary", -5, {"str_bonus": 15, "int_bonus": 15})
+        ("Nexus Core Blade", "Pulsing with infinite energy.", 95, 0, "legendary", 12, "one-handed", {"int_bonus": 15, "wil_bonus": 15}),
+        ("Protocol Breaker", "A hammer that shatters firewalls.", 90, 0, "legendary", -5, "two-handed", {"str_bonus": 15, "int_bonus": 15})
     ],
     "undercity": [
-        ("Shadow's Embrace", "A dagger that drinks light.", 110, 0, "legendary", 20, {"agi_bonus": 25}),
-        ("Crypt-Keeper's Scythe", "Harvests the code of the dead.", 105, 0, "legendary", -10, {"wil_bonus": 30})
+        ("Shadow's Embrace", "A dagger that drinks light.", 110, 0, "legendary", 20, "one-handed", {"agi_bonus": 25}),
+        ("Crypt-Keeper's Scythe", "Harvests the code of the dead.", 105, 0, "legendary", -10, "two-handed", {"wil_bonus": 30})
     ],
 }
 
@@ -376,11 +376,11 @@ class Command(BaseCommand):
 
     def _create_items(self):
         pool = []
-        for name, desc, atk, price, rarity, speed, bonuses in WEAPON_TABLE:
+        for name, desc, atk, price, rarity, speed, subtype, bonuses in WEAPON_TABLE:
             pool.append(Item.objects.create(
                 name=name, description=desc, item_type='weapon',
                 attack_bonus=atk, price=price, rarity=rarity, speed_bonus=speed,
-                **bonuses))
+                subtype=subtype, **bonuses))
         for name, desc, dfn, price, rarity, bonuses in ARMOR_TABLE:
             pool.append(Item.objects.create(
                 name=name, description=desc, item_type='armor',
@@ -506,11 +506,11 @@ class Command(BaseCommand):
         if hub.shop_name:
             hub_weapons = random.sample(WEAPON_TABLE, min(4, len(WEAPON_TABLE)))
             for weapon_data in hub_weapons:
-                name, desc, atk, price, rarity, speed, bonuses = weapon_data
+                name, desc, atk, price, rarity, speed, subtype, bonuses = weapon_data
                 weapon = Item.objects.create(
                     name=name, description=desc, item_type='weapon',
                     attack_bonus=atk, price=price, rarity=rarity,
-                    speed_bonus=speed, **bonuses
+                    speed_bonus=speed, subtype=subtype, **bonuses
                 )
                 hub.shop_inventory.add(weapon)
             hub_armor = random.sample(ARMOR_TABLE, min(3, len(ARMOR_TABLE)))
@@ -547,11 +547,11 @@ class Command(BaseCommand):
                 
                 selected_weapons = random.sample(available_weapons, min(num_weapons, len(available_weapons)))
                 for weapon_data in selected_weapons:
-                    name, desc, atk, price, rarity, speed, bonuses = weapon_data
+                    name, desc, atk, price, rarity, speed, subtype, bonuses = weapon_data
                     weapon = Item.objects.create(
                         name=name, description=desc, item_type='weapon',
                         attack_bonus=atk, price=price, rarity=rarity,
-                        speed_bonus=speed, **bonuses
+                        speed_bonus=speed, subtype=subtype, **bonuses
                     )
                     shop_room.shop_inventory.add(weapon)
                 
@@ -592,11 +592,11 @@ class Command(BaseCommand):
                 boss_info = zone['bosses'][0] if "A" in room.name or "C" in room.name else zone['bosses'][1]
                 bw_list = BOSS_WEAPONS.get(room.zone, [])
                 bw_info = bw_list[0] if boss_info == zone['bosses'][0] else bw_list[1]
-                name, bdesc, batk, bprice, brarity, bspeed, bbonuses = bw_info
+                name, bdesc, batk, bprice, brarity, bspeed, bsubtype, bbonuses = bw_info
                 unique_weapon = Item.objects.create(
                     name=name, description=bdesc, item_type='weapon',
                     attack_bonus=batk, price=bprice, rarity=brarity, 
-                    speed_bonus=bspeed, **bbonuses
+                    speed_bonus=bspeed, subtype=bsubtype, **bbonuses
                 )
                 boss = NPC.objects.create(
                     name=boss_info['name'], description=boss_info['desc'],

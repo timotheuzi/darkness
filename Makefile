@@ -12,6 +12,7 @@ PYTHONANYWHERE_VENV := venv
 PYTHONANYWHERE_PYTHON := $(PYTHONANYWHERE_VENV)/bin/python
 PYTHONANYWHERE_MANAGE := $(PYTHONANYWHERE_PYTHON) manage.py
 PYTHONANYWHERE_SETTINGS := darkness_django.settings.production
+PYTHONANYWHERE_SETTINGS := darkness_django.settings.production
 
 help: ## Show this help message
 	@echo "Usage: make [target]"
