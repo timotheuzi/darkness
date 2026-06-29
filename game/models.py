@@ -5,10 +5,13 @@ from django.contrib.auth.models import User
 class Item(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
-    item_type = models.CharField(max_length=50)  # weapon, armor, consumable, misc, drug, scroll
-    subtype = models.CharField(max_length=50, default='none') # e.g., 'leather', 'heavy', 'one-handed', 'two-handed'
+    # weapon, armor, consumable, misc, drug, scroll
+    item_type = models.CharField(max_length=50)
+    # e.g., 'leather', 'heavy', 'one-handed', 'two-handed'
+    subtype = models.CharField(max_length=50, default='none')
     price = models.IntegerField(default=0)
-    rarity = models.CharField(max_length=20, default='common')  # common, uncommon, rare, epic, legendary
+    # common, uncommon, rare, epic, legendary
+    rarity = models.CharField(max_length=20, default='common')
 
     # Weapon/Armor stats
     attack_bonus = models.IntegerField(default=0)
@@ -23,13 +26,15 @@ class Item(models.Model):
     agi_bonus = models.IntegerField(default=0)
     hea_bonus = models.IntegerField(default=0)
     cha_bonus = models.IntegerField(default=0)
-    
-    # Elemental stats
-    element = models.CharField(max_length=20, default='physical') # physical, fire, water, earth, air
-    
+
+    # physical, fire, water, earth, air
+    element = models.CharField(max_length=20, default='physical')
+
     # Drug/Scroll effects
     addiction_chance = models.FloatField(default=0.0)
-    warp_to_room = models.ForeignKey('Room', on_delete=models.SET_NULL, null=True, blank=True, related_name='warp_items')
+    warp_to_room = models.ForeignKey(
+        'Room', on_delete=models.SET_NULL, null=True, blank=True, related_name='warp_items'
+    )
 
     def __str__(self):
         return self.name
@@ -73,15 +78,17 @@ class Player(models.Model):
     agi_stat = models.IntegerField(default=10)
     hea_stat = models.IntegerField(default=10)
     cha_stat = models.IntegerField(default=10)
-    
+
     stat_points = models.IntegerField(default=0)
 
     attack = models.IntegerField(default=10)
     defense = models.IntegerField(default=5)
 
     location = models.ForeignKey(Room, on_delete=models.SET_NULL, null=True)
-    race = models.CharField(max_length=50) # Cyborg, Bio-hacked, Android, Mutant, Human
-    game_class = models.CharField(max_length=50) # Street Samurai, Netrunner, Techie, Medie, Fixer
+    # Cyborg, Bio-hacked, Android, Mutant, Human
+    race = models.CharField(max_length=50)
+    # Street Samurai, Netrunner, Techie, Medie, Fixer
+    game_class = models.CharField(max_length=50)
     online = models.BooleanField(default=False)
     last_seen = models.DateTimeField(auto_now=True)
 
@@ -89,18 +96,20 @@ class Player(models.Model):
     karma = models.IntegerField(default=0)
 
     inventory = models.ManyToManyField(Item, through='InventoryItem')
-    
+
     # Drug/Addiction System
-    addiction_points = models.IntegerField(default=0) # 0 to 100
-    withdrawal_timer = models.IntegerField(default=0) # ticks since last use
-    
+    addiction_points = models.IntegerField(default=0)  # 0 to 100
+    withdrawal_timer = models.IntegerField(default=0)  # ticks since last use
+
     # Combat/Stalking state
-    last_combat_npc = models.ForeignKey('NPC', on_delete=models.SET_NULL, null=True, blank=True, related_name='stalking_players')
+    last_combat_npc = models.ForeignKey(
+        'NPC', on_delete=models.SET_NULL, null=True, blank=True, related_name='stalking_players'
+    )
     stalk_count = models.IntegerField(default=0)
-    
+
     # Sneaking state
     hidden = models.BooleanField(default=False)
-    
+
     # PvP notification - message shown to player on next poll
     notification = models.TextField(default='', blank=True)
 
@@ -127,13 +136,14 @@ class NPC(models.Model):
     money_drop = models.IntegerField()
     exp_drop = models.IntegerField()
     aggressive = models.BooleanField(default=True)
-    npc_type = models.CharField(max_length=50, default='drone')  # drone, gang, corporate, boss, dealer, vigilante
+    # drone, gang, corporate, boss, dealer, vigilante
+    npc_type = models.CharField(max_length=50, default='drone')
     respawnable = models.BooleanField(default=True)
-    
-    # Karma Alignment: -100 to 100. 
+
+    # Karma Alignment: -100 to 100.
     # Positive alignment NPCs attack negative karma players and vice versa.
     karma_alignment = models.IntegerField(default=0)
-    
+
     # Elemental system
     element = models.CharField(max_length=20, default='physical')
     weakness = models.CharField(max_length=20, default='none')

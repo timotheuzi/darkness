@@ -13,7 +13,7 @@ print("=" * 60)
 wsgi_path = 'darkness_django/wsgi.py'
 with open(wsgi_path, 'r') as f:
     wsgi_content = f.read()
-    
+
 if 'darkness_django.settings' in wsgi_content:
     print("✓ WSGI file has correct settings module path")
 else:
@@ -34,7 +34,7 @@ print("=" * 60)
 prod_path = 'darkness_django/settings/production.py'
 with open(prod_path, 'r') as f:
     prod_content = f.read()
-    
+
 if 'DEBUG = False' in prod_content:
     print("✓ Production DEBUG is set to False")
 else:
@@ -67,7 +67,7 @@ print("=" * 60)
 base_path = 'darkness_django/settings/base.py'
 with open(base_path, 'r') as f:
     base_content = f.read()
-    
+
 if 'import environ' in base_content:
     print("✓ django-environ is imported")
 else:
@@ -93,7 +93,7 @@ print("=" * 60)
 
 with open('requirements/prod.txt', 'r') as f:
     prod_reqs = f.read()
-    
+
 if 'django-environ' in prod_reqs or 'base.txt' in prod_reqs:
     print("✓ django-environ in production requirements")
 else:
@@ -119,7 +119,7 @@ print("=" * 60)
 
 with open('.gitignore', 'r') as f:
     gitignore = f.read()
-    
+
 if 'db.sqlite3' in gitignore or '*.sqlite3' in gitignore:
     print("✓ Database files are ignored")
 else:
@@ -147,13 +147,13 @@ if os.path.exists('DEPLOY_PYTHONANYWHERE.md'):
     print("✓ DEPLOY_PYTHONANYWHERE.md exists")
     with open('DEPLOY_PYTHONANYWHERE.md', 'r') as f:
         deploy_doc = f.read()
-    
+
     if 'WSGI' in deploy_doc:
         print("✓ Deployment doc includes WSGI configuration")
     else:
         print("✗ Deployment doc missing WSGI configuration")
         sys.exit(1)
-    
+
     if 'static' in deploy_doc.lower():
         print("✓ Deployment doc includes static files configuration")
     else:

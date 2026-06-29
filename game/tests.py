@@ -1,6 +1,8 @@
+import json
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from .models import Player, Room, NPC, Item, InventoryItem, ChatMessage
+
 
 class GameLogicTests(TestCase):
     def setUp(self):
@@ -22,14 +24,22 @@ class GameLogicTests(TestCase):
         self.client.login(username="neo", password="password")
 
     def test_look_command(self):
-        response = self.client.post('/command/', data={'command': 'look'}, content_type='application/json')
+        response = self.client.post(
+            '/command/',
+            data=json.dumps({'command': 'look'}),
+            content_type='application/json'
+        )
         self.assertEqual(response.status_code, 200)
         output = response.json()['output']
         self.assertIn("Hub", output)
         self.assertIn("The center.", output)
 
     def test_movement(self):
-        response = self.client.post('/command/', data={'command': 'north'}, content_type='application/json')
+        response = self.client.post(
+            '/command/',
+            data=json.dumps({'command': 'north'}),
+            content_type='application/json'
+        )
         self.assertEqual(response.status_code, 200)
         self.player.refresh_from_db()
         self.assertEqual(self.player.location.id, 2)
@@ -40,7 +50,11 @@ class GameLogicTests(TestCase):
             name="Drone", location=self.hub, hp=20, hp_max=20,
             attack=5, defense=2, lvl=1, money_drop=10, exp_drop=10
         )
-        response = self.client.post('/command/', data={'command': 'attack drone'}, content_type='application/json')
+        response = self.client.post(
+            '/command/',
+            data=json.dumps({'command': 'attack drone'}),
+            content_type='application/json'
+        )
         self.assertEqual(response.status_code, 200)
         npc.refresh_from_db()
         self.assertLess(npc.hp, 20)
@@ -50,8 +64,12 @@ class GameLogicTests(TestCase):
         self.hub.shop_name = "General Store"
         self.hub.save()
         item = Item.objects.create(name="Battery", price=20, item_type="misc")
-        
-        response = self.client.post('/command/', data={'command': 'buy battery'}, content_type='application/json')
+
+        response = self.client.post(
+            '/command/',
+            data=json.dumps({'command': 'buy battery'}),
+            content_type='application/json'
+        )
         self.assertEqual(response.status_code, 200)
         self.player.refresh_from_db()
         self.assertEqual(self.player.money, 30)
@@ -60,22 +78,34 @@ class GameLogicTests(TestCase):
     def test_equip_item(self):
         item = Item.objects.create(name="Laser", item_type="weapon", attack_bonus=5)
         InventoryItem.objects.create(player=self.player, item=item)
-        
-        response = self.client.post('/command/', data={'command': 'equip laser'}, content_type='application/json')
+
+        response = self.client.post(
+            '/command/',
+            data=json.dumps({'command': 'equip laser'}),
+            content_type='application/json'
+        )
         self.assertEqual(response.status_code, 200)
         self.player.refresh_from_db()
         self.assertEqual(self.player.attack, 15)
-        
+
         ii = InventoryItem.objects.get(player=self.player, item=item)
         self.assertTrue(ii.equipped)
 
     def test_say_command(self):
-        response = self.client.post('/command/', data={'command': 'say hello world'}, content_type='application/json')
+        response = self.client.post(
+            '/command/',
+            data=json.dumps({'command': 'say hello world'}),
+            content_type='application/json'
+        )
         self.assertEqual(response.status_code, 200)
-        self.assertIn("You broadcast: hello world", response.json()['output'])
+        self.assertIn("You say: hello world", response.json()['output'])
         self.assertTrue(ChatMessage.objects.filter(message="hello world").exists())
 
     def test_who_command(self):
-        response = self.client.post('/command/', data={'command': 'who'}, content_type='application/json')
+        response = self.client.post(
+            '/command/',
+            data=json.dumps({'command': 'who'}),
+            content_type='application/json'
+        )
         self.assertEqual(response.status_code, 200)
         self.assertIn("neo", response.json()['output'])

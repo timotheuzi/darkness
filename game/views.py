@@ -1,11 +1,11 @@
 import json
-import random
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
 from django.db import OperationalError
+from django.utils import timezone
 from .models import Player, Room
 from . import services
 
@@ -14,7 +14,8 @@ def index(request):
     try:
         return render(request, 'game/game.html')
     except OperationalError:
-        return JsonResponse({'error': 'Database is being initialized. Please refresh in a moment.'}, status=503)
+        return JsonResponse({'error': 'Database is being initialized. Please refresh in a moment.'},
+                            status=503)
 
 
 @csrf_exempt
@@ -24,7 +25,7 @@ def register_view(request):
         password = request.POST.get('password')
         race = request.POST.get('race', 'Human')
         game_class = request.POST.get('gameClass', 'Street Samurai')
-        
+
         # User customized stats
         custom_stats_json = request.POST.get('stats')
         custom_stats = {}
@@ -36,7 +37,7 @@ def register_view(request):
 
         if not name or not password:
             return JsonResponse({'message': 'Name and password required.'}, status=400)
-        
+
         try:
             if User.objects.filter(username=name).exists():
                 return JsonResponse({'message': 'Handle already in use.'}, status=400)
@@ -46,13 +47,13 @@ def register_view(request):
                 id=1,
                 defaults={
                     'name': 'The Neon Hub',
-                    'description': 'A bustling intersection of neon lights and rainy streets. The center of the grid.',
+                    'description': 'A bustling intersection of neon lights and rainy streets.',
                     'zone': 'hub',
                     'theme': 'urban',
                     'safe_zone': True
                 }
             )[0]
-            
+
             # Starting Stats based on Race
             stats = {
                 'str_stat': 10, 'int_stat': 10, 'wil_stat': 10,
@@ -60,23 +61,32 @@ def register_view(request):
             }
 
             race_base_stats = {
-                'Cyborg': {'str_stat': 15, 'hea_stat': 12, 'agi_stat': 8, 'int_stat': 12, 'cha_stat': 5, 'wil_stat': 8},
-                'Bio-hacked': {'hea_stat': 15, 'str_stat': 12, 'cha_stat': 8, 'agi_stat': 12, 'int_stat': 8, 'wil_stat': 5},
-                'Android': {'int_stat': 17, 'wil_stat': 12, 'cha_stat': 5, 'hea_stat': 8, 'str_stat': 10, 'agi_stat': 8},
-                'Mutant': {'str_stat': 13, 'hea_stat': 18, 'wil_stat': 7, 'cha_stat': 6, 'agi_stat': 11, 'int_stat': 5},
-                'Human': {'cha_stat': 15, 'wil_stat': 13, 'str_stat': 7, 'hea_stat': 7, 'agi_stat': 10, 'int_stat': 8},
-                'Void-Walker': {'wil_stat': 20, 'agi_stat': 12, 'str_stat': 5, 'hea_stat': 8, 'int_stat': 10, 'cha_stat': 5},
-                'Synth-Soul': {'int_stat': 22, 'cha_stat': 5, 'wil_stat': 15, 'str_stat': 5, 'hea_stat': 5, 'agi_stat': 8},
-                'Chrome-Crawler': {'str_stat': 18, 'agi_stat': 18, 'int_stat': 5, 'cha_stat': 5, 'hea_stat': 10, 'wil_stat': 4},
-                'Elf': {'agi_stat': 14, 'wil_stat': 10, 'hea_stat': 7, 'cha_stat': 12, 'str_stat': 8, 'int_stat': 9},
-                'Goblin': {'cha_stat': 15, 'agi_stat': 13, 'str_stat': 5, 'int_stat': 12, 'hea_stat': 8, 'wil_stat': 7},
+                'Cyborg': {'str_stat': 15, 'hea_stat': 12, 'agi_stat': 8, 'int_stat': 12,
+                           'cha_stat': 5, 'wil_stat': 8},
+                'Bio-hacked': {'hea_stat': 15, 'str_stat': 12, 'cha_stat': 8, 'agi_stat': 12,
+                               'int_stat': 8, 'wil_stat': 5},
+                'Android': {'int_stat': 17, 'wil_stat': 12, 'cha_stat': 5, 'hea_stat': 8,
+                            'str_stat': 10, 'agi_stat': 8},
+                'Mutant': {'str_stat': 13, 'hea_stat': 18, 'wil_stat': 7, 'cha_stat': 6,
+                           'agi_stat': 11, 'int_stat': 5},
+                'Human': {'cha_stat': 15, 'wil_stat': 13, 'str_stat': 7, 'hea_stat': 7,
+                          'agi_stat': 10, 'int_stat': 8},
+                'Void-Walker': {'wil_stat': 20, 'agi_stat': 12, 'str_stat': 5, 'hea_stat': 8,
+                                'int_stat': 10, 'cha_stat': 5},
+                'Synth-Soul': {'int_stat': 22, 'cha_stat': 5, 'wil_stat': 15, 'str_stat': 5,
+                               'hea_stat': 5, 'agi_stat': 8},
+                'Chrome-Crawler': {'str_stat': 18, 'agi_stat': 18, 'int_stat': 5, 'cha_stat': 5,
+                                   'hea_stat': 10, 'wil_stat': 4},
+                'Elf': {'agi_stat': 14, 'wil_stat': 10, 'hea_stat': 7, 'cha_stat': 12,
+                        'str_stat': 8, 'int_stat': 9},
+                'Goblin': {'cha_stat': 15, 'agi_stat': 13, 'str_stat': 5, 'int_stat': 12,
+                           'hea_stat': 8, 'wil_stat': 7},
             }
-            
+
             if race in race_base_stats:
                 stats.update(race_base_stats[race])
-            
+
             # Apply user customized distribution (bonus points added to racial base)
-            # The frontend starts with 60 base points (10 per stat) and 20 bonus pool (Total 80).
             if custom_stats:
                 total_sum = 0
                 for s_key in ['str', 'int', 'wil', 'agi', 'hea', 'cha']:
@@ -85,11 +95,14 @@ def register_view(request):
                     # Apply the user's deviation from the standard base (10) to the racial base
                     delta = val - 10
                     stats[f'{s_key}_stat'] += delta
-                
+
                 if total_sum > 80:
-                    return JsonResponse({'message': f'Stat point allocation error. Max total points is 80 (You assigned {total_sum}).'}, status=400)
-            
-            # Class Modifiers (only affect derived stats, not base stats)
+                    return JsonResponse({
+                        'message': f'Stat point allocation error. Max total points is 80 '
+                                   f'(You assigned {total_sum}).'
+                    }, status=400)
+
+            # Class Modifiers
             class_mods = {
                 'Street Samurai': {'attack': 5},
                 'Netrunner': {'mana_max': 20},
@@ -103,11 +116,12 @@ def register_view(request):
                 'Priest': {'hp_max': 25},
                 'Trickster': {},
             }
-            
+
             c_mods = class_mods.get(game_class, {})
             for k, v in c_mods.items():
-                if k in stats: stats[k] += v
-                
+                if k in stats:
+                    stats[k] += v
+
             # Initialize derived stats
             stats['attack'] = 10 + (stats['str_stat'] // 2) + c_mods.get('attack', 0)
             stats['defense'] = 5 + (stats['agi_stat'] // 2) + c_mods.get('defense', 0)
@@ -115,7 +129,7 @@ def register_view(request):
             stats['hp'] = stats['hp_max']
             stats['mana_max'] = 20 + (stats['wil_stat'] * 2) + c_mods.get('mana_max', 0)
             stats['mana'] = stats['mana_max']
-            
+
             initial_money = 25 + c_mods.get('money', 0)
 
             Player.objects.create(
@@ -126,7 +140,8 @@ def register_view(request):
                 'message': f'Character initialized! Welcome to the grid, {name}.'
             })
         except OperationalError:
-            return JsonResponse({'message': 'System initializing. Try again in 10 seconds.'}, status=503)
+            return JsonResponse({'message': 'System initializing. Try again in 10 seconds.'},
+                                status=503)
 
 
 @csrf_exempt
@@ -140,6 +155,7 @@ def login_view(request):
                 login(request, user)
                 player = user.player
                 player.online = True
+                player.last_seen = timezone.now()
                 player.save()
                 return JsonResponse({'success': True})
             return JsonResponse({'success': False, 'message': 'Invalid credentials'})
@@ -154,6 +170,20 @@ def command_view(request):
             return JsonResponse({'message': 'Not authenticated'}, status=401)
 
         player = request.user.player
+
+        # Inactivity check (20 minutes)
+        now = timezone.now()
+        if player.last_seen and (now - player.last_seen).total_seconds() > 1200:
+            player.online = False
+            player.save()
+            logout(request)
+            return JsonResponse({'message': 'Session expired due to inactivity.', 'action': 'exit'},
+                                status=401)
+
+        # Update last_seen on every command
+        player.last_seen = now
+        player.save(update_fields=['last_seen'])
+
         try:
             cmd_data = json.loads(request.body)
             full_cmd = cmd_data.get('command', '').strip()
@@ -222,8 +252,12 @@ def command_view(request):
             output = services.use_item(player, args)
         elif command == 'train':
             output = services.train_stat(player, args)
-        elif command in ['blade', 'oni_strike', 'hack', 'overload', 'patch', 'detox', 'scheme', 'calibrate', 'turret', 'call_in', 
-                        'stealth', 'backstab', 'sneak', 'smash', 'taunt', 'mind_bolt', 'soul_drain', 'curse', 'chaos_bolt', 'heal', 'bless', 'bamboozle', 'jackpot']:
+        elif command in [
+            'blade', 'oni_strike', 'hack', 'overload', 'patch', 'detox', 'scheme',
+            'calibrate', 'turret', 'call_in', 'stealth', 'backstab', 'sneak', 'smash',
+            'taunt', 'mind_bolt', 'soul_drain', 'curse', 'chaos_bolt', 'heal', 'bless',
+            'bamboozle', 'jackpot'
+        ]:
             output = services.use_ability(player, command, args)
         else:
             output = "COMMAND ERROR: UNKNOWN INSTRUCTION."
@@ -245,7 +279,17 @@ def poll_view(request):
     try:
         if not request.user.is_authenticated:
             return JsonResponse({'status': 'idle', 'authenticated': False})
+
         player = request.user.player
+
+        # Inactivity check (20 minutes)
+        now = timezone.now()
+        if player.last_seen and (now - player.last_seen).total_seconds() > 1200:
+            player.online = False
+            player.save()
+            logout(request)
+            return JsonResponse({'status': 'session_expired', 'authenticated': False})
+
         return JsonResponse(services.get_poll_data(player))
     except (OperationalError, Exception):
         return JsonResponse({'status': 'db_not_ready', 'authenticated': False})

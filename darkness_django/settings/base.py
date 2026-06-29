@@ -59,6 +59,11 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'darkness_django.wsgi.application'
 
+# Session Configuration: Logout after 20 minutes of inactivity
+SESSION_COOKIE_AGE = 1200  # 20 minutes in seconds
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
 # Database
 # Defaults to SQLite for local development
 # For PythonAnywhere, set DATABASE_URL environment variable to use PostgreSQL

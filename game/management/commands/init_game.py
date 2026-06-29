@@ -13,66 +13,104 @@ from game.models import NPC, Item, Room, GameWorld, Player
 
 WEAPON_TABLE = [
     ("Stun Baton", "Standard issue security baton.", 5, 50, "common", 2, "one-handed", {}),
-    ("Mono-Blade", "Vibrating edge for clean cuts.", 12, 300, "uncommon", 5, "one-handed", {"agi_bonus": 2}),
-    ("Heavy Slugger", "High-caliber kinetic pistol.", 20, 750, "uncommon", -2, "one-handed", {"str_bonus": 1}),
-    ("Laser Drill", "Industrial tool repurposed for violence.", 15, 450, "uncommon", 0, "one-handed", {"int_bonus": 2}),
-    ("Plasma Caster", "Superheated plasma bolt launcher.", 28, 1200, "rare", -3, "two-handed", {"wil_bonus": 3}),
-    ("Neural Spike", "Disrupts cybernetic implants.", 35, 2000, "rare", 8, "one-handed", {"int_bonus": 5}),
-    ("Railgun", "Electromagnetic accelerator.", 50, 5000, "epic", -5, "two-handed", {"str_bonus": 8}),
-    ("Void Blade", "Cuts through dimensions.", 80, 15000, "legendary", 10, "one-handed", {"agi_bonus": 10, "wil_bonus": 10}),
+    ("Mono-Blade", "Vibrating edge for clean cuts.", 12, 300, "uncommon", 5, "one-handed",
+     {"agi_bonus": 2}),
+    ("Heavy Slugger", "High-caliber kinetic pistol.", 20, 750, "uncommon", -2, "one-handed",
+     {"str_bonus": 1}),
+    ("Laser Drill", "Industrial tool repurposed for violence.", 15, 450, "uncommon", 0, "one-handed",
+     {"int_bonus": 2}),
+    ("Plasma Caster", "Superheated plasma bolt launcher.", 28, 1200, "rare", -3, "two-handed",
+     {"wil_bonus": 3}),
+    ("Neural Spike", "Disrupts cybernetic implants.", 35, 2000, "rare", 8, "one-handed",
+     {"int_bonus": 5}),
+    ("Railgun", "Electromagnetic accelerator.", 50, 5000, "epic", -5, "two-handed",
+     {"str_bonus": 8}),
+    ("Void Blade", "Cuts through dimensions.", 80, 15000, "legendary", 10, "one-handed",
+     {"agi_bonus": 10, "wil_bonus": 10}),
     ("EMP Grenade", "Disables electronics in radius.", 10, 200, "common", 0, "one-handed", {}),
-    ("Cyber Katana", "Monomolecular edge blade.", 25, 900, "rare", 6, "one-handed", {"agi_bonus": 4}),
-    ("Phase Ripper", "High-frequency claw.", 30, 1500, "rare", 7, "one-handed", {"agi_bonus": 3, "str_bonus": 2}),
-    ("Gravity Hammer", "Crushes armor with ease.", 45, 3500, "epic", -8, "two-handed", {"str_bonus": 12}),
-    ("Hand Cannon", "Massive firepower in a small package.", 35, 2500, "rare", -4, "one-handed", {"str_bonus": 5, "hea_bonus": 2}),
-    ("Vibro-Knife", "Rapid vibration cuts through mesh.", 18, 600, "uncommon", 12, "one-handed", {"agi_bonus": 5}),
-    ("Shock Gloves", "Deliver lethal voltage on contact.", 15, 800, "uncommon", 8, "one-handed", {"str_bonus": 2, "agi_bonus": 2}),
-    ("Sniper Rail", "Long-range magnetic projectile.", 55, 6000, "epic", -10, "two-handed", {"int_bonus": 8, "agi_bonus": 4}),
-    ("Toxic Dart Gun", "Injects neurotoxins silently.", 22, 1800, "rare", 5, "one-handed", {"int_bonus": 6, "cha_bonus": 3}),
+    ("Cyber Katana", "Monomolecular edge blade.", 25, 900, "rare", 6, "one-handed",
+     {"agi_bonus": 4}),
+    ("Phase Ripper", "High-frequency claw.", 30, 1500, "rare", 7, "one-handed",
+     {"agi_bonus": 3, "str_bonus": 2}),
+    ("Gravity Hammer", "Crushes armor with ease.", 45, 3500, "epic", -8, "two-handed",
+     {"str_bonus": 12}),
+    ("Hand Cannon", "Massive firepower in a small package.", 35, 2500, "rare", -4, "one-handed",
+     {"str_bonus": 5, "hea_bonus": 2}),
+    ("Vibro-Knife", "Rapid vibration cuts through mesh.", 18, 600, "uncommon", 12, "one-handed",
+     {"agi_bonus": 5}),
+    ("Shock Gloves", "Deliver lethal voltage on contact.", 15, 800, "uncommon", 8, "one-handed",
+     {"str_bonus": 2, "agi_bonus": 2}),
+    ("Sniper Rail", "Long-range magnetic projectile.", 55, 6000, "epic", -10, "two-handed",
+     {"int_bonus": 8, "agi_bonus": 4}),
+    ("Toxic Dart Gun", "Injects neurotoxins silently.", 22, 1800, "rare", 5, "one-handed",
+     {"int_bonus": 6, "cha_bonus": 3}),
 ]
 
 DRUG_TABLE = [
     # 5-6 New Drugs with bonuses and penalties across stats
-    ("Neuro-Jack", "Sharpens the mind but rots the body.", 150, "uncommon", 0.25, {"int_bonus": 5, "wil_bonus": 3, "str_bonus": -2, "hea_bonus": -2}),
-    ("Combat-Rush", "Unlocks raw power at the cost of sanity.", 200, "uncommon", 0.30, {"str_bonus": 6, "agi_bonus": 4, "wil_bonus": -3, "cha_bonus": -3}),
-    ("Synth-Ghost", "Phase slightly out of reality. Evasive but frail.", 300, "rare", 0.20, {"agi_bonus": 8, "hea_bonus": -5, "str_bonus": -3}),
-    ("Neon-Glow", "Radiate charismatic energy, but suffer memory leaks.", 150, "uncommon", 0.15, {"cha_bonus": 10, "int_bonus": -4, "wil_bonus": -2}),
-    ("Over-Clock", "Maximum performance across all systems. Lethal dependency.", 600, "epic", 0.50, {"str_bonus": 4, "int_bonus": 4, "wil_bonus": 4, "agi_bonus": 4, "hea_bonus": 4, "cha_bonus": 4}),
-    ("Iron-Skin", "Hardens tissue into armor. Slows reflexes.", 250, "rare", 0.35, {"hea_bonus": 10, "agi_bonus": -5, "cha_bonus": -2}),
+    ("Neuro-Jack", "Sharpens the mind but rots the body.", 150, "uncommon", 0.25,
+     {"int_bonus": 5, "wil_bonus": 3, "str_bonus": -2, "hea_bonus": -2}),
+    ("Combat-Rush", "Unlocks raw power at the cost of sanity.", 200, "uncommon", 0.30,
+     {"str_bonus": 6, "agi_bonus": 4, "wil_bonus": -3, "cha_bonus": -3}),
+    ("Synth-Ghost", "Phase slightly out of reality. Evasive but frail.", 300, "rare", 0.20,
+     {"agi_bonus": 8, "hea_bonus": -5, "str_bonus": -3}),
+    ("Neon-Glow", "Radiate charismatic energy, but suffer memory leaks.", 150, "uncommon", 0.15,
+     {"cha_bonus": 10, "int_bonus": -4, "wil_bonus": -2}),
+    ("Over-Clock", "Maximum performance across all systems. Lethal dependency.", 600, "epic", 0.50,
+     {"str_bonus": 4, "int_bonus": 4, "wil_bonus": 4, "agi_bonus": 4, "hea_bonus": 4,
+      "cha_bonus": 4}),
+    ("Iron-Skin", "Hardens tissue into armor. Slows reflexes.", 250, "rare", 0.35,
+     {"hea_bonus": 10, "agi_bonus": -5, "cha_bonus": -2}),
 ]
 
 BOSS_WEAPONS = {
     "slums": [
-        ("Street King's Shiv", "A jagged blade that reeks of the gutters.", 40, 0, "epic", 12, "one-handed", {"agi_bonus": 8, "cha_bonus": 5}),
-        ("Gutter Brawler's Knuckles", "Weighted with lead and street history.", 35, 0, "epic", 8, "one-handed", {"str_bonus": 10, "hea_bonus": 5})
+        ("Street King's Shiv", "A jagged blade that reeks of the gutters.", 40, 0, "epic", 12,
+         "one-handed", {"agi_bonus": 8, "cha_bonus": 5}),
+        ("Gutter Brawler's Knuckles", "Weighted with lead and street history.", 35, 0, "epic", 8,
+         "one-handed", {"str_bonus": 10, "hea_bonus": 5})
     ],
     "industrial": [
-        ("Forge-Master's Wrench", "Massive industrial tool.", 55, 0, "epic", -4, "two-handed", {"str_bonus": 15, "hea_bonus": 5}),
-        ("Steam-Powered Piercer", "Hisses with pressure.", 50, 0, "epic", 2, "one-handed", {"str_bonus": 8, "wil_bonus": 5})
+        ("Forge-Master's Wrench", "Massive industrial tool.", 55, 0, "epic", -4, "two-handed",
+         {"str_bonus": 15, "hea_bonus": 5}),
+        ("Steam-Powered Piercer", "Hisses with pressure.", 50, 0, "epic", 2, "one-handed",
+         {"str_bonus": 8, "wil_bonus": 5})
     ],
     "corporate": [
-        ("CEO's Golden Handgun", "Fires solid gold rounds.", 70, 0, "legendary", 5, "one-handed", {"cha_bonus": 20, "int_bonus": 10}),
-        ("Director's Neural Whip", "Agony in fiber-optic form.", 60, 0, "legendary", 15, "one-handed", {"int_bonus": 15, "cha_bonus": 10})
+        ("CEO's Golden Handgun", "Fires solid gold rounds.", 70, 0, "legendary", 5, "one-handed",
+         {"cha_bonus": 20, "int_bonus": 10}),
+        ("Director's Neural Whip", "Agony in fiber-optic form.", 60, 0, "legendary", 15,
+         "one-handed", {"int_bonus": 15, "cha_bonus": 10})
     ],
     "undergrid": [
-        ("Source Code Fragment", "Pure data manifested as a weapon.", 85, 0, "legendary", 15, "one-handed", {"int_bonus": 25}),
-        ("Malware Spike", "Infects reality itself.", 75, 0, "legendary", 10, "one-handed", {"int_bonus": 20, "wil_bonus": 10})
+        ("Source Code Fragment", "Pure data manifested as a weapon.", 85, 0, "legendary", 15,
+         "one-handed", {"int_bonus": 25}),
+        ("Malware Spike", "Infects reality itself.", 75, 0, "legendary", 10, "one-handed",
+         {"int_bonus": 20, "wil_bonus": 10})
     ],
     "neon": [
-        ("Diva's Sonic Lash", "Vibrates at lethal frequencies.", 50, 0, "rare", 10, "one-handed", {"cha_bonus": 12, "agi_bonus": 5}),
-        ("Club Owner's Cane", "Hidden blade, refined taste.", 45, 0, "rare", 5, "one-handed", {"cha_bonus": 15, "wil_bonus": 5})
+        ("Diva's Sonic Lash", "Vibrates at lethal frequencies.", 50, 0, "rare", 10, "one-handed",
+         {"cha_bonus": 12, "agi_bonus": 5}),
+        ("Club Owner's Cane", "Hidden blade, refined taste.", 45, 0, "rare", 5, "one-handed",
+         {"cha_bonus": 15, "wil_bonus": 5})
     ],
     "wastes": [
-        ("Wasteland Harvester", "A brutal tool of survival.", 65, 0, "epic", -2, "two-handed", {"str_bonus": 10, "hea_bonus": 15}),
-        ("Scavenger's Crossbow", "Fires rusted rebar.", 60, 0, "epic", -5, "two-handed", {"agi_bonus": 12, "hea_bonus": 8})
+        ("Wasteland Harvester", "A brutal tool of survival.", 65, 0, "epic", -2, "two-handed",
+         {"str_bonus": 10, "hea_bonus": 15}),
+        ("Scavenger's Crossbow", "Fires rusted rebar.", 60, 0, "epic", -5, "two-handed",
+         {"agi_bonus": 12, "hea_bonus": 8})
     ],
     "nexus": [
-        ("Nexus Core Blade", "Pulsing with infinite energy.", 95, 0, "legendary", 12, "one-handed", {"int_bonus": 15, "wil_bonus": 15}),
-        ("Protocol Breaker", "A hammer that shatters firewalls.", 90, 0, "legendary", -5, "two-handed", {"str_bonus": 15, "int_bonus": 15})
+        ("Nexus Core Blade", "Pulsing with infinite energy.", 95, 0, "legendary", 12, "one-handed",
+         {"int_bonus": 15, "wil_bonus": 15}),
+        ("Protocol Breaker", "A hammer that shatters firewalls.", 90, 0, "legendary", -5,
+         "two-handed", {"str_bonus": 15, "int_bonus": 15})
     ],
     "undercity": [
-        ("Shadow's Embrace", "A dagger that drinks light.", 110, 0, "legendary", 20, "one-handed", {"agi_bonus": 25}),
-        ("Crypt-Keeper's Scythe", "Harvests the code of the dead.", 105, 0, "legendary", -10, "two-handed", {"wil_bonus": 30})
+        ("Shadow's Embrace", "A dagger that drinks light.", 110, 0, "legendary", 20, "one-handed",
+         {"agi_bonus": 25}),
+        ("Crypt-Keeper's Scythe", "Harvests the code of the dead.", 105, 0, "legendary", -10,
+         "two-handed", {"wil_bonus": 30})
     ],
 }
 
@@ -80,13 +118,19 @@ ARMOR_TABLE = [
     ("Mesh Vest", "Basic kinetic protection.", 8, 150, "common", {"hea_bonus": 2}),
     ("Riot Shield", "Reinforced alloy shield.", 20, 1000, "uncommon", {"str_bonus": 3, "hea_bonus": 5}),
     ("Synth-Leathers", "Tough street fabric.", 4, 80, "common", {"agi_bonus": 2}),
-    ("Titanium Exo-Frame", "Full body exoskeleton.", 35, 3000, "rare", {"str_bonus": 10, "hea_bonus": 10}),
+    ("Titanium Exo-Frame", "Full body exoskeleton.", 35, 3000, "rare",
+     {"str_bonus": 10, "hea_bonus": 10}),
     ("Ghost Cloak", "Active camouflage tech.", 15, 2500, "rare", {"agi_bonus": 15}),
-    ("Neural Shield", "Anti-hacking defense.", 10, 1500, "uncommon", {"wil_bonus": 8, "int_bonus": 4}),
-    ("Adamantine Plate", "Near-indestructible armor.", 50, 8000, "epic", {"hea_bonus": 20, "str_bonus": 5}),
-    ("Quantum Weave", "Shifts slightly out of reality.", 25, 6000, "rare", {"agi_bonus": 10, "wil_bonus": 10}),
-    ("Reflective Trenchcoat", "Cool looks, decent protection.", 12, 1200, "uncommon", {"cha_bonus": 10, "agi_bonus": 2}),
-    ("Hazmat Suit", "Protects against toxic environments.", 15, 2000, "rare", {"hea_bonus": 15, "wil_bonus": 5}),
+    ("Neural Shield", "Anti-hacking defense.", 10, 1500, "uncommon",
+     {"wil_bonus": 8, "int_bonus": 4}),
+    ("Adamantine Plate", "Near-indestructible armor.", 50, 8000, "epic",
+     {"hea_bonus": 20, "str_bonus": 5}),
+    ("Quantum Weave", "Shifts slightly out of reality.", 25, 6000, "rare",
+     {"agi_bonus": 10, "wil_bonus": 10}),
+    ("Reflective Trenchcoat", "Cool looks, decent protection.", 12, 1200, "uncommon",
+     {"cha_bonus": 10, "agi_bonus": 2}),
+    ("Hazmat Suit", "Protects against toxic environments.", 15, 2000, "rare",
+     {"hea_bonus": 15, "wil_bonus": 5}),
 ]
 
 CONSUMABLE_TABLE = [
@@ -120,10 +164,11 @@ ZONE_TEMPLATES = [
         "npc_prefix": "Street", "npc_types": ["drone", "gang", "scavenger", "thug"],
         "bosses": [
             {"name": "Rat King Vane", "desc": "A massive mutant sitting on a throne of scrap."},
-            {"name": "Mama 'Doc' Voltage", "desc": "An illegal ripperdoc gone rogue with a power drill."}
+            {"name": "Mama 'Doc' Voltage", "desc": "An illegal ripperdoc rogue with a power drill."}
         ],
         "shop": "Black Market Stall",
-        "room_names": ["Alley", "Street", "Block", "Corner", "Junction", "Dead End", "Roof", "Squat", "Drain"],
+        "room_names": ["Alley", "Street", "Block", "Corner", "Junction", "Dead End", "Roof",
+                       "Squat", "Drain"],
         "room_details": [
             "Neon signs flicker above puddles of dirty water.",
             "Rusted fire escapes climb the walls like skeletal fingers.",
@@ -138,7 +183,7 @@ ZONE_TEMPLATES = [
     },
     {
         "name": "Industrial Zone",
-        "desc": "Hissing steam, clanking machinery, and toxic fumes. The heart of the city's production.",
+        "desc": "Hissing steam, toxic fumes. The heart of the city's production.",
         "min_lvl": 3, "max_lvl": 6, "theme": "industrial", "zone_id": "industrial",
         "npc_prefix": "Factory", "npc_types": ["drone", "gang", "worker", "foreman"],
         "bosses": [
@@ -146,7 +191,8 @@ ZONE_TEMPLATES = [
             {"name": "Iron-Lung Igor", "desc": "A cyborg foreman who is more machine than man."}
         ],
         "shop": "Scrapyard Exchange",
-        "room_names": ["Factory", "Warehouse", "Dock", "Plant", "Mill", "Forge", "Smelter", "Boiler", "Pipe-way"],
+        "room_names": ["Factory", "Warehouse", "Dock", "Plant", "Mill", "Forge", "Smelter",
+                       "Boiler", "Pipe-way"],
         "room_details": [
             "Steam vents hiss from cracked pipes overhead.",
             "Conveyor belts carry unknown objects into darkness.",
@@ -165,11 +211,12 @@ ZONE_TEMPLATES = [
         "min_lvl": 6, "max_lvl": 10, "theme": "corporate", "zone_id": "corporate",
         "npc_prefix": "Corp", "npc_types": ["corporate", "drone", "security", "agent"],
         "bosses": [
-            {"name": "Executive Enforcer", "desc": "A high-ranking security officer in custom power armor."},
+            {"name": "Executive Enforcer", "desc": "Security officer in custom power armor."},
             {"name": "VP of Acquisitions", "desc": "A suit-wearing shark with mono-molecular claws."}
         ],
         "shop": "Corp Supply Depot",
-        "room_names": ["Tower", "Office", "Lobby", "Suite", "Lab", "Boardroom", "Vault", "Heliport", "Archive"],
+        "room_names": ["Tower", "Office", "Lobby", "Suite", "Lab", "Boardroom", "Vault",
+                       "Heliport", "Archive"],
         "room_details": [
             "Polished floors reflect the cold fluorescent lights.",
             "Security cameras track every movement.",
@@ -189,10 +236,11 @@ ZONE_TEMPLATES = [
         "npc_prefix": "Glitch", "npc_types": ["drone", "gang", "virus", "ghost"],
         "bosses": [
             {"name": "The Arch-Decompiler", "desc": "A semi-sentient AI virus taking physical form."},
-            {"name": "Root-Access Spectre", "desc": "A legendary hacker who uploaded his consciousness."}
+            {"name": "Root-Access Spectre", "desc": "Legendary hacker who uploaded his consciousness."}
         ],
         "shop": "Data Market",
-        "room_names": ["Node", "Port", "Terminal", "Gateway", "Matrix", "Buffer", "Stream", "Stack", "Heap"],
+        "room_names": ["Node", "Port", "Terminal", "Gateway", "Matrix", "Buffer", "Stream",
+                       "Stack", "Heap"],
         "room_details": [
             "Reality pixelates at the edges of vision.",
             "Data streams flow like rivers of light.",
@@ -207,15 +255,16 @@ ZONE_TEMPLATES = [
     },
     {
         "name": "Neon District",
-        "desc": "Bright neon lights, crowded streets, hidden alleys. Where the city never sleeps.",
+        "desc": "Bright neon lights, crowded streets. Where the city never sleeps.",
         "min_lvl": 2, "max_lvl": 5, "theme": "neon", "zone_id": "neon",
         "npc_prefix": "Neon", "npc_types": ["gang", "drone", "bouncer", "pusher"],
         "bosses": [
-            {"name": "Madam Pulse", "desc": "A cyber-enhanced gang leader with a deadly voice."},
-            {"name": "Neon Dragon", "desc": "A yakuza boss with integrated holographic tattoos."}
+            {"name": "Madam Pulse", "desc": "Gang leader with a deadly voice."},
+            {"name": "Neon Dragon", "desc": "Yakuza boss with integrated holographic tattoos."}
         ],
         "shop": "Neon Bazaar",
-        "room_names": ["Club", "Bar", "Lounge", "Arcade", "Stage", "Booth", "Rooftop", "Dancefloor", "VIP"],
+        "room_names": ["Club", "Bar", "Lounge", "Arcade", "Stage", "Booth", "Rooftop",
+                       "Dancefloor", "VIP"],
         "room_details": [
             "Neon lights paint everything in pink and blue.",
             "Bass-heavy music thumps through the walls.",
@@ -230,15 +279,16 @@ ZONE_TEMPLATES = [
     },
     {
         "name": "The Wastes",
-        "desc": "Desolate wasteland outside the city walls. Mutants and scavengers roam.",
+        "desc": "Desolate wasteland outside city walls. Mutants and scavengers roam.",
         "min_lvl": 10, "max_lvl": 15, "theme": "wasteland", "zone_id": "wastes",
         "npc_prefix": "Waste", "npc_types": ["gang", "drone", "mutant", "raider"],
         "bosses": [
-            {"name": "The Dust-Walker", "desc": "A legendary scavenger who has survived the acid rains for decades."},
-            {"name": "War-Rig Warlord", "desc": "A massive mutant commanding a caravan of scrap."}
+            {"name": "The Dust-Walker", "desc": "Survivor of acid rains for decades."},
+            {"name": "War-Rig Warlord", "desc": "Massive mutant commanding a caravan of scrap."}
         ],
         "shop": None,
-        "room_names": ["Ruin", "Camp", "Outpost", "Bunker", "Crater", "Scrapyard", "Dunes", "Bridge", "Settlement"],
+        "room_names": ["Ruin", "Camp", "Outpost", "Bunker", "Crater", "Scrapyard", "Dunes",
+                       "Bridge", "Settlement"],
         "room_details": [
             "Acid rain pools in craters of fused glass.",
             "Rusted vehicles lie overturned in the dust.",
@@ -253,15 +303,16 @@ ZONE_TEMPLATES = [
     },
     {
         "name": "Data Nexus",
-        "desc": "A massive server farm. Data streams flow like light. The brain of the global network.",
+        "desc": "A massive server farm. The brain of the global network.",
         "min_lvl": 12, "max_lvl": 18, "theme": "cyber", "zone_id": "nexus",
         "npc_prefix": "Data", "npc_types": ["drone", "corporate", "guardian", "sentry"],
         "bosses": [
-            {"name": "Protocol Prime", "desc": "The ultimate security program, manifested in a liquid-metal body."},
+            {"name": "Protocol Prime", "desc": "Security program in a liquid-metal body."},
             {"name": "The Architect", "desc": "The sentient core of the city's infrastructure."}
         ],
         "shop": "Data Exchange",
-        "room_names": ["Server", "Core", "Relay", "Hub", "Vault", "Uplink", "Processor", "Coolant", "Bus"],
+        "room_names": ["Server", "Core", "Relay", "Hub", "Vault", "Uplink", "Processor",
+                       "Coolant", "Bus"],
         "room_details": [
             "Rows of servers blink in perfect synchronization.",
             "Cooling fans create a constant drone.",
@@ -276,15 +327,16 @@ ZONE_TEMPLATES = [
     },
     {
         "name": "The Undercity",
-        "desc": "Deep underground. Dark, damp, full of secrets. Forgotten by the world above.",
+        "desc": "Deep underground. Forgotten by the world above.",
         "min_lvl": 15, "max_lvl": 20, "theme": "underground", "zone_id": "undercity",
         "npc_prefix": "Shadow", "npc_types": ["gang", "drone", "cultist", "stalker"],
         "bosses": [
             {"name": "The Hollow One", "desc": "A creature of pure shadow and malicious code."},
-            {"name": "Under-King Silas", "desc": "A former corporate genius who built a kingdom in the sewers."}
+            {"name": "Under-King Silas", "desc": "Corporate genius who built a sewer kingdom."}
         ],
         "shop": "Shadow Market",
-        "room_names": ["Tunnel", "Cave", "Chamber", "Crypt", "Passage", "Sewer", "Catacomb", "Shrine", "Void"],
+        "room_names": ["Tunnel", "Cave", "Chamber", "Crypt", "Passage", "Sewer", "Catacomb",
+                       "Shrine", "Void"],
         "room_details": [
             "Water drips from the cavern ceiling above.",
             "Bioluminescent fungi provide eerie light.",
@@ -333,7 +385,7 @@ class Command(BaseCommand):
 
         self.stdout.write(f"Seed: {seed}")
         self.stdout.write("Purging existing grid data...")
-        
+
         with transaction.atomic():
             NPC.objects.all().delete()
             Room.objects.all().delete()
@@ -352,11 +404,13 @@ class Command(BaseCommand):
                     entry = Room.objects.filter(zone=zone_id, name__icontains="Entry").first()
                     if entry:
                         if abs(entry.map_x) <= 2 and abs(entry.map_y) <= 2:
-                            dir_to_entry = "east" if entry.map_x > 0 else "west" if entry.map_x < 0 else "south" if entry.map_y > 0 else "north"
-                            opp_dir = {"east":"west", "west":"east", "south":"north", "north":"south"}[dir_to_entry]
-                            self._connect_rooms(hub, entry, dir_to_entry, opp_dir)
+                            d_to_e = ("east" if entry.map_x > 0 else "west" if entry.map_x < 0
+                                      else "south" if entry.map_y > 0 else "north")
+                            opp_dir = {"east": "west", "west": "east",
+                                       "south": "north", "north": "south"}[d_to_e]
+                            self._connect_rooms(hub, entry, d_to_e, opp_dir)
                             break
-            
+
             Player.objects.all().update(location=hub)
 
             GameWorld.objects.all().delete()
@@ -376,29 +430,29 @@ class Command(BaseCommand):
 
     def _create_items(self):
         pool = []
-        for name, desc, atk, price, rarity, speed, subtype, bonuses in WEAPON_TABLE:
+        for name, desc, atk, pr, rarity, speed, subtype, bonuses in WEAPON_TABLE:
             pool.append(Item.objects.create(
                 name=name, description=desc, item_type='weapon',
-                attack_bonus=atk, price=price, rarity=rarity, speed_bonus=speed,
+                attack_bonus=atk, price=pr, rarity=rarity, speed_bonus=speed,
                 subtype=subtype, **bonuses))
-        for name, desc, dfn, price, rarity, bonuses in ARMOR_TABLE:
+        for name, desc, dfn, pr, rarity, bonuses in ARMOR_TABLE:
             pool.append(Item.objects.create(
                 name=name, description=desc, item_type='armor',
-                defense_bonus=dfn, price=price, rarity=rarity,
+                defense_bonus=dfn, price=pr, rarity=rarity,
                 **bonuses))
-        for name, desc, price, rarity, heal in CONSUMABLE_TABLE:
+        for name, desc, pr, rarity, heal in CONSUMABLE_TABLE:
             pool.append(Item.objects.create(
                 name=name, description=desc, item_type='consumable',
-                price=price, rarity=rarity, heal_amount=heal))
-        for name, desc, price, rarity, addic, bonuses in DRUG_TABLE:
+                price=pr, rarity=rarity, heal_amount=heal))
+        for name, desc, pr, rarity, addic, bonuses in DRUG_TABLE:
             pool.append(Item.objects.create(
                 name=name, description=desc, item_type='drug',
-                price=price, rarity=rarity, addiction_chance=addic,
+                price=pr, rarity=rarity, addiction_chance=addic,
                 **bonuses))
-        for name, desc, price, rarity in MISC_TABLE:
+        for name, desc, pr, rarity in MISC_TABLE:
             pool.append(Item.objects.create(
                 name=name, description=desc, item_type='misc',
-                price=price, rarity=rarity))
+                price=pr, rarity=rarity))
         return pool
 
     def _connect_rooms(self, r1, r2, d1, d2):
@@ -416,16 +470,11 @@ class Command(BaseCommand):
     def _create_rooms(self, zones, target_count):
         all_rooms = []
         opp = {"north": "south", "south": "north", "east": "west", "west": "east"}
-        dir_coords = {
-            "north": (0, -1),
-            "south": (0, 1),
-            "east": (1, 0),
-            "west": (-1, 0)
-        }
+        dir_coords = {"north": (0, -1), "south": (0, 1), "east": (1, 0), "west": (-1, 0)}
 
         hub = Room.objects.create(
             id=1, name="The Neon Hub",
-            description="Central nerve center. Terminals flicker with green text. All paths lead outward from here.",
+            description="Central nerve center. Terminals flicker with green text.",
             safe_zone=True, shop_name="Central Exchange",
             zone="hub", theme="urban", map_x=0, map_y=0)
         all_rooms.append(hub)
@@ -454,8 +503,9 @@ class Command(BaseCommand):
                     self._connect_rooms(start_room, entry, d, opp[d])
                     occupied_coords.add((new_x, new_y))
                     break
-            
-            if not entry: continue
+
+            if not entry:
+                continue
             zone_rooms.append(entry)
             prev = entry
 
@@ -466,7 +516,7 @@ class Command(BaseCommand):
                     rname = f"{zone['name']} - BOSS LAIR {chr(65+i)}"
                 detail = random.choice(zone['room_details'])
                 rdesc = f"{zone['desc']} {detail}"
-                
+
                 new_room = None
                 dirs = ["north", "south", "east", "west"]
                 random.shuffle(dirs)
@@ -481,7 +531,7 @@ class Command(BaseCommand):
                         occupied_coords.add((new_x, new_y))
                         self._connect_rooms(prev, new_room, d, opp[d])
                         break
-                
+
                 if new_room:
                     zone_rooms.append(new_room)
                     prev = new_room
@@ -499,104 +549,96 @@ class Command(BaseCommand):
                                     self._connect_rooms(r1, r2, d, opp[d])
                                 break
             all_rooms.extend(zone_rooms)
-        
-        # Populate shop inventories with weapons and items after all rooms are created
-        # Also populate the Hub's shop
+
+        # Populate shop inventories with weapons and items
         hub = Room.objects.get(id=1)
         if hub.shop_name:
             hub_weapons = random.sample(WEAPON_TABLE, min(4, len(WEAPON_TABLE)))
-            for weapon_data in hub_weapons:
-                name, desc, atk, price, rarity, speed, subtype, bonuses = weapon_data
+            for w_data in hub_weapons:
+                name, desc, atk, pr, rarity, speed, subtype, bonuses = w_data
                 weapon = Item.objects.create(
                     name=name, description=desc, item_type='weapon',
-                    attack_bonus=atk, price=price, rarity=rarity,
+                    attack_bonus=atk, price=pr, rarity=rarity,
                     speed_bonus=speed, subtype=subtype, **bonuses
                 )
                 hub.shop_inventory.add(weapon)
             hub_armor = random.sample(ARMOR_TABLE, min(3, len(ARMOR_TABLE)))
-            for armor_data in hub_armor:
-                name, desc, dfn, price, rarity, bonuses = armor_data
+            for a_data in hub_armor:
+                name, desc, dfn, pr, rarity, bonuses = a_data
                 armor = Item.objects.create(
                     name=name, description=desc, item_type='armor',
-                    defense_bonus=dfn, price=price, rarity=rarity,
+                    defense_bonus=dfn, price=pr, rarity=rarity,
                     **bonuses
                 )
                 hub.shop_inventory.add(armor)
-            hub_consumables = random.sample(CONSUMABLE_TABLE, min(3, len(CONSUMABLE_TABLE)))
-            for consumable_data in hub_consumables:
-                name, desc, price, rarity, heal = consumable_data
-                consumable = Item.objects.create(
+            hub_cons = random.sample(CONSUMABLE_TABLE, min(3, len(CONSUMABLE_TABLE)))
+            for c_data in hub_cons:
+                name, desc, pr, rarity, heal = c_data
+                cons = Item.objects.create(
                     name=name, description=desc, item_type='consumable',
-                    price=price, rarity=rarity, heal_amount=heal
+                    price=pr, rarity=rarity, heal_amount=heal
                 )
-                hub.shop_inventory.add(consumable)
-        
+                hub.shop_inventory.add(cons)
+
         for zone in zones:
-            if not zone.get('shop'): continue
+            if not zone.get('shop'):
+                continue
             shop_rooms = [r for r in all_rooms if r.zone == zone['zone_id'] and r.shop_name]
             for shop_room in shop_rooms:
-                # Add 3-5 weapons appropriate for the zone level
                 num_weapons = random.randint(3, 5)
                 zone_avg_lvl = (zone['min_lvl'] + zone['max_lvl']) // 2
-                
-                # Filter weapons by price to match zone difficulty
                 price_max = zone_avg_lvl * 500
-                available_weapons = [w for w in WEAPON_TABLE if w[3] <= price_max]
-                if not available_weapons:
-                    available_weapons = WEAPON_TABLE
-                
-                selected_weapons = random.sample(available_weapons, min(num_weapons, len(available_weapons)))
-                for weapon_data in selected_weapons:
-                    name, desc, atk, price, rarity, speed, subtype, bonuses = weapon_data
+                avail_w = [w for w in WEAPON_TABLE if w[3] <= price_max] or WEAPON_TABLE
+                selected_weapons = random.sample(avail_w, min(num_weapons, len(avail_w)))
+                for w_data in selected_weapons:
+                    name, desc, atk, pr, rarity, speed, subtype, bonuses = w_data
                     weapon = Item.objects.create(
                         name=name, description=desc, item_type='weapon',
-                        attack_bonus=atk, price=price, rarity=rarity,
+                        attack_bonus=atk, price=pr, rarity=rarity,
                         speed_bonus=speed, subtype=subtype, **bonuses
                     )
                     shop_room.shop_inventory.add(weapon)
-                
-                # Add 2-3 armor pieces
                 num_armor = random.randint(2, 3)
                 selected_armor = random.sample(ARMOR_TABLE, min(num_armor, len(ARMOR_TABLE)))
-                for armor_data in selected_armor:
-                    name, desc, dfn, price, rarity, bonuses = armor_data
+                for a_data in selected_armor:
+                    name, desc, dfn, pr, rarity, bonuses = a_data
                     armor = Item.objects.create(
                         name=name, description=desc, item_type='armor',
-                        defense_bonus=dfn, price=price, rarity=rarity,
+                        defense_bonus=dfn, price=pr, rarity=rarity,
                         **bonuses
                     )
                     shop_room.shop_inventory.add(armor)
-                
-                # Add 2-3 consumables
-                num_consumables = random.randint(2, 3)
-                selected_consumables = random.sample(CONSUMABLE_TABLE, min(num_consumables, len(CONSUMABLE_TABLE)))
-                for consumable_data in selected_consumables:
-                    name, desc, price, rarity, heal = consumable_data
-                    consumable = Item.objects.create(
+                num_cons = random.randint(2, 3)
+                sel_cons = random.sample(CONSUMABLE_TABLE, min(num_cons, len(CONSUMABLE_TABLE)))
+                for c_data in sel_cons:
+                    name, desc, pr, rarity, heal = c_data
+                    cons = Item.objects.create(
                         name=name, description=desc, item_type='consumable',
-                        price=price, rarity=rarity, heal_amount=heal
+                        price=pr, rarity=rarity, heal_amount=heal
                     )
-                    shop_room.shop_inventory.add(consumable)
-        
+                    shop_room.shop_inventory.add(cons)
         return all_rooms
 
     def _create_npcs(self, rooms, zones, items):
         zone_map = {z['zone_id']: z for z in zones}
         for room in rooms:
-            if room.safe_zone: continue
+            if room.safe_zone:
+                continue
             zone = zone_map.get(room.zone)
-            if not zone: continue
+            if not zone:
+                continue
             is_boss_room = "BOSS LAIR" in room.name
             if is_boss_room:
                 lvl = zone['max_lvl'] + 2
-                boss_info = zone['bosses'][0] if "A" in room.name or "C" in room.name else zone['bosses'][1]
+                boss_info = (zone['bosses'][0] if "A" in room.name or "C" in room.name
+                             else zone['bosses'][1])
                 bw_list = BOSS_WEAPONS.get(room.zone, [])
                 bw_info = bw_list[0] if boss_info == zone['bosses'][0] else bw_list[1]
-                name, bdesc, batk, bprice, brarity, bspeed, bsubtype, bbonuses = bw_info
+                name, bdesc, batk, bpr, brarity, bspeed, bsub, bbonuses = bw_info
                 unique_weapon = Item.objects.create(
                     name=name, description=bdesc, item_type='weapon',
-                    attack_bonus=batk, price=bprice, rarity=brarity, 
-                    speed_bonus=bspeed, subtype=bsubtype, **bbonuses
+                    attack_bonus=batk, price=bpr, rarity=brarity,
+                    speed_bonus=bspeed, subtype=bsub, **bbonuses
                 )
                 boss = NPC.objects.create(
                     name=boss_info['name'], description=boss_info['desc'],
