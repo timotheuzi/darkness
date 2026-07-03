@@ -103,9 +103,16 @@ class Player(models.Model):
 
     # Combat/Stalking state
     last_combat_npc = models.ForeignKey(
-        'NPC', on_delete=models.SET_NULL, null=True, blank=True, related_name='stalking_players'
+        'NPC', on_delete=models.SET_NULL, null=True, blank=True, related_name='combating_players'
+    )
+    last_combat_player = models.ForeignKey(
+        'Player', on_delete=models.SET_NULL, null=True, blank=True, related_name='combating_players_target'
     )
     stalk_count = models.IntegerField(default=0)
+
+    # Combat Mode
+    auto_attack = models.BooleanField(default=False)
+    last_combat_tick = models.DateTimeField(null=True, blank=True)
 
     # Sneaking state
     hidden = models.BooleanField(default=False)

@@ -225,10 +225,12 @@ def command_view(request):
         elif command == 'top':
             output = services.get_top_ten()
         elif command in ['attack', 'a', 'kill', 'k']:
-            output = services.attack_target(player, args)
+            output = services.attack_target(player, args, auto=False)
+        elif command in ['autoattack', 'aa']:
+            output = services.attack_target(player, args, auto=True)
         elif command in ['inventory', 'i']:
             output = services.get_inventory(player)
-        elif command in ['status', 'st']:
+        elif command in ['status', 'st', 'stats']:
             output = services.get_status_detailed(player)
         elif command in ['get', 'g']:
             output = services.get_item(player, args)
@@ -252,15 +254,13 @@ def command_view(request):
             output = services.use_item(player, args)
         elif command == 'train':
             output = services.train_stat(player, args)
-        elif command in [
-            'blade', 'oni_strike', 'hack', 'overload', 'patch', 'detox', 'scheme',
-            'calibrate', 'turret', 'call_in', 'stealth', 'backstab', 'sneak', 'smash',
-            'taunt', 'mind_bolt', 'soul_drain', 'curse', 'chaos_bolt', 'heal', 'bless',
-            'bamboozle', 'jackpot'
-        ]:
-            output = services.use_ability(player, command, args)
         else:
-            output = "COMMAND ERROR: UNKNOWN INSTRUCTION."
+            # Check for special moves dynamically
+            move_output = services.use_ability(player, command, args)
+            if move_output is not None:
+                output = move_output
+            else:
+                output = "COMMAND ERROR: UNKNOWN INSTRUCTION."
 
         chat_output = services.get_recent_chat(player)
         if chat_output:

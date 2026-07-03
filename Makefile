@@ -31,6 +31,8 @@ setup: $(VENV)/bin/python ## Install dependencies
 	$(PYTHON) -m pip install -r requirements/dev.txt
 
 clean: ## Wipe .venv, cache, database, and migrations, then recreate everything fresh
+	@echo "Killing existing python processes..."
+	-pkill -9 python || true
 	@echo "Nuking virtual environment..."
 	rm -rf $(VENV)
 	@echo "Cleaning generated files..."
