@@ -12,7 +12,6 @@ PYTHONANYWHERE_VENV := venv
 PYTHONANYWHERE_PYTHON := $(PYTHONANYWHERE_VENV)/bin/python
 PYTHONANYWHERE_MANAGE := $(PYTHONANYWHERE_PYTHON) manage.py
 PYTHONANYWHERE_SETTINGS := darkness_django.settings.production
-PYTHONANYWHERE_SETTINGS := darkness_django.settings.production
 
 help: ## Show this help message
 	@echo "Usage: make [target]"
@@ -20,17 +19,17 @@ help: ## Show this help message
 	@echo "Targets:"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
 
-venv: $(VENV)/bin/python ## Create virtual environment
+venv: $(VENV)/bin/python ## Create virtual environment and install requirements
+	$(PYTHON) -m pip install -r requirements/dev.txt
 
 $(VENV)/bin/python:
 	@echo "Creating virtual environment..."
 	python3 -m venv $(VENV)
 	$(PYTHON) -m pip install --upgrade pip
 
-setup: $(VENV)/bin/python ## Install dependencies
-	$(PYTHON) -m pip install -r requirements/dev.txt
+setup: venv ## Install dependencies
 
-clean: ## Wipe .venv, cache, database, and migrations, then recreate everything fresh
+clean: ## Wipe .venv, cache, and generated files while KEEPING the database
 	@echo "Killing existing python processes..."
 	-pkill -9 python || true
 	@echo "Nuking virtual environment..."
@@ -38,25 +37,17 @@ clean: ## Wipe .venv, cache, database, and migrations, then recreate everything 
 	@echo "Cleaning generated files..."
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 	find . -type f -name "*.pyc" -exec rm -f {} +
-	rm -rf .pytest_cache .coverage htmlcov staticfiles db.sqlite3
-	@echo "Cleaning app migrations..."
-	# Explicitly delete all numbered migrations (including 0001_initial.py) to avoid collisions
-	find . -path "*/migrations/*.py" -not -name "__init__.py" -exec rm -f {} +
-	@echo "Recreating virtual environment..."
-	python3 -m venv $(VENV)
-	$(VENV)/bin/python -m pip install --upgrade pip
-	$(VENV)/bin/python -m pip install -r requirements/dev.txt
-	@echo "Recreating blank database with latest models..."
+	rm -rf .pytest_cache .coverage htmlcov staticfiles
+	@echo "Cleaning app migrations (optional, usually keeps them for DB consistency)..."
+	# We keep migrations by default to ensure the DB can still be migrated. 
+	# If you want to wipe migrations, use 'make repair'.
+
+migrate: venv ## Run database migrations (local)
 	$(MANAGE) makemigrations game --settings=$(SETTINGS)
 	$(MANAGE) makemigrations --settings=$(SETTINGS)
 	$(MANAGE) migrate --settings=$(SETTINGS)
 
-migrate: setup ## Run database migrations (local)
-	$(MANAGE) makemigrations game --settings=$(SETTINGS)
-	$(MANAGE) makemigrations --settings=$(SETTINGS)
-	$(MANAGE) migrate --settings=$(SETTINGS)
-
-init: migrate ## Initialize game world data (local)
+init: migrate ## Initialize game world data (local) - WARNING: Wipes world state but keeps players
 	$(MANAGE) init_game --settings=$(SETTINGS)
 
 deploy-migrate: ## Run database migrations (PythonAnywhere/production)
@@ -67,20 +58,24 @@ deploy-migrate: ## Run database migrations (PythonAnywhere/production)
 deploy-init: deploy-migrate ## Initialize game world data (PythonAnywhere/production)
 	$(PYTHONANYWHERE_MANAGE) init_game --settings=$(PYTHONANYWHERE_SETTINGS)
 
-run: clean init ## Full clean, build/initialize, and run the Django development server
+run: venv ## Run the Django development server (kills existing ones first)
+	@echo "Killing existing python processes..."
+	-pkill -9 python || true
+	$(MANAGE) migrate --settings=$(SETTINGS)
 	$(MANAGE) runserver 0.0.0.0:8008 --settings=$(SETTINGS)
 
 deploy-run: ## Run the Django development server (PythonAnywhere/production)
 	$(PYTHONANYWHERE_MANAGE) runserver 0.0.0.0:8008 --settings=$(PYTHONANYWHERE_SETTINGS)
 
-repair: ## Deep repair: Nuke venv and start over
-	@echo "Performing deep repair..."
-	rm -rf $(VENV)
-	$(MAKE) run
+repair: clean ## Deep repair: Nuke everything including the database and start over
+	@echo "Wiping database and all migrations..."
+	rm -f db.sqlite3
+	find . -path "*/migrations/*.py" -not -name "__init__.py" -exec rm -f {} +
+	$(MAKE) init
 
-test: setup ## Run django tests
+test: venv ## Run django tests
 	$(MANAGE) test --settings=$(SETTINGS)
 
-lint: setup ## Run static analysis
+lint: venv ## Run static analysis
 	@echo "Running lint (flake8)..."
 	$(PYTHON) -m flake8 . --exclude=*/migrations/*,*/settings/*,$(VENV)/*
