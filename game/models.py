@@ -87,6 +87,8 @@ class Player(models.Model):
     location = models.ForeignKey(Room, on_delete=models.SET_NULL, null=True)
     # Cyborg, Bio-hacked, Android, Mutant, Human
     race = models.CharField(max_length=50)
+    # Male, Female, Non-binary, Other
+    gender = models.CharField(max_length=20, default='Other')
     # Street Samurai, Netrunner, Techie, Medie, Fixer
     game_class = models.CharField(max_length=50)
     online = models.BooleanField(default=False)
@@ -106,7 +108,8 @@ class Player(models.Model):
         'NPC', on_delete=models.SET_NULL, null=True, blank=True, related_name='combating_players'
     )
     last_combat_player = models.ForeignKey(
-        'Player', on_delete=models.SET_NULL, null=True, blank=True, related_name='combating_players_target'
+        'Player', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='combating_players_target'
     )
     stalk_count = models.IntegerField(default=0)
 
@@ -116,6 +119,10 @@ class Player(models.Model):
 
     # Sneaking state
     hidden = models.BooleanField(default=False)
+
+    # Resting state
+    resting = models.BooleanField(default=False)
+    rest_started_at = models.DateTimeField(null=True, blank=True)
 
     # PvP notification - message shown to player on next poll
     notification = models.TextField(default='', blank=True)
@@ -180,3 +187,14 @@ class GameWorld(models.Model):
     total_npcs = models.IntegerField(default=0)
     total_items = models.IntegerField(default=0)
     version = models.IntegerField(default=1)
+
+
+class ProceduralWeaponSpawn(models.Model):
+    """Tracks procedurally generated weapons in each zone."""
+    zone = models.CharField(max_length=100)
+    room = models.ForeignKey(Room, on_delete=models.CASCADE)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    spawned_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ['zone', 'item']

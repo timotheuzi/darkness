@@ -24,6 +24,7 @@ def register_view(request):
         name = request.POST.get('name')
         password = request.POST.get('password')
         race = request.POST.get('race', 'Human')
+        gender = request.POST.get('gender', 'Other')
         game_class = request.POST.get('gameClass', 'Street Samurai')
 
         # User customized stats
@@ -61,26 +62,26 @@ def register_view(request):
             }
 
             race_base_stats = {
-                'Cyborg': {'str_stat': 15, 'hea_stat': 12, 'agi_stat': 8, 'int_stat': 12,
-                           'cha_stat': 5, 'wil_stat': 8},
-                'Bio-hacked': {'hea_stat': 15, 'str_stat': 12, 'cha_stat': 8, 'agi_stat': 12,
-                               'int_stat': 8, 'wil_stat': 5},
-                'Android': {'int_stat': 17, 'wil_stat': 12, 'cha_stat': 5, 'hea_stat': 8,
-                            'str_stat': 10, 'agi_stat': 8},
-                'Mutant': {'str_stat': 13, 'hea_stat': 18, 'wil_stat': 7, 'cha_stat': 6,
-                           'agi_stat': 11, 'int_stat': 5},
-                'Human': {'cha_stat': 15, 'wil_stat': 13, 'str_stat': 7, 'hea_stat': 7,
-                          'agi_stat': 10, 'int_stat': 8},
-                'Void-Walker': {'wil_stat': 20, 'agi_stat': 12, 'str_stat': 5, 'hea_stat': 8,
-                                'int_stat': 10, 'cha_stat': 5},
-                'Synth-Soul': {'int_stat': 22, 'cha_stat': 5, 'wil_stat': 15, 'str_stat': 5,
-                               'hea_stat': 5, 'agi_stat': 8},
-                'Chrome-Crawler': {'str_stat': 18, 'agi_stat': 18, 'int_stat': 5, 'cha_stat': 5,
-                                   'hea_stat': 10, 'wil_stat': 4},
-                'Elf': {'agi_stat': 14, 'wil_stat': 10, 'hea_stat': 7, 'cha_stat': 12,
-                        'str_stat': 8, 'int_stat': 9},
-                'Goblin': {'cha_stat': 15, 'agi_stat': 13, 'str_stat': 5, 'int_stat': 12,
-                           'hea_stat': 8, 'wil_stat': 7},
+                'Cyborg': {'str_stat': 13, 'hea_stat': 12, 'agi_stat': 10, 'int_stat': 11,
+                           'cha_stat': 8, 'wil_stat': 10},
+                'Bio-hacked': {'hea_stat': 13, 'str_stat': 11, 'cha_stat': 9, 'agi_stat': 11,
+                               'int_stat': 10, 'wil_stat': 10},
+                'Android': {'int_stat': 14, 'wil_stat': 12, 'cha_stat': 7, 'hea_stat': 10,
+                            'str_stat': 10, 'agi_stat': 10},
+                'Mutant': {'str_stat': 12, 'hea_stat': 13, 'wil_stat': 10, 'cha_stat': 8,
+                           'agi_stat': 11, 'int_stat': 10},
+                'Human': {'cha_stat': 12, 'wil_stat': 11, 'str_stat': 10, 'hea_stat': 10,
+                          'agi_stat': 10, 'int_stat': 10},
+                'Void-Walker': {'wil_stat': 14, 'agi_stat': 11, 'str_stat': 8, 'hea_stat': 10,
+                                'int_stat': 10, 'cha_stat': 8},
+                'Synth-Soul': {'int_stat': 15, 'cha_stat': 7, 'wil_stat': 12, 'str_stat': 8,
+                               'hea_stat': 10, 'agi_stat': 10},
+                'Chrome-Crawler': {'str_stat': 13, 'agi_stat': 13, 'int_stat': 8, 'cha_stat': 8,
+                                   'hea_stat': 10, 'wil_stat': 10},
+                'Elf': {'agi_stat': 12, 'wil_stat': 10, 'hea_stat': 9, 'cha_stat': 11,
+                        'str_stat': 9, 'int_stat': 10},
+                'Goblin': {'cha_stat': 12, 'agi_stat': 11, 'str_stat': 8, 'int_stat': 10,
+                           'hea_stat': 10, 'wil_stat': 10},
             }
 
             if race in race_base_stats:
@@ -105,16 +106,16 @@ def register_view(request):
             # Class Modifiers
             class_mods = {
                 'Street Samurai': {'attack': 5},
-                'Netrunner': {'mana_max': 20},
+                'Netrunner': {'mana_max': 40},
                 'Techie': {'defense': 3},
-                'Medie': {'hp_max': 20},
+                'Medie': {'hp_max': 40},
                 'Fixer': {'money': 50},
-                'Thief': {'attack': 2},
+                'Thief': {'attack': 3},
                 'Heavy': {'defense': 5, 'hp_max': 30},
                 'Psycher': {'mana_max': 40},
-                'Warlock': {'mana_max': 30},
-                'Priest': {'hp_max': 25},
-                'Trickster': {},
+                'Warlock': {'mana_max': 40},
+                'Priest': {'hp_max': 45},
+                'Trickster': {'mana_max': 30},
             }
 
             c_mods = class_mods.get(game_class, {})
@@ -133,7 +134,7 @@ def register_view(request):
             initial_money = 25 + c_mods.get('money', 0)
 
             Player.objects.create(
-                user=user, race=race, game_class=game_class,
+                user=user, race=race, gender=gender, game_class=game_class,
                 location=start_room, money=initial_money, **stats
             )
             return JsonResponse({
@@ -254,6 +255,8 @@ def command_view(request):
             output = services.use_item(player, args)
         elif command == 'train':
             output = services.train_stat(player, args)
+        elif command == 'rest':
+            output = services.rest_command(player)
         else:
             # Check for special moves dynamically
             move_output = services.use_ability(player, command, args)

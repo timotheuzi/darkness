@@ -35,4 +35,4 @@ local_settings.py
 staticfiles/
 
 ## procedural artifacts
-0001_initial.py
+000*

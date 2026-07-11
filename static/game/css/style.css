@@ -180,7 +180,7 @@ body::before {
 /* Status colors */
 .msg-room-name { color: var(--ansi-bright-cyan); font-weight: bold; text-shadow: 0 0 2px var(--ansi-cyan); }
 .msg-room-desc { color: var(--ansi-white); }
-.msg-exits { color: var(--ansi-cyan); }
+.msg-exits { color: var(--ansi-bright-cyan); }
 .msg-npc { color: var(--ansi-bright-red); }
 .msg-player { color: var(--ansi-bright-green); }
 .msg-system { color: var(--ansi-bright-yellow); }

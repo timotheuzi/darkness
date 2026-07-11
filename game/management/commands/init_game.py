@@ -17,8 +17,8 @@ WEAPON_TABLE = [
      {"agi_bonus": 2}),
     ("Heavy Slugger", "High-caliber kinetic pistol.", 20, 750, "uncommon", -2, "one-handed",
      {"str_bonus": 1}),
-    ("Laser Drill", "Industrial tool repurposed for violence.", 15, 450, "uncommon", 0, "one-handed",
-     {"int_bonus": 2}),
+    ("Laser Drill", "Industrial tool repurposed for violence.", 15, 450,
+     "uncommon", 0, "one-handed", {"int_bonus": 2}),
     ("Plasma Caster", "Superheated plasma bolt launcher.", 28, 1200, "rare", -3, "two-handed",
      {"wil_bonus": 3}),
     ("Neural Spike", "Disrupts cybernetic implants.", 35, 2000, "rare", 8, "one-handed",
@@ -116,7 +116,8 @@ BOSS_WEAPONS = {
 
 ARMOR_TABLE = [
     ("Mesh Vest", "Basic kinetic protection.", 8, 150, "common", {"hea_bonus": 2}),
-    ("Riot Shield", "Reinforced alloy shield.", 20, 1000, "uncommon", {"str_bonus": 3, "hea_bonus": 5}),
+    ("Riot Shield", "Reinforced alloy shield.", 20, 1000, "uncommon",
+     {"str_bonus": 3, "hea_bonus": 5}),
     ("Synth-Leathers", "Tough street fabric.", 4, 80, "common", {"agi_bonus": 2}),
     ("Titanium Exo-Frame", "Full body exoskeleton.", 35, 3000, "rare",
      {"str_bonus": 10, "hea_bonus": 10}),
@@ -211,8 +212,10 @@ ZONE_TEMPLATES = [
         "min_lvl": 6, "max_lvl": 10, "theme": "corporate", "zone_id": "corporate",
         "npc_prefix": "Corp", "npc_types": ["corporate", "drone", "security", "agent"],
         "bosses": [
-            {"name": "Executive Enforcer", "desc": "Security officer in custom power armor."},
-            {"name": "VP of Acquisitions", "desc": "A suit-wearing shark with mono-molecular claws."}
+            {"name": "Executive Enforcer",
+             "desc": "Security officer in custom power armor."},
+            {"name": "VP of Acquisitions",
+             "desc": "A suit-wearing shark with mono-molecular claws."}
         ],
         "shop": "Corp Supply Depot",
         "room_names": ["Tower", "Office", "Lobby", "Suite", "Lab", "Boardroom", "Vault",
@@ -235,8 +238,10 @@ ZONE_TEMPLATES = [
         "min_lvl": 8, "max_lvl": 12, "theme": "cyber", "zone_id": "undergrid",
         "npc_prefix": "Glitch", "npc_types": ["drone", "gang", "virus", "ghost"],
         "bosses": [
-            {"name": "The Arch-Decompiler", "desc": "A semi-sentient AI virus taking physical form."},
-            {"name": "Root-Access Spectre", "desc": "Legendary hacker who uploaded his consciousness."}
+            {"name": "The Arch-Decompiler",
+             "desc": "A semi-sentient AI virus taking physical form."},
+            {"name": "Root-Access Spectre",
+             "desc": "Legendary hacker who uploaded his consciousness."}
         ],
         "shop": "Data Market",
         "room_names": ["Node", "Port", "Terminal", "Gateway", "Matrix", "Buffer", "Stream",
@@ -511,9 +516,9 @@ class Command(BaseCommand):
 
             for i in range(1, rooms_per_zone):
                 is_boss_room = (i >= rooms_per_zone - 2)
-                rname = f"{zone['name']} - {random.choice(zone['room_names'])} {chr(65+i)}"
+                rname = f"{zone['name']} - {random.choice(zone['room_names'])} {chr(65 + i)}"
                 if is_boss_room:
-                    rname = f"{zone['name']} - BOSS LAIR {chr(65+i)}"
+                    rname = f"{zone['name']} - BOSS LAIR {chr(65 + i)}"
                 detail = random.choice(zone['room_details'])
                 rdesc = f"{zone['desc']} {detail}"
 

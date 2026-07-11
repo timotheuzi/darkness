@@ -2,7 +2,22 @@ import json
 import random
 from django.utils import timezone
 from django.db.models import Q
-from .models import Player, Room, NPC, Item, InventoryItem, ChatMessage
+from .models import Player, Room, NPC, Item, InventoryItem, ChatMessage, ProceduralWeaponSpawn
+
+# Race Special Characteristics
+RACE_CHARACTERISTICS = {
+    'Cyborg': 'Cybernetic Resilience: +10% resistance to debuffs and status effects.',
+    'Bio-hacked': 'Adrenal Efficiency: Natural healing 20% faster, reduced addiction.',
+    'Android': 'Systematic Mind: +15% mana efficiency, immune to mind-affecting effects.',
+    'Mutant': 'Adaptive Biology: Stats can exceed normal caps by 5 points.',
+    'Human': 'Versatile Potential: Gains 1.5x stat points on level up.',
+    'Void-Walker': 'Phase Shift: Can dodge 10% of incoming attacks.',
+    'Synth-Soul': 'Digital Presence: +20% stealth effectiveness, reduced physical stats.',
+    'Chrome-Crawler': 'Overclocked: +1 extra attack per combat round.',
+    'Elf': 'Ancient Grace: +10% crit chance, natural affinity for precision.',
+    'Goblin': 'Street Cunning: +15% chance to find extra loot from NPCs.',
+}
+
 
 # Class Ability Definitions - Learned every 5 levels until Lv 30
 CLASS_MOVES = {
@@ -137,65 +152,102 @@ def get_reputation_title(karma):
 
 def get_attribute_desc(stat_name, val):
     if stat_name == 'str':
-        if val < 8: return "feeble and scrawny"
-        if val < 13: return "of average build"
-        if val < 18: return "visibly toned and athletic"
-        if val < 25: return "powerful and heavily muscled"
+        if val < 8:
+            return "feeble and scrawny"
+        if val < 13:
+            return "of average build"
+        if val < 18:
+            return "visibly toned and athletic"
+        if val < 25:
+            return "powerful and heavily muscled"
         return "a titan of pure physical power"
     if stat_name == 'agi':
-        if val < 8: return "clumsy and awkward"
-        if val < 13: return "steady on their feet"
-        if val < 18: return "lithe and graceful"
-        if val < 25: return "incredibly swift and precise"
+        if val < 8:
+            return "clumsy and awkward"
+        if val < 13:
+            return "steady on their feet"
+        if val < 18:
+            return "lithe and graceful"
+        if val < 25:
+            return "incredibly swift and precise"
         return "moving with supernatural speed"
     if stat_name == 'int':
-        if val < 8: return "slow-witted"
-        if val < 13: return "of average intelligence"
-        if val < 18: return "sharp and analytical"
-        if val < 25: return "brilliant and calculating"
+        if val < 8:
+            return "slow-witted"
+        if val < 13:
+            return "of average intelligence"
+        if val < 18:
+            return "sharp and analytical"
+        if val < 25:
+            return "brilliant and calculating"
         return "possessing a mind like a supercomputer"
     if stat_name == 'wil':
-        if val < 8: return "easily swayed"
-        if val < 13: return "of average resolve"
-        if val < 18: return "determined and focused"
-        if val < 25: return "unshakeable in their will"
+        if val < 8:
+            return "easily swayed"
+        if val < 13:
+            return "of average resolve"
+        if val < 18:
+            return "determined and focused"
+        if val < 25:
+            return "unshakeable in their will"
         return "radiating an aura of absolute mental dominance"
     if stat_name == 'cha':
-        if val < 8: return "unpleasant and abrasive"
-        if val < 13: return "plain and unremarkable"
-        if val < 18: return "charming and charismatic"
-        if val < 25: return "strikingly beautiful"
+        if val < 8:
+            return "unpleasant and abrasive"
+        if val < 13:
+            return "plain and unremarkable"
+        if val < 18:
+            return "charming and charismatic"
+        if val < 25:
+            return "strikingly beautiful"
         return "possessing an almost divine, otherworldly beauty"
     if stat_name == 'hea':
-        if val < 8: return "sickly and fragile"
-        if val < 13: return "reasonably healthy"
-        if val < 18: return "tough and resilient"
-        if val < 25: return "exceptionally hardy"
+        if val < 8:
+            return "sickly and fragile"
+        if val < 13:
+            return "reasonably healthy"
+        if val < 18:
+            return "tough and resilient"
+        if val < 25:
+            return "exceptionally hardy"
         return "virtually indestructible"
     return "average"
 
 
 def get_combat_desc(atk, dfn, is_self=False):
     pronoun = "You" if is_self else "They"
-    if atk < 15: atk_desc = "minimal combat capability"
-    elif atk < 30: atk_desc = "competent offensive skills"
-    elif atk < 60: atk_desc = "deadly precision"
-    elif atk < 100: atk_desc = "devastating power"
-    else: atk_desc = "unstoppable destructive force"
+    if atk < 15:
+        atk_desc = "minimal combat capability"
+    elif atk < 30:
+        atk_desc = "competent offensive skills"
+    elif atk < 60:
+        atk_desc = "deadly precision"
+    elif atk < 100:
+        atk_desc = "devastating power"
+    else:
+        atk_desc = "unstoppable destructive force"
 
-    if dfn < 10: dfn_desc = "fragile defenses"
-    elif dfn < 25: dfn_desc = "solid protection"
-    elif dfn < 50: dfn_desc = "impenetrable shielding"
-    else: dfn_desc = "the resilience of a fortress"
-    
+    if dfn < 10:
+        dfn_desc = "fragile defenses"
+    elif dfn < 25:
+        dfn_desc = "solid protection"
+    elif dfn < 50:
+        dfn_desc = "impenetrable shielding"
+    else:
+        dfn_desc = "the resilience of a fortress"
+
     return f"{pronoun} exhibit {atk_desc} and {dfn_desc}."
 
 
 def get_threat_desc(lvl):
-    if lvl < 5: return "minimal threat"
-    if lvl < 10: return "moderate threat"
-    if lvl < 15: return "significant threat"
-    if lvl < 25: return "lethal threat"
+    if lvl < 5:
+        return "minimal threat"
+    if lvl < 10:
+        return "moderate threat"
+    if lvl < 15:
+        return "significant threat"
+    if lvl < 25:
+        return "lethal threat"
     return "apocalyptic threat"
 
 
@@ -204,10 +256,14 @@ def get_rarity_desc(rarity):
 
 
 def get_item_bonus_desc(bonus):
-    if bonus <= 0: return "no noticeable"
-    if bonus < 5: return "slight"
-    if bonus < 10: return "modest"
-    if bonus < 20: return "significant"
+    if bonus <= 0:
+        return "no noticeable"
+    if bonus < 5:
+        return "slight"
+    if bonus < 10:
+        return "modest"
+    if bonus < 20:
+        return "significant"
     return "massive"
 
 
@@ -237,6 +293,7 @@ def get_help(player):
     sb.append("HELP/?        : Display this manual")
     sb.append("USE <item>    : Use hardware/consumable/drug/scroll")
     sb.append("TRAIN <stat>  : Spend stat points (STR, INT, WIL, AGI, HEA, CHA)")
+    sb.append("REST          : Rest to recover HP (broken by movement/combat/full HP)")
     sb.append("EXIT          : Log out and disconnect from the grid")
 
     if room.exits:
@@ -277,19 +334,27 @@ def get_top_ten():
     top_players = Player.objects.order_by('-lvl', '-exp')[:10]
     sb = ["\n=== TOP 10 ADVENTURERS ==="]
     for i, p in enumerate(top_players, 1):
-        sb.append(f"{i:2}. {p.user.username:15} | Threat: {get_threat_desc(p.lvl)} | Class: {p.game_class}")
+        sb.append(f"{i:2}. {p.user.username:15} | Threat: {get_threat_desc(p.lvl)} | "
+                  f"Class: {p.game_class}")
     return "\n".join(sb)
 
 
 def get_procedural_desc(obj, viewer=None):
     if isinstance(obj, Player):
         is_self = (viewer and obj.id == viewer.id)
-        armor = InventoryItem.objects.filter(player=obj, equipped=True,
-                                             item__item_type='armor').first()
-        weapon = InventoryItem.objects.filter(player=obj, equipped=True,
-                                              item__item_type='weapon').first()
+        equipped_items = InventoryItem.objects.filter(player=obj, equipped=True)
+        armor = equipped_items.filter(item__item_type='armor').first()
+        weapon = equipped_items.filter(item__item_type='weapon').first()
+        other_equipped = equipped_items.exclude(item__item_type__in=['armor', 'weapon'])
 
         rep = get_reputation_title(obj.karma)
+        gender_pronoun = obj.gender.lower()
+        if gender_pronoun == 'male':
+            pronoun_cap = "He"
+        elif gender_pronoun == 'female':
+            pronoun_cap = "She"
+        else:
+            pronoun_cap = "They"
 
         if is_self:
             desc = f"You are a {obj.race} {obj.game_class} known as a {rep}. "
@@ -299,22 +364,28 @@ def get_procedural_desc(obj, viewer=None):
                 desc += "You are wearing standard-issue synth-rags. "
             if weapon:
                 desc += f"You are wielding {weapon.item.name}. "
+            if other_equipped.exists():
+                names = [ei.item.name for ei in other_equipped]
+                desc += f"You also have {', '.join(names)} active. "
         else:
-            desc = f"A {obj.race} {obj.game_class} known as a {rep}. "
+            desc = f"{pronoun_cap} is a {obj.race} {obj.game_class} known as a {rep}. "
             if armor:
-                desc += f"Wearing {armor.item.name}. "
+                desc += f"{pronoun_cap} is wearing {armor.item.name}. "
             else:
-                desc += "Wearing standard-issue synth-rags. "
+                desc += f"{pronoun_cap} is wearing standard-issue synth-rags. "
             if weapon:
-                desc += f"Wielding {weapon.item.name}. "
+                desc += f"{pronoun_cap} is wielding {weapon.item.name}. "
+            if other_equipped.exists():
+                names = [ei.item.name for ei in other_equipped]
+                desc += f"{pronoun_cap} also has {', '.join(names)} active. "
 
         desc += f"{get_combat_desc(obj.attack, obj.defense, is_self=is_self)} "
-        
+
         pronoun = "you" if is_self else "they"
         subject = "You" if is_self else "They"
         verb = "are" if is_self else "appear"
         seem_verb = "seem" if is_self else "seem"
-        
+
         desc += (f"Physically, {pronoun} {verb} {get_attribute_desc('str', obj.str_stat)} and "
                  f"{get_attribute_desc('agi', obj.agi_stat)}. {subject} {verb} "
                  f"{get_attribute_desc('hea', obj.hea_stat)}, yet {seem_verb} "
@@ -383,7 +454,7 @@ def get_look(player, target_name=None):
         if target_name_lower.startswith('at '):
             target_name_lower = target_name_lower[3:].strip()
 
-        if (target_name_lower in ['me', 'self'] or
+        if (target_name_lower in ['me', 'sel'] or
                 target_name_lower == player.user.username.lower()):
             return f"\n[SCAN: {player.user.username}]\n{get_procedural_desc(player, viewer=player)}"
 
@@ -560,8 +631,23 @@ def move_player(player, direction):
 
     new_room_id = player.location.exits[direction]
     try:
+        # Store old room for broadcast
+        old_room = player.location
+
+        # Interrupt rest if player moves
+        if player.resting:
+            player.resting = False
+            player.rest_started_at = None
+            player.save()
+
         player.location = Room.objects.get(id=new_room_id)
         player.save()
+
+        # Broadcast exit to old room
+        broadcast_room_event(player, old_room, None, 'exit')
+
+        # Broadcast entry to new room
+        broadcast_room_event(player, None, player.location, 'enter')
 
         # If hidden and moving, re-roll stealth detection for the new room
         stealth_break_msg = ""
@@ -581,11 +667,15 @@ def move_player(player, direction):
             if random.randint(1, 100) > stay_chance:
                 player.hidden = False
                 player.save()
-                stealth_break_msg = (f"\n[ALERT] Your cover is blown in the new sector! "
-                                     f"({stay_chance}% stay hidden)")
+                stealth_break_msg = (
+                    f"\n[ALERT] Your cover is blown in the new sector! "
+                    f"({stay_chance}% stay hidden)"
+                )
             else:
                 player.save()
-                stealth_break_msg = f"\n[STEALTH] You remain hidden. ({stay_chance}% stay hidden)"
+                stealth_break_msg = (
+                    f"\n[STEALTH] You remain hidden. ({stay_chance}% stay hidden)"
+                )
 
         respawn_msg = respawn_npcs(player.location)
         look_text = get_look(player)
@@ -616,15 +706,56 @@ def move_player(player, direction):
                 player.last_combat_npc = attacker
                 player.save()
 
-        return (look_text + stalk_msg + stealth_break_msg + addiction_msg +
-                respawn_msg + auto_attack_msg)
+        return (look_text + stalk_msg + stealth_break_msg + addiction_msg
+                + respawn_msg + auto_attack_msg)
     except Room.DoesNotExist:
         return "NAVIGATION ERROR."
 
 
-def calculate_damage(atk, dfn, element='physical', weakness='none', resistance='none'):
+def broadcast_room_event(player, old_room, new_room, event_type):
+    """Broadcast room entry/exit events to players in the affected rooms."""
+    if event_type == 'exit' and old_room:
+        players_in_old = Player.objects.filter(location=old_room, online=True).exclude(id=player.id)
+        for p in players_in_old:
+            p.notification = (p.notification +
+                              f"\n[GRID] {player.user.username} leaves the sector.").strip()
+            p.save(update_fields=['notification'])
+
+    if event_type == 'enter' and new_room:
+        players_in_new = Player.objects.filter(location=new_room, online=True).exclude(id=player.id)
+        for p in players_in_new:
+            p.notification = (p.notification +
+                              f"\n[GRID] {player.user.username} enters the sector.").strip()
+            p.save(update_fields=['notification'])
+
+
+def broadcast_npc_movement(npc, old_room, new_room):
+    """Broadcast NPC movement between rooms."""
+    if old_room and old_room != new_room:
+        players_in_old = Player.objects.filter(location=old_room, online=True)
+        for p in players_in_old:
+            p.notification = (p.notification +
+                              f"\n[GRID] {npc.name} leaves the sector.").strip()
+            p.save(update_fields=['notification'])
+
+    if new_room:
+        players_in_new = Player.objects.filter(location=new_room, online=True)
+        for p in players_in_new:
+            p.notification = (p.notification +
+                              f"\n[GRID] {npc.name} enters the sector.").strip()
+            p.save(update_fields=['notification'])
+
+
+def calculate_damage(atk, dfn, element='physical', weakness='none',
+                     resistance='none', crit_chance=0):
     base_dmg = max(1, atk - dfn // 2)
     dmg = random.randint(max(1, base_dmg - 2), base_dmg + 2)
+
+    # Critical strike check
+    is_crit = False
+    if crit_chance > 0 and random.randint(1, 100) <= crit_chance:
+        is_crit = True
+        dmg = int(dmg * 2)  # Critical hits do 2x damage
 
     strong_against = {'fire': 'air', 'air': 'earth', 'earth': 'water', 'water': 'fire'}
 
@@ -634,7 +765,7 @@ def calculate_damage(atk, dfn, element='physical', weakness='none', resistance='
         elif resistance == element:
             dmg = int(dmg * 0.5)
 
-    return dmg
+    return dmg, is_crit
 
 
 def handle_player_defeat(player, victor_player=None):
@@ -649,13 +780,16 @@ def handle_player_defeat(player, victor_player=None):
     player.auto_attack = False
     player.save()
     output += f"\nRespawned at The Neon Hub. Lost {stolen} credits."
-    
+
     if victor_player:
         victor_player.money += stolen
         victor_player.exp += player.lvl * 50
-        victor_player.notification = f"\nYou neutralized {player.user.username}! +{player.lvl * 50} exp, +{stolen} credits."
+        victor_player.notification = (
+            f"\nYou neutralized {player.user.username}! "
+            f"+{player.lvl * 50} exp, +{stolen} credits."
+        )
         victor_player.save()
-    
+
     return output
 
 
@@ -671,7 +805,7 @@ def combat_round(player):
         return ""
 
     target = target_npc or target_player
-    
+
     # Check if target is still valid/in room
     if isinstance(target, NPC):
         if target.hp <= 0 or target.location != player.location:
@@ -687,8 +821,9 @@ def combat_round(player):
             return f"\n[COMBAT] {target.user.username} is no longer here."
 
     # Player attacks
-    equipped_weapon = InventoryItem.objects.filter(player=player, equipped=True,
-                                                   item__item_type='weapon').first()
+    equipped_weapon = InventoryItem.objects.filter(
+        player=player, equipped=True, item__item_type='weapon'
+    ).first()
     speed_bonus = equipped_weapon.item.speed_bonus if equipped_weapon else 0
     agi_attacks = player.agi_stat // 10
     base_attacks = 1 + (speed_bonus // 10) if speed_bonus > 0 else 1
@@ -696,16 +831,28 @@ def combat_round(player):
 
     target_name = target.name if target_npc else target.user.username
 
+    # Calculate critical strike chance based on agility (for physical attacks)
+    # AGI stat: 1-25+ gives 1-5% crit chance, capping at 10%
+    agi_crit_chance = min(10, max(1, player.agi_stat // 5))
+
     for _ in range(p_attacks):
         if isinstance(target, NPC):
-            dmg = calculate_damage(player.attack, target.defense, element='physical',
-                                   weakness=target.weakness, resistance=target.resistance)
+            dmg, is_crit = calculate_damage(
+                player.attack, target.defense, element='physical',
+                weakness=target.weakness, resistance=target.resistance,
+                crit_chance=agi_crit_chance
+            )
         else:
-            dmg = calculate_damage(player.attack, target.defense)
-        
+            dmg, is_crit = calculate_damage(
+                player.attack, target.defense, crit_chance=agi_crit_chance
+            )
+
         target.hp -= dmg
         target.save()
-        output += f"\nYou hit {target_name} for {dmg} damage."
+        if is_crit:
+            output += f"\n[CRIT] You hit {target_name} for {dmg} damage!"
+        else:
+            output += f"\nYou hit {target_name} for {dmg} damage."
 
         if target.hp <= 0:
             # Win logic
@@ -713,18 +860,23 @@ def combat_round(player):
                 player.exp += target.exp_drop
                 player.money += target.money_drop
                 player.last_combat_npc = None
-                
-                if target.karma_alignment < -30: player.karma += 5
-                elif target.karma_alignment > 30: player.karma -= 10
-                else: player.karma += 1
-                
+
+                if target.karma_alignment < -30:
+                    player.karma += 5
+                elif target.karma_alignment > 30:
+                    player.karma -= 10
+                else:
+                    player.karma += 1
+
                 player.karma = max(-100, min(100, player.karma))
                 player.save()
 
-                output += f"\nTarget neutralized! +{target.exp_drop} exp, +{target.money_drop} credits."
+                output += (f"\nTarget neutralized! +{target.exp_drop} exp, "
+                           f"+{target.money_drop} credits.")
                 for item in target.drops.all():
                     ii, created = InventoryItem.objects.get_or_create(player=player, item=item)
-                    if not created: ii.quantity += 1
+                    if not created:
+                        ii.quantity += 1
                     ii.save()
                     output += f"\nRetrieved: {item.name}"
                 output += check_level_up(player)
@@ -735,16 +887,19 @@ def combat_round(player):
                 player.money += stolen
                 player.last_combat_player = None
                 player.save()
-                
+
                 hub = Room.objects.get(id=1)
                 target.hp = target.hp_max // 2
                 target.money -= stolen
                 target.location = hub
-                target.notification = f"\nYou were neutralized by {player.user.username}! Lost {stolen} credits."
+                notif_msg = (f"\nYou were neutralized by {player.user.username}! "
+                             f"Lost {stolen} credits.")
+                target.notification = notif_msg
                 target.save()
-                output += f"\nYou neutralized {target_name}! +{exp_gain} exp, +{stolen} credits."
+                output += (f"\nYou neutralized {target_name}! +{exp_gain} exp, "
+                           f"+{stolen} credits.")
                 output += check_level_up(player)
-            
+
             player.auto_attack = False
             player.save()
             return output
@@ -758,31 +913,39 @@ def execute_opponent_attack(player, target):
     """Internal logic for the opponent striking the player."""
     output = ""
     target_npc = isinstance(target, NPC)
-    
+
     if target_npc:
-        target_dmg = calculate_damage(target.attack, player.defense, element=target.element)
+        target_dmg, _ = calculate_damage(target.attack, player.defense, element=target.element)
         player.hp -= target_dmg
         output += f"\n{target.name} hits you for {target_dmg} damage."
     else:
-        # opponent is a Player
-        t_weapon = InventoryItem.objects.filter(player=target, equipped=True,
-                                                item__item_type='weapon').first()
+        # opponent is a Player - can also crit based on their AGI
+        t_weapon = InventoryItem.objects.filter(
+            player=target, equipped=True, item__item_type='weapon'
+        ).first()
         t_speed = t_weapon.item.speed_bonus if t_weapon else 0
         t_agi_attacks = target.agi_stat // 10
         t_base_attacks = 1 + (t_speed // 10) if t_speed > 0 else 1
         t_attacks = t_base_attacks + t_agi_attacks
-        
+        t_crit_chance = min(10, max(1, target.agi_stat // 5))
+
         for _ in range(t_attacks):
-            counter_dmg = calculate_damage(target.attack, player.defense)
+            counter_dmg, is_crit = calculate_damage(
+                target.attack, player.defense, crit_chance=t_crit_chance
+            )
             player.hp -= counter_dmg
-            output += f"\n{target.user.username} hits you for {counter_dmg} damage."
-            if player.hp <= 0: break
+            if is_crit:
+                output += f"\n[CRIT] {target.user.username} hits you for {counter_dmg} damage!"
+            else:
+                output += f"\n{target.user.username} hits you for {counter_dmg} damage."
+            if player.hp <= 0:
+                break
 
     player.save()
 
     if player.hp <= 0:
         output += handle_player_defeat(player, victor_player=(None if target_npc else target))
-    
+
     return output
 
 
@@ -794,24 +957,27 @@ def attack_target(player, target_name, auto=False):
             player.save()
             return combat_round(player)
         return "Specify target."
-    
+
     if player.location.safe_zone:
         return "Violence is prohibited in this sector."
 
     # Try to find NPC
-    npc = NPC.objects.filter(location=player.location, name__icontains=target_name, hp__gt=0).first()
+    npc = NPC.objects.filter(location=player.location, name__icontains=target_name,
+                             hp__gt=0).first()
     # Try to find Player
     other = None
     if not npc:
-        other = Player.objects.filter(location=player.location, user__username__icontains=target_name,
-                                      online=True).exclude(id=player.id).first()
+        other = Player.objects.filter(
+            location=player.location, user__username__icontains=target_name,
+            online=True
+        ).exclude(id=player.id).first()
 
     if not npc and not other:
         return "Target not found."
 
     if other:
         if abs(player.lvl - other.lvl) > 3:
-            return f"Target level too distant. Range: +/- 3 levels."
+            return "Target level too distant. Range: +/- 3 levels."
         player.last_combat_player = other
         player.last_combat_npc = None
         player.karma -= 10
@@ -829,7 +995,7 @@ def attack_target(player, target_name, auto=False):
         player.hidden = False
         player.save()
         output += "\n[BACKSTAB] Strike from the shadows! They never saw you coming."
-    
+
     output += combat_round(player)
     return output
 
@@ -839,7 +1005,7 @@ def process_combat_tick(player):
     target = player.last_combat_npc or player.last_combat_player
     if not target:
         return ""
-    
+
     now = timezone.now()
     if not player.last_combat_tick:
         player.last_combat_tick = now
@@ -854,10 +1020,79 @@ def process_combat_tick(player):
             return combat_round(player)
         else:
             # Player is IDLE in combat, opponent takes advantage
-            output = f"\n[COMBAT] You are idle! {target.name if hasattr(target, 'name') else target.user.username} strikes!"
+            t_name = target.name if hasattr(target, 'name') else target.user.username
+            output = f"\n[COMBAT] You are idle! {t_name} strikes!"
             output += execute_opponent_attack(player, target)
             return output
-    
+
+    return ""
+
+
+def rest_command(player):
+    """Allows player to rest and regenerate HP over time."""
+    # Can't rest if in combat
+    if player.last_combat_npc or player.last_combat_player:
+        return "Cannot rest while engaged in combat."
+
+    # Can't rest if already at full HP
+    if player.hp >= player.hp_max:
+        return "Already at full health. No need to rest."
+
+    # Can't rest if already resting
+    if player.resting:
+        return "Already resting."
+
+    # Start resting
+    player.resting = True
+    player.rest_started_at = timezone.now()
+    player.save()
+
+    return "\nYou settle down to rest and recover HP..."
+
+
+def process_resting(player):
+    """Process HP regeneration for resting players. Called during polling."""
+    if not player.resting:
+        return ""
+
+    # Check if rest should be interrupted
+    # Interrupted by: combat, movement (handled elsewhere), or full HP
+    if player.hp >= player.hp_max:
+        player.resting = False
+        player.rest_started_at = None
+        player.save()
+        return "\n[REST] You feel fully recovered. Ready to move."
+
+    if player.last_combat_npc or player.last_combat_player:
+        player.resting = False
+        player.rest_started_at = None
+        player.save()
+        return "\n[REST] Combat detected! Rest interrupted!"
+
+    # Calculate HP regeneration
+    # Base regen: 1 HP per 3 seconds, modified by health stat
+    # Higher HEA = faster regen
+    regen_rate = max(1, player.hea_stat // 5)  # 1-4 HP per tick depending on HEA
+    regen_interval = max(2, 5 - (player.hea_stat // 10))
+    # 2-5 seconds between regen
+
+    if not player.rest_started_at:
+        player.rest_started_at = timezone.now()
+        player.save()
+        return ""
+
+    time_resting = (timezone.now() - player.rest_started_at).total_seconds()
+
+    if time_resting >= regen_interval:
+        # Regenerate HP
+        old_hp = player.hp
+        player.hp = min(player.hp_max, player.hp + regen_rate)
+        player.rest_started_at = timezone.now()
+        player.save()
+
+        if player.hp != old_hp:
+            return f"\n[REST] Recovered {player.hp - old_hp} HP. ({player.hp}/{player.hp_max})"
+
     return ""
 
 
@@ -866,8 +1101,17 @@ def use_ability(player, ability_name, target_name):
 
     # Universal sneak/stealth - works for any class, but success varies
     if ability_name in ('stealth', 'sneak'):
-        if player.last_combat_npc or player.stalk_count > 0:
-            return "\nCannot hide while engaged or stalking targets."
+        # ENHANCED: Can only sneak outside combat
+        if player.last_combat_npc or player.last_combat_player:
+            return "\nCannot hide while engaged in combat. Disengage first."
+
+        # ENHANCED: Can't sneak while resting
+        if player.resting:
+            player.resting = False
+            player.rest_started_at = None
+            player.save()
+            return "\nYou stop resting and stand up to attempt stealth."
+
         if player.location.safe_zone:
             return "\nNo need to hide in a safe sector."
 
@@ -878,28 +1122,37 @@ def use_ability(player, ability_name, target_name):
         max_player_lvl = max([p.lvl for p in players_here]) if players_here.exists() else 0
         threat_lvl = max(max_npc_lvl, max_player_lvl)
 
-        # Base chance: Thief/Trickster get better rates, everyone else struggles
+        # ENHANCED: Sneaking tied to agility stat
+        # Base chance heavily influenced by AGI stat
         if player.game_class in ('Thief', 'Trickster') and player.lvl >= 4:
-            base_chance = 70 + player.agi_stat // 2
+            # Thief/Trickster: AGI is primary stat, get excellent stealth
+            base_chance = 50 + (player.agi_stat * 2)  # 70-130 base, capped at 95
         else:
-            base_chance = 30 + player.agi_stat // 4
+            # Other classes: AGI still matters but less so
+            base_chance = 20 + (player.agi_stat * 1.5)  # 35-95 base
             if player.lvl < 4:
                 base_chance = max(5, base_chance - 20)
 
+        # Threat level penalty
         if threat_lvl > 0:
             lvl_penalty = max(0, (threat_lvl - player.lvl) * 10)
             base_chance -= lvl_penalty
 
+        # Clamp chance between 5% and 95%
         base_chance = max(5, min(95, base_chance))
 
         if random.randint(1, 100) <= base_chance:
             player.hidden = True
             player.save()
-            return f"\nYou melt into the shadows. Hidden!"
+            agi_bonus = (
+                f" (AGI: {player.agi_stat})"
+                if player.game_class not in ('Thief', 'Trickster') else ""
+            )
+            return f"\nYou melt into the shadows. Hidden!{agi_bonus}"
         else:
             player.hidden = False
             player.save()
-            return f"\nFailed to hide. You remain visible."
+            return "\nFailed to hide. You remain visible."
 
     # Check if this command is actually a move for this class
     moves = CLASS_MOVES.get(player.game_class, [])
@@ -928,7 +1181,7 @@ def use_ability(player, ability_name, target_name):
         if player.lvl < 5:
             return "Neural safety lock engaged. Level 5 required to target users."
         if abs(player.lvl - target_player.lvl) > 3:
-            return f"Target level too distant. Range: +/- 3 levels."
+            return "Target level too distant. Range: +/- 3 levels."
         if player.location.safe_zone:
             return "Violence is prohibited in this sector."
 
@@ -949,6 +1202,12 @@ def use_ability(player, ability_name, target_name):
             res += "\nTarget required."
             return
 
+        # Calculate critical strike chance based on INT for spells, AGI for physical
+        if element == 'physical':
+            crit_chance = min(10, max(1, player.agi_stat // 5))
+        else:
+            crit_chance = min(10, max(1, player.int_stat // 5))
+
         # Improved scaling logic
         # Scaling stats based on class primary attributes
         primary_stat = 10
@@ -967,20 +1226,25 @@ def use_ability(player, ability_name, target_name):
 
         # Base power: primary stat influence + base attack influence
         power_val = (primary_stat * 1.5) + (player.attack * 0.5)
-        
+
         # Scaling by ability requirement level (more advanced moves are inherently stronger)
         req_mult = 1.0 + (req_lvl / 20.0)
-        
+
         final_atk = int(power_val * mult * req_mult)
-        
-        dmg = calculate_damage(final_atk, target.defense, element=element)
+
+        dmg, is_crit = calculate_damage(
+            final_atk, target.defense, element=element, crit_chance=crit_chance
+        )
         target.hp -= dmg
 
         if isinstance(target, Player):
             player.karma -= 2
             player.save()
             target.save()
-            res += f"\nYou hit {target.user.username} for {dmg} {element} damage."
+            if is_crit:
+                res += f"\n[CRIT] You hit {target.user.username} for {dmg} {element} damage!"
+            else:
+                res += f"\nYou hit {target.user.username} for {dmg} {element} damage."
             if target.hp <= 0:
                 exp_gain = target.lvl * 50
                 player.exp += exp_gain
@@ -996,7 +1260,10 @@ def use_ability(player, ability_name, target_name):
                 res += f"\nYou neutralized {target.user.username}! +{exp_gain} exp, +{stolen} CR."
         else:
             target.save()
-            res += f"\nYou hit {target.name} for {dmg} {element} damage."
+            if is_crit:
+                res += f"\n[CRIT] You hit {target.name} for {dmg} {element} damage!"
+            else:
+                res += f"\nYou hit {target.name} for {dmg} {element} damage."
             if target.hp <= 0:
                 player.exp += target.exp_drop
                 player.money += target.money_drop
@@ -1023,7 +1290,7 @@ def use_ability(player, ability_name, target_name):
         buff = 20 + (player.agi_stat // 2)
         player.defense += buff
         player.save()
-        res += f"\nDefense boosted significantly."
+        res += "\nDefense boosted significantly."
     elif ability_name == 'whirlwind':
         deal_dmg(1.5)
         deal_dmg(1.5)
@@ -1066,16 +1333,18 @@ def use_ability(player, ability_name, target_name):
         heal = 20 + (player.int_stat * 2)
         player.hp = min(player.hp_max, player.hp + heal)
         player.save()
-        res += f"\nHealed HP."
+        res += "\nHealed HP."
     elif ability_name == 'detox':
-        player.addiction_points = max(0, player.addiction_points - 15 - (player.int_stat // 5))
+        player.addiction_points = max(
+            0, player.addiction_points - 15 - (player.int_stat // 5)
+        )
         player.save()
         res += "\nToxins cleared."
     elif ability_name == 'heal':
         heal = 40 + (player.wil_stat * 2)
         player.hp = min(player.hp_max, player.hp + heal)
         player.save()
-        res += f"\nHealed HP."
+        res += "\nHealed HP."
     elif ability_name == 'bless':
         buff = 10 + (player.wil_stat // 5)
         player.defense += buff
@@ -1093,21 +1362,30 @@ def use_ability(player, ability_name, target_name):
         elem = 'physical'
         if any(x in ability_name for x in ['bolt', 'pulse', 'arc', 'tesla']):
             elem = 'air'
-        if any(x in ability_name for x in ['burn', 'fire', 'flare', 'oni', 'plasma', 'armageddon']):
+        if any(x in ability_name for x in [
+            'burn', 'fire', 'flare', 'oni', 'plasma', 'armageddon'
+        ]):
             elem = 'fire'
-        if any(x in ability_name for x in ['seismic', 'earth', 'singularity', 'dart', 'nanobot']):
+        if any(x in ability_name for x in [
+            'seismic', 'earth', 'singularity', 'dart', 'nanobot'
+        ]):
             elem = 'earth'
-        if any(x in ability_name for x in ['hack', 'water', 'ice', 'black', 'zero', 'siphon']):
+        if any(x in ability_name for x in [
+            'hack', 'water', 'ice', 'black', 'zero', 'siphon'
+        ]):
             elem = 'water'
         deal_dmg(mult, elem)
     elif any(x in ability_name for x in [
         'boost', 'shield', 'iron', 'protocol', 'vanish', 'smoke', 'mirage', 'image', 'bless'
     ]):
-        stat_val = player.wil_stat if player.game_class in ('Psycher', 'Priest') else (player.agi_stat if player.game_class == 'Thief' else player.hea_stat)
+        stat_val = (
+            player.wil_stat if player.game_class in ('Psycher', 'Priest')
+            else (player.agi_stat if player.game_class == 'Thief' else player.hea_stat)
+        )
         buff = 10 + req_lvl + (stat_val // 2)
         player.defense += buff
         player.save()
-        res += f"\nDefense boosted."
+        res += "\nDefense boosted."
     elif any(x in ability_name for x in [
         'heal', 'patch', 'purify', 'restoration', 'resuscitate', 'regeneration'
     ]):
@@ -1115,23 +1393,23 @@ def use_ability(player, ability_name, target_name):
         heal = 20 + req_lvl * 3 + (stat_val * 2)
         player.hp = min(player.hp_max, player.hp + heal)
         player.save()
-        res += f"\nHealed HP."
+        res += "\nHealed HP."
     elif ability_name == 'soul_drain':
         if target:
-            dmg = calculate_damage(int(player.wil_stat * 2.5), target.defense, element='water')
+            dmg, _ = calculate_damage(int(player.wil_stat * 2.5), target.defense, element='water')
             target.hp -= dmg
             player.hp = min(player.hp_max, player.hp + dmg // 2)
             target.save()
             player.save()
-            res += f"\nDrained HP!"
+            res += "\nDrained HP!"
         else:
             res += "\nTarget required."
     elif ability_name in ('scheme', 'sleight_of_hand'):
         if npc:
-            stolen = random.randint(1, 20) + (player.cha_stat)
+            stolen = random.randint(1, 20) + player.cha_stat
             player.money += stolen
             player.save()
-            res += f"\nDrained credits."
+            res += "\nDrained credits."
         else:
             res = "Requires NPC target."
     elif ability_name == 'jackpot':
@@ -1140,12 +1418,12 @@ def use_ability(player, ability_name, target_name):
                 dmg = int(player.cha_stat * 6)
                 target.hp -= dmg
                 target.save()
-                res += f"\nJACKPOT! Damage dealt!"
+                res += "\nJACKPOT! Damage dealt!"
             else:
                 loot = random.randint(50, 300) + (player.cha_stat * 2)
                 player.money += loot
                 player.save()
-                res += f"\nJACKPOT! Credits siphoned!"
+                res += "\nJACKPOT! Credits siphoned!"
         else:
             res += "\nTarget required."
     elif ability_name == 'bamboozle':
@@ -1161,7 +1439,7 @@ def use_ability(player, ability_name, target_name):
         deal_dmg(1.5 + (req_lvl / 15.0))
 
     if npc and npc.hp > 0:
-        npc_dmg = calculate_damage(npc.attack, player.defense, element=npc.element)
+        npc_dmg, _ = calculate_damage(npc.attack, player.defense, element=npc.element)
         player.hp -= npc_dmg
         player.save()
         res += f"\n{npc.name} counters for {npc_dmg} damage!"
@@ -1182,7 +1460,7 @@ def use_item(player, item_name):
     if item.item_type == 'consumable':
         if item.heal_amount > 0:
             player.hp = min(player.hp_max, player.hp + item.heal_amount)
-            output += f"\nHealed HP."
+            output += "\nHealed HP."
     elif item.item_type == 'drug':
         player.str_stat += item.str_bonus
         player.int_stat += item.int_bonus
@@ -1286,9 +1564,12 @@ def get_status_detailed(player):
     sb.append(f"Credits: {player.money} | Stat Points: {player.stat_points} | "
               f"Karma: {player.karma} ({get_reputation_title(player.karma)})")
     sb.append(f"Path (Race): {player.race} | Class: {player.game_class}")
+    race_char = RACE_CHARACTERISTICS.get(player.race, '')
+    if race_char:
+        sb.append(f"Race Trait: {race_char}")
     if player.addiction_points > 0:
         sb.append(f"ADDICTION: {player.addiction_points}%")
-    
+
     sb.append("\nBiological & Cybernetic Data:")
     sb.append(f"  Strength:  {player.str_stat:2} ({get_attribute_desc('str', player.str_stat)})")
     sb.append(f"  Agility:   {player.agi_stat:2} ({get_attribute_desc('agi', player.agi_stat)})")
@@ -1296,7 +1577,13 @@ def get_status_detailed(player):
     sb.append(f"  Willpower: {player.wil_stat:2} ({get_attribute_desc('wil', player.wil_stat)})")
     sb.append(f"  Health:    {player.hea_stat:2} ({get_attribute_desc('hea', player.hea_stat)})")
     sb.append(f"  Charm:     {player.cha_stat:2} ({get_attribute_desc('cha', player.cha_stat)})")
-    
+
+    # Show equipped weapon
+    equipped_weapon = InventoryItem.objects.filter(player=player, equipped=True,
+                                                   item__item_type='weapon').first()
+    if equipped_weapon:
+        sb.append(f"\nEquipped Weapon: {equipped_weapon.item.name}")
+
     sb.append("\nCombat Assessment:")
     sb.append(f"  ATK: {player.attack:2} | DEF: {player.defense:2}")
     sb.append(f"  {get_combat_desc(player.attack, player.defense, is_self=True)}")
@@ -1520,10 +1807,13 @@ def buy_item(player, item_name):
         return "No shop here."
 
     if player.location.shop_inventory.exists():
-        item = player.location.shop_inventory.filter(name__icontains=item_name, price__gt=0).first()
+        item = player.location.shop_inventory.filter(
+            name__icontains=item_name, price__gt=0
+        ).first()
     else:
         item = Item.objects.filter(name__icontains=item_name, price__gt=0).exclude(
-            rarity__in=['rare', 'epic', 'legendary']).first()
+            rarity__in=['rare', 'epic', 'legendary']
+        ).first()
 
     if not item:
         return "Item not in database or unavailable at this terminal."
@@ -1586,9 +1876,155 @@ def sell_item(player, item_name):
     return f"Sold {name} for {price} credits."
 
 
+def generate_random_weapon(zone):
+    """Generate a procedurally spawned weapon with random stat bonuses/penalties."""
+    # Weapon name components
+    prefixes = ["Glitched", "Corrupted", "Enhanced", "Mutated", "Volatile", "Unstable",
+                "Charged", "Infused", "Tainted", "Blessed", "Cursed", "Radiant", "Dark",
+                "Quantum", "Neural", "Cyber", "Void", "Chaos", "Harmonic", "Resonant"]
+
+    weapon_types = ["Blade", "Cutter", "Driver", "Piercer", "Crusher", "Striker", "Launcher",
+                    "Emitter", "Projector", "Rifle", "Pistol", "Cannon", "Gauntlet", "Claw",
+                    "Sword", "Axe", "Mace", "Spear", "Dagger", "Fist"]
+
+    suffixes = ["of Pain", "of Speed", "of Power", "of Shadows", "of Light", "of Chaos",
+                "of Order", "of the Grid", "of the Void", "of the Street", "of the Corp",
+                "of the Net", "of the Wastes", "of the Neon", "of the Deep"]
+
+    # Generate name
+    if random.random() < 0.6:  # 60% chance for prefix
+        name = f"{random.choice(prefixes)} {random.choice(weapon_types)}"
+    else:
+        name = random.choice(weapon_types)
+
+    if random.random() < 0.4:  # 40% chance for suffix
+        name += f" {random.choice(suffixes)}"
+
+    # Random stats
+    attack_bonus = random.randint(5, 25)
+    speed_bonus = random.randint(-5, 10)
+
+    # Random stat bonuses (1-3 stats affected)
+    stat_bonuses = {}
+    num_bonuses = random.randint(1, 3)
+    available_stats = [
+        'str_bonus', 'int_bonus', 'wil_bonus', 'agi_bonus', 'hea_bonus', 'cha_bonus'
+    ]
+
+    for _ in range(num_bonuses):
+        stat = random.choice(available_stats)
+        available_stats.remove(stat)
+        # Can be positive or negative (sagging stats)
+        bonus = random.randint(-5, 8)
+        stat_bonuses[stat] = bonus
+
+    # Determine rarity based on total power
+    total_power = attack_bonus + sum(stat_bonuses.values())
+    if total_power > 20:
+        rarity = 'rare'
+    elif total_power > 12:
+        rarity = 'uncommon'
+    else:
+        rarity = 'common'
+
+    # Price based on power
+    price = max(50, total_power * 30)
+
+    # Create description
+    desc_parts = [f"A procedurally generated weapon from {zone}."]
+    if attack_bonus > 15:
+        desc_parts.append("It hums with dangerous energy.")
+    elif attack_bonus > 10:
+        desc_parts.append("It feels balanced and deadly.")
+    else:
+        desc_parts.append("It looks serviceable.")
+
+    # Add stat description
+    positive_bonuses = [
+        k.replace('_bonus', '').upper() for k, v in stat_bonuses.items() if v > 0
+    ]
+    negative_bonuses = [
+        k.replace('_bonus', '').upper() for k, v in stat_bonuses.items() if v < 0
+    ]
+
+    if positive_bonuses:
+        desc_parts.append(f"Boosts: {', '.join(positive_bonuses)}.")
+    if negative_bonuses:
+        desc_parts.append(f"Sags: {', '.join(negative_bonuses)}.")
+
+    description = " ".join(desc_parts)
+
+    # Create the item
+    item = Item.objects.create(
+        name=name,
+        description=description,
+        item_type='weapon',
+        attack_bonus=attack_bonus,
+        speed_bonus=speed_bonus,
+        rarity=rarity,
+        price=price,
+        subtype=random.choice(['one-handed', 'two-handed']),
+        **stat_bonuses
+    )
+
+    return item
+
+
+def check_procedural_weapon_spawns():
+    """Check all zones and spawn new weapons if 30 minutes have passed since last spawn."""
+    now = timezone.now()
+    zones = [
+        'slums', 'industrial', 'corporate', 'undergrid', 'neon', 'wastes', 'nexus', 'undercity'
+    ]
+
+    spawned_weapons = []
+
+    for zone in zones:
+        # Get the most recent spawn for this zone
+        last_spawn = ProceduralWeaponSpawn.objects.filter(zone=zone).order_by('-spawned_at').first()
+
+        # If no spawn exists, or last spawn was more than 30 minutes ago
+        if not last_spawn or (now - last_spawn.spawned_at).total_seconds() >= 1800:
+            # 30 minutes
+            # Get a random room in this zone (not hub, not safe zone)
+            zone_rooms = list(Room.objects.filter(zone=zone, safe_zone=False))
+
+            if zone_rooms:
+                spawn_room = random.choice(zone_rooms)
+
+                # Generate a new weapon
+                weapon = generate_random_weapon(zone)
+
+                # Add it to the room
+                spawn_room.items.add(weapon)
+
+                # Record the spawn
+                ProceduralWeaponSpawn.objects.create(
+                    zone=zone,
+                    room=spawn_room,
+                    item=weapon
+                )
+
+                spawned_weapons.append({
+                    'zone': zone,
+                    'room': spawn_room.name,
+                    'weapon': weapon.name
+                })
+
+    return spawned_weapons
+
+
 def get_poll_data(player):
     # Process auto-combat tick
     combat_msg = process_combat_tick(player)
+
+    # Process resting HP regeneration
+    rest_msg = process_resting(player)
+
+    # Check for procedural weapon spawns (once per poll cycle is fine, it's time-gated)
+    if random.random() < 0.1:  # 10% chance each poll to check (roughly every 30 seconds)
+        check_procedural_weapon_spawns()
+        # Weapons spawn silently - no broadcast messages
 
     cutoff = timezone.now() - timezone.timedelta(seconds=30)
     # Poll world chat and local chat
@@ -1601,21 +2037,25 @@ def get_poll_data(player):
     npcs = list(NPC.objects.filter(location=player.location, hp__gt=0).values(
         'id', 'name', 'hp', 'hp_max', 'lvl', 'npc_type'))
     room_items = list(player.location.items.all().values('id', 'name')) if player.location else []
-    players_here = list(Player.objects.filter(location=player.location, online=True).exclude(
-        id=player.id).values('id', 'user__username', 'lvl', 'game_class'))
+    players_here = list(Player.objects.filter(
+        location=player.location, online=True
+    ).exclude(id=player.id).values('id', 'user__username', 'lvl', 'game_class'))
 
     # PvP notification
     notification = player.notification
     if notification:
         player.notification = ''
         player.save(update_fields=['notification'])
-    
+
     if combat_msg:
         notification = (notification + "\n" + combat_msg).strip()
 
+    if rest_msg:
+        notification = (notification + "\n" + rest_msg).strip()
+
     return {
         "chat": chat, "npcs": npcs, "items": room_items, "players": players_here,
-        "status": get_status_str(player), "location": (player.location.name if player.location
-                                                       else "Unknown"),
+        "status": get_status_str(player),
+        "location": (player.location.name if player.location else "Unknown"),
         "notification": notification,
     }
