@@ -227,6 +227,8 @@ def command_view(request):
             output = "\n".join(lines)
         elif command == 'top':
             output = services.get_top_ten()
+        elif command == 'wall':
+            output = services.get_wall_of_death()
         elif command in ['attack', 'a', 'kill', 'k']:
             output = services.attack_target(player, args, auto=False)
         elif command in ['autoattack', 'aa']:
@@ -259,6 +261,8 @@ def command_view(request):
             output = services.train_stat(player, args)
         elif command == 'rest':
             output = services.rest_command(player)
+        elif command == 'disengage':
+            output = services.disengage_combat(player)
         elif command == 'party':
             if not args:
                 output = "Party commands: CREATE, INVITE <player>, ACCEPT, LEAVE, STATUS"

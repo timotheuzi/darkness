@@ -386,15 +386,15 @@ NPC_ADJECTIVES = [
     "Abend", "Chromeo", "Neon", "Shadow", "Binary", "Cyber", "Dark", "Electric",
     "Glitch", "Hollow", "Iron", "Jacked", "Knotted", "Laser-brain", "Malware",
     "Neural", "Optic", "Phantom", "Quantum", "Rogue", "Static", "Turbo",
-    "Void", "Wired", "Xeno", "Zero", "Blazed", "Corroded", "Digital",
+    "Void", "Wired", "Xeno", "Bumb", "Blazed", "Corroded", "Digital",
     "Flickering", "Ghostly", "Hyper", "Infused", "Jittery", "Kinetic",
     "Muffled", "Oily", "Pulsing", "Rad-sick", "Screaming", "Twisted",
 ]
 NPC_NOUNS = [
-    "Runner", "Hound", "Ghost", "Pilot", "Razor", "Strike", "Pulse",
+    "Shithead", "Hound", "Ghost", "Piss", "Razor", "Berger", "Pulse",
     "Wraith", "Shade", "Spy", "Drone", "Bot", "Hunter", "Stalker",
-    "Phantom", "Reaper", "Hacker", "Fixer", "Dealer", "Thug",
-    "Sentinel", "Ward", "Guard", "Scout", "Flayer", "Spinner",
+    "Phantom", "Reaper", "Hacker", "Fixer", "Stupid", "Thug",
+    "Sentinel", "Ward", "Guard", "Scout", "Flayer", "Dumb",
     "Breaker", "Crawler", "Drifter", "Enforcer", "Fragment",
     "Grendel", "Husk", "Icon", "Juggernaut", "Kill-joy", "Lurker",
 ]
@@ -405,8 +405,8 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('--seed', type=int, default=None)
-        parser.add_argument('--rooms', type=int, default=250)
-        parser.add_argument('--zones', type=int, default=10)
+        parser.add_argument('--rooms', type=int, default=350)
+        parser.add_argument('--zones', type=int, default=16)
 
     def handle(self, *args, **kwargs):
         seed = kwargs.get('seed') or random.randint(1, 999999)
@@ -446,7 +446,7 @@ class Command(BaseCommand):
 
             # Create AI bots
             from django.core.management import call_command
-            call_command('create_bots', count=8, reset=False)
+            call_command('create_bots', count=20, reset=False)
 
             GameWorld.objects.all().delete()
             GameWorld.objects.create(

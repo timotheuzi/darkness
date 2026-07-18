@@ -296,7 +296,8 @@ def get_help(player):
     sb.append("L/LOOK        : Scan current sector")
     sb.append("L/LOOK <target>: Examine entity, item, or yourself (LOOK ME)")
     sb.append("WHO           : List active terminal nodes")
-    sb.append("TOP           : Display top 10 adventurers")
+    sb.append("TOP           : Display top 25 adventurers")
+    sb.append("WALL          : View the Wall of Death (most deaths)")
     sb.append("I/INVENTORY   : List equipped and stored hardware")
     sb.append("ST/STATUS     : Detailed user profile data")
     sb.append("SAY <msg>     : Message to current sector")
@@ -349,6 +350,19 @@ def get_top_ten():
         bot_marker = " (bot)" if p.is_bot else ""
         sb.append(f"{i:2}. {p.user.username}{bot_marker:15} | Lv {p.lvl:2} | EXP: {p.exp:5} | "
                   f"Class: {p.game_class}")
+    return "\n".join(sb)
+
+
+def get_wall_of_death():
+    """Display the top players by death count."""
+    top_deaths = Player.objects.order_by('-deaths', '-lvl')[:10]
+    sb = ["\n=== WALL OF DEATH ==="]
+    sb.append("The most fallen souls in the grid:")
+    for i, p in enumerate(top_deaths, 1):
+        if p.deaths > 0:
+            sb.append(f"{i:2}. {p.user.username:15} | {p.deaths:3} deaths | Lv {p.lvl:2} | {p.game_class}")
+    if not any(p.deaths > 0 for p in top_deaths):
+        sb.append("The wall is empty... for now.")
     return "\n".join(sb)
 
 
@@ -505,6 +519,12 @@ def get_look(player, target_name=None):
 
     if room.shop_name:
         sb.append(f"\n[TERMINAL] A commerce node is active here: {room.shop_name}")
+
+    # Advertise Wall of Death in the hub
+    if room.zone == 'hub':
+        top_deaths = Player.objects.order_by('-deaths', '-lvl')[:3]
+        if top_deaths and top_deaths[0].deaths > 0:
+            sb.append(f"\n[WALL OF DEATH] Type WALL to see the most fallen. Current leader: {top_deaths[0].user.username} ({top_deaths[0].deaths} deaths)")
 
     npcs = NPC.objects.filter(location=room, hp__gt=0)
     if npcs.exists():
@@ -1988,6 +2008,8 @@ def sell_item(player, item_name):
         ii.save()
     else:
         ii.delete()
+    # Add sold item to shop inventory
+    player.location.shop_inventory.add(ii.item)
     return f"Sold {name} for {price} credits."
 
 
@@ -2006,14 +2028,23 @@ def generate_random_weapon(zone):
                 "of Order", "of the Grid", "of the Void", "of the Street", "of the Corp",
                 "of the Net", "of the Wastes", "of the Neon", "of the Deep"]
 
-    # Generate name
-    if random.random() < 0.6:  # 60% chance for prefix
-        name = f"{random.choice(prefixes)} {random.choice(weapon_types)}"
-    else:
-        name = random.choice(weapon_types)
+    # Generate name with uniqueness guarantee
+    max_attempts = 50
+    for _ in range(max_attempts):
+        if random.random() < 0.6:  # 60% chance for prefix
+            name = f"{random.choice(prefixes)} {random.choice(weapon_types)}"
+        else:
+            name = random.choice(weapon_types)
 
-    if random.random() < 0.4:  # 40% chance for suffix
-        name += f" {random.choice(suffixes)}"
+        if random.random() < 0.4:  # 40% chance for suffix
+            name += f" {random.choice(suffixes)}"
+
+        # Check if this name already exists
+        if not Item.objects.filter(name=name).exists():
+            break
+    else:
+        # If we couldn't find a unique name, add a random number suffix
+        name = f"{name} {random.randint(100, 999)}"
 
     # Random stats
     attack_bonus = random.randint(5, 25)

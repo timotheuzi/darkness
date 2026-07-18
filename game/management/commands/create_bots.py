@@ -6,6 +6,7 @@ Creates AI-controlled bot players with cyberpunk names that wander, fight, and i
 import random
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.utils import timezone
 from game.models import Player, User, Room, Item, InventoryItem, Party, PartyMembership
 from game import services
 
@@ -176,7 +177,8 @@ class Command(BaseCommand):
                     bot_karma=karma,
                     bot_aggression=aggression,
                     bot_social=social,
-                    stat_points=random.randint(0, lvl // 2)
+                    stat_points=random.randint(0, lvl // 2),
+                    last_bot_action=timezone.now() - timezone.timedelta(seconds=random.randint(30, 60))
                 )
 
                 # Equip bot with random gear

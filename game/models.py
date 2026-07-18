@@ -97,6 +97,9 @@ class Player(models.Model):
     # Karma / alignment: -100 (Villain) to 100 (Saint)
     karma = models.IntegerField(default=0)
 
+    # Death counter for wall of death
+    deaths = models.IntegerField(default=0)
+
     inventory = models.ManyToManyField(Item, through='InventoryItem')
 
     # Drug/Addiction System
@@ -182,7 +185,7 @@ class NPC(models.Model):
 
 
 class ChatMessage(models.Model):
-    sender = models.ForeignKey(Player, on_delete=models.CASCADE)
+    sender = models.ForeignKey(Player, on_delete=models.CASCADE, null=True, blank=True)
     room = models.ForeignKey(Room, on_delete=models.CASCADE, null=True, blank=True)
     message = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
