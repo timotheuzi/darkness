@@ -256,3 +256,113 @@ class PartyTests(TestCase):
         self.member.refresh_from_db()
         result = services.move_party_leader(self.member, "north")
         self.assertIn("Only the party leader", result)
+
+
+class BotAITests(TestCase):
+    def setUp(self):
+        # Create rooms
+        self.hub = Room.objects.create(id=1, name="Hub", description="The center.", safe_zone=True, zone="hub")
+        self.combat_room = Room.objects.create(id=2, name="Combat Zone", description="Dangerous.", safe_zone=False, zone="slums")
+        self.hub.exits = {"north": 2}
+        self.hub.save()
+        self.combat_room.exits = {"south": 1}
+        self.combat_room.save()
+
+        # Create bot player
+        self.bot_user = User.objects.create_user(username="TestBot", password="password")
+        self.bot = Player.objects.create(
+            user=self.bot_user, location=self.combat_room, hp=100, hp_max=100,
+            attack=15, defense=5, money=50, online=True, is_bot=True,
+            bot_aggression=70, bot_social=50, karma=-50, lvl=5
+        )
+
+        # Create NPC
+        self.npc = NPC.objects.create(
+            name="Test NPC", location=self.combat_room, hp=30, hp_max=30,
+            attack=5, defense=2, lvl=2, money_drop=10, exp_drop=20,
+            aggressive=True
+        )
+
+    def test_bot_attacks_npc(self):
+        """Test that bots can attack NPCs and gain EXP."""
+        # Set last_bot_action to the past to ensure bot acts immediately
+        from django.utils import timezone
+        import datetime
+        self.bot.last_bot_action = timezone.now() - datetime.timedelta(seconds=30)
+        self.bot.save(update_fields=['last_bot_action'])
+        
+        # Check that NPC exists in room
+        npcs = NPC.objects.filter(location=self.combat_room, hp__gt=0)
+        self.assertTrue(npcs.exists(), "NPC should exist in combat room")
+        
+        # Bot should be able to attack NPC
+        result = services.process_bot_ai(self.bot)
+        
+        # Debug output
+        self.bot.refresh_from_db()
+        self.npc.refresh_from_db()
+        
+        # Check if bot attacked (either killed NPC or started combat)
+        # The NPC has exp_drop=20, so bot should have gained 10 (50% rate) if killed
+        # Or bot should be in combat if NPC survived
+        self.assertTrue(
+            self.bot.exp > 0 or self.bot.last_combat_npc is not None,
+            f"Bot should have EXP or be in combat. EXP={self.bot.exp}, last_combat_npc={self.bot.last_combat_npc}, NPC HP={self.npc.hp}, result={result}"
+        )
+
+    def test_bot_combat_tick_in_combat(self):
+        """Test that bots in combat get their combat ticks processed."""
+        # Create a fresh NPC with more HP to survive the first attack
+        npc = NPC.objects.create(
+            name="Durable NPC", location=self.combat_room, hp=100, hp_max=100,
+            attack=5, defense=2, lvl=2, money_drop=10, exp_drop=20
+        )
+        
+        # Start combat
+        services.attack_target(self.bot, "Durable NPC", auto=True)
+        self.bot.refresh_from_db()
+        
+        # Set last_combat_tick to the past to simulate time passing
+        from django.utils import timezone
+        import datetime
+        self.bot.last_combat_tick = timezone.now() - datetime.timedelta(seconds=5)
+        self.bot.save(update_fields=['last_combat_tick'])
+        
+        # Process combat tick
+        result = services.process_combat_tick(self.bot)
+        
+        # Should have combat output
+        self.assertTrue(len(result) > 0)
+        self.assertIn("hit", result.lower())
+
+    def test_bot_exp_gain_slower_than_human(self):
+        """Test that bots gain EXP at 50% rate compared to humans."""
+        # Create a human player for comparison
+        human_user = User.objects.create_user(username="HumanPlayer", password="password")
+        human = Player.objects.create(
+            user=human_user, location=self.combat_room, hp=100, hp_max=100,
+            attack=15, defense=5, money=50, online=True, is_bot=False,
+            lvl=5
+        )
+        
+        # Create fresh NPC for each
+        npc1 = NPC.objects.create(
+            name="NPC1", location=self.combat_room, hp=1, hp_max=1,
+            attack=5, defense=2, lvl=2, money_drop=10, exp_drop=100
+        )
+        npc2 = NPC.objects.create(
+            name="NPC2", location=self.combat_room, hp=1, hp_max=1,
+            attack=5, defense=2, lvl=2, money_drop=10, exp_drop=100
+        )
+        
+        # Human kills NPC
+        services.attack_target(human, "NPC1", auto=True)
+        human_exp = human.exp
+        
+        # Bot kills NPC
+        services.attack_target(self.bot, "NPC2", auto=True)
+        bot_exp = self.bot.exp
+        
+        # Bot should have gained 50% of the EXP (50 instead of 100)
+        self.assertEqual(bot_exp, 50)
+        self.assertEqual(human_exp, 100)

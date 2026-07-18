@@ -26,11 +26,8 @@ class Command(BaseCommand):
                     actions_taken = 0
                     
                     for bot in bots:
-                        # Skip bots in combat or resting (they're already "active")
-                        if bot.last_combat_npc or bot.last_combat_player or bot.resting:
-                            continue
-                        
                         # Use the existing process_bot_ai function
+                        # It now handles combat ticks for bots in combat
                         result = services.process_bot_ai(bot)
                         
                         if result:

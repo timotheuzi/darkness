@@ -53,11 +53,11 @@ class Command(BaseCommand):
     help = "Create AI bot players with cyberpunk names"
 
     def add_arguments(self, parser):
-        parser.add_argument('--count', type=int, default=7, help='Number of bots to create (3-10)')
+        parser.add_argument('--count', type=int, default=15, help='Number of bots to create (3-20)')
         parser.add_argument('--reset', action='store_true', help='Delete all existing bots first')
 
     def handle(self, *args, **kwargs):
-        count = min(max(3, kwargs.get('count', 7)), 10)  # Clamp between 3-10
+        count = min(max(3, kwargs.get('count', 15)), 20)  # Clamp between 3-20
         reset = kwargs.get('reset', False)
 
         with transaction.atomic():

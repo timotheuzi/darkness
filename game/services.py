@@ -886,7 +886,11 @@ def combat_round(player):
         if target.hp <= 0:
             # Win logic
             if target_npc:
-                player.exp += target.exp_drop
+                # Bots gain EXP at 50% rate (slower than humans)
+                exp_gain = target.exp_drop
+                if player.is_bot:
+                    exp_gain = int(target.exp_drop * 0.5)
+                player.exp += exp_gain
                 player.money += target.money_drop
                 player.last_combat_npc = None
 
@@ -900,7 +904,7 @@ def combat_round(player):
                 player.karma = max(-100, min(100, player.karma))
                 player.save()
 
-                output += (f"\nTarget neutralized! +{target.exp_drop} exp, "
+                output += (f"\nTarget neutralized! +{exp_gain} exp, "
                            f"+{target.money_drop} credits.")
                 # Broadcast victory to room
                 broadcast_combat_to_room(player, target_name, f"{player.user.username} neutralized {target_name}!", room_players)
@@ -913,6 +917,9 @@ def combat_round(player):
                 output += check_level_up(player)
             else:
                 exp_gain = target.lvl * 50
+                # Bots gain EXP at 50% rate (slower than humans)
+                if player.is_bot:
+                    exp_gain = int(target.lvl * 50 * 0.5)
                 player.exp += exp_gain
                 stolen = target.money // 4
                 player.money += stolen
@@ -983,6 +990,17 @@ def execute_opponent_attack(player, target):
     player.save()
 
     if player.hp <= 0:
+        # Broadcast death to room before handling defeat
+        if target_npc:
+            death_msg = f"{player.user.username} has been splattered by {target.name}! Blood and circuitry everywhere!"
+        else:
+            death_msg = f"{player.user.username} has been neutralized by {target.user.username}! A brutal end!"
+        room_players = Player.objects.filter(
+            location=player.location, online=True
+        ).exclude(id=player.id)
+        for p in room_players:
+            p.notification = (p.notification + f"\n[DEATH] {death_msg}").strip()
+            p.save(update_fields=['notification'])
         output += handle_player_defeat(player, victor_player=(None if target_npc else target))
 
     return output
@@ -1234,8 +1252,8 @@ def use_ability(player, ability_name, target_name):
         npc = NPC.objects.filter(location=player.location, name__icontains=target_name,
                                  hp__gt=0).first()
         target_player = Player.objects.filter(location=player.location,
-                                              user__username__icontains=target_name,
-                                              online=True).exclude(id=player.id).first()
+                                               user__username__icontains=target_name,
+                                               online=True).exclude(id=player.id).first()
 
     if target_player:
         if player.lvl < 5:
@@ -1283,7 +1301,7 @@ def use_ability(player, ability_name, target_name):
             primary_stat = player.wil_stat
         elif player.game_class in ('Thief'):
             primary_stat = player.agi_stat
-        elif player.game_class in ('Medie'):
+        elif player.game_class in ('Medie',):
             primary_stat = max(player.int_stat, player.hea_stat)
         elif player.game_class in ('Fixer', 'Trickster'):
             primary_stat = player.cha_stat
@@ -1638,7 +1656,10 @@ def get_map_data(player):
             'x': r.map_x, 'y': r.map_y,
             'current': (r.id == room.id),
             'players': Player.objects.filter(location=r,
-                                             online=True).exclude(id=player.id).count(),
+                                             online=True).exclude(id=player.id).exclude(is_bot=True).count(),
+            'bots': Player.objects.filter(location=r,
+                                          online=True,
+                                          is_bot=True).exclude(id=player.id).count(),
             'npcs': NPC.objects.filter(location=r, hp__gt=0).count(),
             'safe': r.safe_zone,
         })
@@ -1930,7 +1951,7 @@ def sell_item(player, item_name):
         item_name = parts[0].strip()
         npc_name = parts[1].strip()
         target_npc = NPC.objects.filter(location=player.location, name__icontains=npc_name,
-                                        hp__gt=0).first()
+                                         hp__gt=0).first()
         if not target_npc:
             return f"Target '{npc_name}' not found."
 
@@ -2109,14 +2130,17 @@ def check_procedural_weapon_spawns():
 
 
 def process_bot_ai(bot):
-    """Process AI behavior for bot players. Called during polling."""
+    """Process AI behavior for bot players. Called during polling or by process_bots command."""
     if not bot.is_bot or not bot.online:
         return ""
     
-    output = ""
+    # Process combat tick for bots in combat (auto-attack continues)
+    if bot.last_combat_npc or bot.last_combat_player:
+        process_combat_tick(bot)
+        return ""
     
-    # Skip if bot is in combat or resting (they're already "active")
-    if bot.last_combat_npc or bot.last_combat_player or bot.resting:
+    # Skip if bot is resting (they're already "active")
+    if bot.resting:
         return ""
     
     # Only act every 10-30 seconds (using persistent database field)
@@ -2133,101 +2157,94 @@ def process_bot_ai(bot):
     # AI Decision Making
     room = bot.location
     
-    # Check if bot should rest (low HP)
-    if bot.hp < bot.hp_max * 0.3:
-        rest_result = rest_command(bot)
-        if "settle down" in rest_result:
-            return ""  # Bot is now resting
+    # Check if bot should rest (low HP) - but NOT if in combat
+    if bot.hp < bot.hp_max * 0.3 and not bot.last_combat_npc and not bot.last_combat_player:
+        rest_command(bot)
+        return ""  # Bot is now resting or already resting
     
     # Look for targets in current room
     npcs = NPC.objects.filter(location=room, hp__gt=0)
     players_here = Player.objects.filter(location=room, online=True).exclude(id=bot.id)
     
-    # Decide whether to attack players (based on karma and aggression)
-    should_attack_players = (
-        bot.bot_aggression > 60 and 
-        bot.karma < -30 and 
-        not room.safe_zone and
-        bot.lvl >= 5
-    )
-    
-    # Find a target
+    # Find a target (only if not in safe zone)
     target_npc = None
     target_player = None
     
-    # Priority 1: Attack evil players if we're good
-    if bot.karma > 50:
-        for p in players_here:
-            if p.karma < -50 and abs(bot.lvl - p.lvl) <= 3:
-                target_player = p
-                break
+    if not room.safe_zone:
+        # Attack evil/semi-evil players (any bot can attack players with bad karma)
+        # This allows bots to "police" evil players regardless of the bot's own alignment
+        if not target_npc and not target_player:
+            for p in players_here:
+                # Attack players who are evil (karma < -50) or semi-evil (karma < -20)
+                if p.karma < -20 and abs(bot.lvl - p.lvl) <= 3:
+                    target_player = p
+                    break
+        
+        # Priority 3: Attack nearby NPCs (only aggressive NPCs, and level-appropriate)
+        if not target_npc and not target_player:
+            if npcs.exists():
+                # Only attack NPCs within 5 levels of bot
+                valid_npcs = [n for n in npcs if n.aggressive and abs(n.lvl - bot.lvl) <= 5]
+                if valid_npcs:
+                    target_npc = random.choice(valid_npcs)
     
-    # Priority 2: Attack good players if we're evil
-    if not target_npc and not target_player and should_attack_players:
-        for p in players_here:
-            if p.karma > 30 and abs(bot.lvl - p.lvl) <= 3:
-                target_player = p
-                break
-    
-    # Priority 3: Attack nearby NPCs
-    if not target_npc and not target_player:
-        aggressive_npcs = [n for n in npcs if n.aggressive]
-        if aggressive_npcs:
-            target_npc = random.choice(aggressive_npcs)
-    
-    # Execute combat
+    # Execute combat (without broadcasting to players - bots fight silently)
     if target_npc or target_player:
         target_name = target_npc.name if target_npc else target_player.user.username
-        combat_output = attack_target(bot, target_name, auto=True)
-        if combat_output:
-            output += f"\n[AI] {combat_output}"
-        # Notify players in room about the combat
-        for p in players_here:
-            p.notification = (p.notification + f"\n[COMBAT] {bot.user.username} attacks {target_name}!").strip()
-            p.save(update_fields=['notification'])
-        return output
+        attack_target(bot, target_name, auto=True)
+        return ""
     
     # Party behavior: invite players if social enough
     if bot.bot_social > 60 and not bot.parties.exists() and players_here.exists():
         for p in players_here:
             if abs(bot.lvl - p.lvl) <= 3 and not p.parties.exists():
                 # Invite player to party
-                invite_result = invite_to_party(bot, p.user.username)
-                if "Invited" in invite_result:
-                    output += f"\n[AI] {invite_result}"
-                    # Notify the player
-                    p.notification = (p.notification + f"\n[PARTY] {invite_result}").strip()
-                    p.save(update_fields=['notification'])
-                    break
+                invite_to_party(bot, p.user.username)
+                break
     
     # Random chat/say to players in room
     if players_here.exists() and random.random() < 0.15:  # 15% chance to say something
         player = random.choice(list(players_here))
-        greetings = [
-            "Hey there, choom.",
-            "Watch your back in this sector.",
-            "Looking for a party?",
-            "Stay frosty.",
-            "The grid's been weird lately.",
-            "Heard there's good loot in the wastes.",
-            "Beware the corporate enforcers.",
-            "Need a heal? I'm a Medie.",
-            "Let's wreck some drones.",
-            "Karma's a bitch, watch yours."
-        ]
-        message = random.choice(greetings)
+        
+        # Evil bots talk crap, good bots are friendly
+        if bot.karma < -30:
+            taunts = [
+                "You're gonna die in the gutter, choom.",
+                "Pathetic. I'll scrap you for parts.",
+                "Your blood will look good on my chrome.",
+                "I've killed better players before breakfast.",
+                "Run along, meat. This sector's mine.",
+                "You smell like weakness.",
+                "I'll turn your corpse into street art.",
+                "Hope you got your affairs in order, fool.",
+                "You're just another corpse waiting to happen.",
+                "I'll gut you and sell your organs.",
+                "Your screams will echo in the wastes.",
+                "I've got a special place in my kill list for you."
+            ]
+            message = random.choice(taunts)
+        else:
+            greetings = [
+                "Hey there, choom.",
+                "Watch your back in this sector.",
+                "Looking for a party?",
+                "Stay frosty.",
+                "The grid's been weird lately.",
+                "Heard there's good loot in the wastes.",
+                "Beware the corporate enforcers.",
+                "Need a heal? I'm a Medie.",
+                "Let's wreck some drones.",
+                "Karma's a bitch, watch yours."
+            ]
+            message = random.choice(greetings)
         ChatMessage.objects.create(sender=bot, room=room, message=message)
-        output += f"\n[CHAT] {bot.user.username} says: \"{message}\""
     
     # Wander to adjacent room
     if room.exits and random.random() < 0.5:  # 50% chance to move
         direction = random.choice(list(room.exits.keys()))
-        move_result = move_player(bot, direction)
-        if "PATH BLOCKED" not in move_result and "NAVIGATION ERROR" not in move_result:
-            output += f"\n[AI] {bot.user.username} moves {direction}."
-            # Note: move_player already broadcasts exit/enter events to players
+        move_player(bot, direction)
     
-    return output
+    return ""
 
 
 def get_poll_data(player):
@@ -2237,20 +2254,15 @@ def get_poll_data(player):
     # Process resting HP regeneration
     rest_msg = process_resting(player)
 
-    # Process bot AI for all online bots in the same room
+    # Process bot AI for ALL online bots (not just bots in same room)
     bot_msg = ""
-    if player.location:
-        bots_here = Player.objects.filter(
-            location=player.location,
-            online=True,
-            is_bot=True
-        ).exclude(id=player.id)
-        
-        for bot in bots_here:
-            bot_result = process_bot_ai(bot)
-            if bot_result:
-                bot_msg += bot_result
+    all_bots = Player.objects.filter(is_bot=True, online=True)
     
+    for bot in all_bots:
+        bot_result = process_bot_ai(bot)
+        if bot_result:
+            bot_msg += bot_result
+
     # Check for procedural weapon spawns (once per poll cycle is fine, it's time-gated)
     if random.random() < 0.1:  # 10% chance each poll to check (roughly every 30 seconds)
         check_procedural_weapon_spawns()
@@ -2282,6 +2294,9 @@ def get_poll_data(player):
 
     if rest_msg:
         notification = (notification + "\n" + rest_msg).strip()
+
+    if bot_msg:
+        notification = (notification + "\n" + bot_msg).strip()
 
     return {
         "chat": chat, "npcs": npcs, "items": room_items, "players": players_here,
