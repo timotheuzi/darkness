@@ -16,12 +16,12 @@ BOT_NAMES = [
     "NeonShade", "ChromeWraith", "GlitchMonk", "ByteHunter", "CircuitBreaker",
     "SynthRunner", "DataPhantom", "VoltStriker", "ZeroCool", "PixelSlayer",
     "RogueAI", "NeuralJack", "CyberWitch", "BinaryStorm", "QuantumShade",
-    "EchoProtocol", "VoidWalker", "StaticGhost", "LaserMonk", "TitanByte",
-    "NovaBlade", "CipherPunk", "DriftWire", "FluxCore", "HexMatrix",
+    "EchoProtocol", "VoidWalker", "StaticGhost", "LaserMonk", "Innit",
+    "NovaBlade", "CipherPunk", "DriftWire", "FluxCore", "Geostomping",
     "JadeSpirit", "KiraCode", "LynxSystem", "MakoShift", "NexusFlame",
     "OnyxData", "PrismHack", "QuakeBot", "RiftWalker", "SparkAgent",
     "TalonNet", "Derpydo", "ViperCode", "WarpEntity", "XenoByte",
-    "YuriShift", "ZenHacker", "ApexDrone", "BlitzCoder", "CrackShell",
+    "YuriShift", "ZenHacker", "Some Guy", "BlitzCoder", "CrackShell",
     "DuskLoader", "EmberSync", "FrostByte", "GrimAccess", "Tim Bob"
 ]
 

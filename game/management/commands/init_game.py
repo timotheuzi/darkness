@@ -137,22 +137,22 @@ BOSS_WEAPONS = {
 }
 
 ARMOR_TABLE = [
-    ("Mesh Vest", "Basic kinetic protection.", 8, 150, "common", {"hea_bonus": 2}),
-    ("Riot Shield", "Reinforced alloy shield.", 20, 1000, "uncommon",
+    ("Mesh Vest", "Basic kinetic protection.", 8, 150, "common", "leather", {"hea_bonus": 2}),
+    ("Riot Shield", "Reinforced alloy shield.", 20, 1000, "uncommon", "heavy",
      {"str_bonus": 3, "hea_bonus": 5}),
-    ("Synth-Leathers", "Tough street fabric.", 4, 80, "common", {"agi_bonus": 2}),
-    ("Titanium Exo-Frame", "Full body exoskeleton.", 35, 3000, "rare",
+    ("Synth-Leathers", "Tough street fabric.", 4, 80, "common", "leather", {"agi_bonus": 2}),
+    ("Titanium Exo-Frame", "Full body exoskeleton.", 35, 3000, "rare", "heavy",
      {"str_bonus": 10, "hea_bonus": 10}),
-    ("Ghost Cloak", "Active camouflage tech.", 15, 2500, "rare", {"agi_bonus": 15}),
-    ("Neural Shield", "Anti-hacking defense.", 10, 1500, "uncommon",
+    ("Ghost Cloak", "Active camouflage tech.", 15, 2500, "rare", "light", {"agi_bonus": 15}),
+    ("Neural Shield", "Anti-hacking defense.", 10, 1500, "uncommon", "light",
      {"wil_bonus": 8, "int_bonus": 4}),
-    ("Adamantine Plate", "Near-indestructible armor.", 50, 8000, "epic",
+    ("Adamantine Plate", "Near-indestructible armor.", 50, 8000, "epic", "heavy",
      {"hea_bonus": 20, "str_bonus": 5}),
-    ("Quantum Weave", "Shifts slightly out of reality.", 25, 6000, "rare",
+    ("Quantum Weave", "Shifts slightly out of reality.", 25, 6000, "rare", "light",
      {"agi_bonus": 10, "wil_bonus": 10}),
-    ("Reflective Trenchcoat", "Cool looks, decent protection.", 12, 1200, "uncommon",
+    ("Reflective Trenchcoat", "Cool looks, decent protection.", 12, 1200, "uncommon", "leather",
      {"cha_bonus": 10, "agi_bonus": 2}),
-    ("Hazmat Suit", "Protects against toxic environments.", 15, 2000, "rare",
+    ("Hazmat Suit", "Protects against toxic environments.", 15, 2000, "rare", "heavy",
      {"hea_bonus": 15, "wil_bonus": 5}),
 ]
 
@@ -446,7 +446,7 @@ class Command(BaseCommand):
 
             # Create AI bots
             from django.core.management import call_command
-            call_command('create_bots', count=20, reset=False)
+            call_command('create_bots', count=12, reset=False)
 
             GameWorld.objects.all().delete()
             GameWorld.objects.create(
@@ -470,10 +470,10 @@ class Command(BaseCommand):
                 name=name, description=desc, item_type='weapon',
                 attack_bonus=atk, price=pr, rarity=rarity, speed_bonus=speed,
                 subtype=subtype, **bonuses))
-        for name, desc, dfn, pr, rarity, bonuses in ARMOR_TABLE:
+        for name, desc, dfn, pr, rarity, subtype, bonuses in ARMOR_TABLE:
             pool.append(Item.objects.create(
                 name=name, description=desc, item_type='armor',
-                defense_bonus=dfn, price=pr, rarity=rarity,
+                defense_bonus=dfn, price=pr, rarity=rarity, subtype=subtype,
                 **bonuses))
         for name, desc, pr, rarity, heal in CONSUMABLE_TABLE:
             pool.append(Item.objects.create(
@@ -599,10 +599,10 @@ class Command(BaseCommand):
                 hub.shop_inventory.add(weapon)
             hub_armor = random.sample(ARMOR_TABLE, min(3, len(ARMOR_TABLE)))
             for a_data in hub_armor:
-                name, desc, dfn, pr, rarity, bonuses = a_data
+                name, desc, dfn, pr, rarity, subtype, bonuses = a_data
                 armor = Item.objects.create(
                     name=name, description=desc, item_type='armor',
-                    defense_bonus=dfn, price=pr, rarity=rarity,
+                    defense_bonus=dfn, price=pr, rarity=rarity, subtype=subtype,
                     **bonuses
                 )
                 hub.shop_inventory.add(armor)
@@ -636,10 +636,10 @@ class Command(BaseCommand):
                 num_armor = random.randint(2, 3)
                 selected_armor = random.sample(ARMOR_TABLE, min(num_armor, len(ARMOR_TABLE)))
                 for a_data in selected_armor:
-                    name, desc, dfn, pr, rarity, bonuses = a_data
+                    name, desc, dfn, pr, rarity, subtype, bonuses = a_data
                     armor = Item.objects.create(
                         name=name, description=desc, item_type='armor',
-                        defense_bonus=dfn, price=pr, rarity=rarity,
+                        defense_bonus=dfn, price=pr, rarity=rarity, subtype=subtype,
                         **bonuses
                     )
                     shop_room.shop_inventory.add(armor)

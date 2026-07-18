@@ -344,10 +344,10 @@ def get_help(player):
 
 
 def get_top_ten():
-    top_players = Player.objects.order_by('-lvl', '-exp')[:10]
-    sb = ["\n=== TOP 10 ADVENTURERS ==="]
+    top_players = Player.objects.order_by('-lvl', '-exp')[:25]
+    sb = ["\n=== TOP 25 ADVENTURERS ==="]
     for i, p in enumerate(top_players, 1):
-        bot_marker = " (bot)" if p.is_bot else ""
+        bot_marker = " (bot)" if p.is_bot and p.user.id % 2 == 0 else ""
         sb.append(f"{i:2}. {p.user.username}{bot_marker:15} | Lv {p.lvl:2} | EXP: {p.exp:5} | "
                   f"Class: {p.game_class}")
     return "\n".join(sb)
@@ -355,7 +355,7 @@ def get_top_ten():
 
 def get_wall_of_death():
     """Display the top players by death count."""
-    top_deaths = Player.objects.order_by('-deaths', '-lvl')[:10]
+    top_deaths = Player.objects.order_by('-deaths', '-lvl')[:25]
     sb = ["\n=== WALL OF DEATH ==="]
     sb.append("The most fallen souls in the grid:")
     for i, p in enumerate(top_deaths, 1):
