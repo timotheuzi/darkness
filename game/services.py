@@ -2,7 +2,7 @@ import json
 import random
 from django.utils import timezone
 from django.db.models import Q
-from .models import Player, Room, NPC, Item, InventoryItem, ChatMessage, ProceduralWeaponSpawn
+from .models import Player, Room, NPC, Item, InventoryItem, ChatMessage, ProceduralWeaponSpawn, Party, PartyMembership
 
 # Race Special Characteristics
 RACE_CHARACTERISTICS = {
@@ -20,105 +20,115 @@ RACE_CHARACTERISTICS = {
 
 
 # Class Ability Definitions - Learned every 5 levels until Lv 30
+# Format: (level, ability_name, acronym, description)
 CLASS_MOVES = {
     'Street Samurai': [
-        (1, 'blade', 'Precise physical strike. Scales with STR/ATK.'),
-        (5, 'oni_strike', 'Fire-elemental strike. Scales with STR/ATK.'),
-        (10, 'zansetsu', 'High-critical physical strike. Scales with STR/ATK.'),
-        (15, 'mirage', 'Technological displacement. Boosts Defense significantly based on AGI.'),
-        (20, 'whirlwind', 'Multiple physical strikes. Scales with STR/ATK.'),
-        (25, 'dragon_lunge', 'Heavy fire-elemental pierce. Scales with STR/ATK.'),
-        (30, 'omnislash', 'Ultimate physical combo. Scales with STR/ATK.'),
+        (1, 'blade', 'BLD', 'Precise physical strike. Scales with STR/ATK.'),
+        (5, 'oni_strike', 'ONI', 'Fire-elemental strike. Scales with STR/ATK.'),
+        (10, 'zansetsu', 'ZAN', 'High-critical physical strike. Scales with STR/ATK.'),
+        (15, 'mirage', 'MIR', 'Technological displacement. Boosts Defense significantly based on AGI.'),
+        (20, 'whirlwind', 'WHL', 'Multiple physical strikes. Scales with STR/ATK.'),
+        (25, 'dragon_lunge', 'DRG', 'Heavy fire-elemental pierce. Scales with STR/ATK.'),
+        (30, 'omnislash', 'OMN', 'Ultimate physical combo. Scales with STR/ATK.'),
     ],
     'Netrunner': [
-        (1, 'hack', 'System water/ice damage. Scales with INT.'),
-        (5, 'overload', 'High air damage pulse. Scales with INT.'),
-        (10, 'synapse_burn', 'Burn target memory (Fire). Scales with INT.'),
-        (15, 'logic_bomb', 'Heavy air system corruption. Scales with INT.'),
-        (20, 'blackout', 'Neural interference. Lowers target stats based on INT.'),
-        (25, 'databreach', 'Siphon credits and deal water damage. Scales with INT.'),
-        (30, 'zero_day', 'Critical system failure damage. Scales with INT.'),
+        (1, 'hack', 'HCK', 'System water/ice damage. Scales with INT.'),
+        (5, 'overload', 'OVR', 'High air damage pulse. Scales with INT.'),
+        (10, 'synapse_burn', 'SYN', 'Burn target memory (Fire). Scales with INT.'),
+        (15, 'logic_bomb', 'LGC', 'Heavy air system corruption. Scales with INT.'),
+        (20, 'blackout', 'BKO', 'Neural interference. Lowers target stats based on INT.'),
+        (25, 'databreach', 'DBR', 'Siphon credits and deal water damage. Scales with INT.'),
+        (30, 'zero_day', 'ZER', 'Critical system failure damage. Scales with INT.'),
     ],
     'Techie': [
-        (1, 'calibrate', 'Drone earth damage. Scales with INT/AGI.'),
-        (5, 'turret', 'Automated physical fire. Scales with INT/ATK.'),
-        (10, 'overclock', 'System boost. Increases Attack and Speed based on INT.'),
-        (15, 'nanobot_swarm', 'Healing and earth damage. Scales with INT.'),
-        (20, 'plasma_arc', 'Heavy fire damage. Scales with INT.'),
-        (25, 'tesla_coil', 'Stun and air damage. Scales with INT.'),
-        (30, 'singularity', 'Ultimate gravity collapse (Earth). Scales with INT.'),
+        (1, 'calibrate', 'CAL', 'Drone earth damage. Scales with INT/AGI.'),
+        (5, 'turret', 'TUR', 'Automated physical fire. Scales with INT/ATK.'),
+        (10, 'overclock', 'OVC', 'System boost. Increases Attack and Speed based on INT.'),
+        (15, 'nanobot_swarm', 'NAN', 'Healing and earth damage. Scales with INT.'),
+        (20, 'plasma_arc', 'PLA', 'Heavy fire damage. Scales with INT.'),
+        (25, 'tesla_coil', 'TES', 'Stun and air damage. Scales with INT.'),
+        (30, 'singularity', 'SIN', 'Ultimate gravity collapse (Earth). Scales with INT.'),
     ],
     'Medie': [
-        (1, 'patch', 'Biological repair. Heals based on INT.'),
-        (5, 'detox', 'Cleanse toxins. Heals and clears addiction.'),
-        (10, 'adrenaline', 'Boost stats. Increases Attack and Defense based on HEA.'),
-        (15, 'biocortical_shock', 'Water damage to nervous system. Scales with INT/HEA.'),
-        (20, 'regeneration', 'Continuous cellular repair. Large heal based on HEA.'),
-        (25, 'viral_burst', 'Heavy rot damage over time. Scales with HEA/INT.'),
-        (30, 'nanomachine_army', 'Ultimate survival boost. Massive HP recovery based on HEA.'),
+        (1, 'patch', 'PTC', 'Biological repair. Heals based on INT.'),
+        (5, 'detox', 'DTX', 'Cleanse toxins. Heals and clears addiction.'),
+        (10, 'adrenaline', 'ADR', 'Boost stats. Increases Attack and Defense based on HEA.'),
+        (15, 'biocortical_shock', 'BIO', 'Water damage to nervous system. Scales with INT/HEA.'),
+        (20, 'regeneration', 'REG', 'Continuous cellular repair. Large heal based on HEA.'),
+        (25, 'viral_burst', 'VIR', 'Heavy rot damage over time. Scales with HEA/INT.'),
+        (30, 'nanomachine_army', 'NMA', 'Ultimate survival boost. Massive HP recovery based on HEA.'),
     ],
     'Fixer': [
-        (1, 'scheme', 'Drain credits from target. Scales with CHA.'),
-        (5, 'call_in', 'Air-strike damage. Scales with CHA/ATK.'),
-        (10, 'bribe', 'Lower target defense with credits. Effectiveness based on CHA.'),
-        (15, 'contract_kill', 'High physical damage assassination. Scales with CHA/ATK.'),
-        (20, 'market_crash', 'Siphon massive credits. Scales with CHA.'),
-        (25, 'reinforcements', 'Summon allies for extra hits. Scales with CHA/ATK.'),
-        (30, 'hostile_takeover', 'Ultimate credit and soul drain. Scales with CHA.'),
+        (1, 'scheme', 'SCH', 'Drain credits from target. Scales with CHA.'),
+        (5, 'call_in', 'CAL', 'Air-strike damage. Scales with CHA/ATK.'),
+        (10, 'bribe', 'BRI', 'Lower target defense with credits. Effectiveness based on CHA.'),
+        (15, 'contract_kill', 'CTK', 'High physical damage assassination. Scales with CHA/ATK.'),
+        (20, 'market_crash', 'MKT', 'Siphon massive credits. Scales with CHA.'),
+        (25, 'reinforcements', 'REF', 'Summon allies for extra hits. Scales with CHA/ATK.'),
+        (30, 'hostile_takeover', 'HTK', 'Ultimate credit and soul drain. Scales with CHA.'),
     ],
     'Thief': [
-        (1, 'backstab', 'Critical strike from shadows. Scales with AGI/ATK.'),
-        (5, 'stealth', 'Become hidden. Success chance scales with AGI.'),
-        (10, 'poison_dart', 'Earth damage over time. Scales with AGI/INT.'),
-        (15, 'smoke_bomb', 'Defense boost and escape. Scales with AGI.'),
-        (20, 'shadow_strike', 'Critical hit from stealth. Scales with AGI/ATK.'),
-        (25, 'assassinate', 'Execute target with low HP. Scales with AGI/ATK.'),
-        (30, 'death_mark', 'Ultimate physical assassination. Scales with AGI/ATK.'),
+        (1, 'backstab', 'BSB', 'Critical strike from shadows. Scales with AGI/ATK.'),
+        (5, 'stealth', 'STL', 'Become hidden. Success chance scales with AGI.'),
+        (10, 'poison_dart', 'PSN', 'Earth damage over time. Scales with AGI/INT.'),
+        (15, 'smoke_bomb', 'SMB', 'Defense boost and escape. Scales with AGI.'),
+        (20, 'shadow_strike', 'SHD', 'Critical hit from stealth. Scales with AGI/ATK.'),
+        (25, 'assassinate', 'ASN', 'Execute target with low HP. Scales with AGI/ATK.'),
+        (30, 'death_mark', 'DMK', 'Ultimate physical assassination. Scales with AGI/ATK.'),
     ],
     'Heavy': [
-        (1, 'smash', 'Heavy physical damage. Scales with STR.'),
-        (5, 'taunt', 'Focus enemy attention. Lowers enemy stats based on HEA.'),
-        (10, 'iron_skin', 'Harden armor. Boosts Defense based on HEA.'),
-        (15, 'seismic_toss', 'Heavy earth damage. Scales with STR/HEA.'),
-        (20, 'juggernaut', 'Boost Attack and Defense based on HEA/STR.'),
-        (25, 'avalanche', 'Massive earth AOE. Scales with STR/HEA.'),
-        (30, 'earthshaker', 'Ultimate earth blow. Scales with STR/HEA.'),
+        (1, 'smash', 'SMH', 'Heavy physical damage. Scales with STR.'),
+        (5, 'taunt', 'TNT', 'Focus enemy attention. Lowers enemy stats based on HEA.'),
+        (10, 'iron_skin', 'IRN', 'Harden armor. Boosts Defense based on HEA.'),
+        (15, 'seismic_toss', 'SMT', 'Heavy earth damage. Scales with STR/HEA.'),
+        (20, 'juggernaut', 'JUG', 'Boost Attack and Defense based on HEA/STR.'),
+        (25, 'avalanche', 'AVL', 'Massive earth AOE. Scales with STR/HEA.'),
+        (30, 'earthshaker', 'EQK', 'Ultimate earth blow. Scales with STR/HEA.'),
     ],
     'Psycher': [
-        (1, 'mind_bolt', 'Will-based energy damage. Scales with WIL.'),
-        (5, 'soul_drain', 'Damage target, heal self. Scales with WIL.'),
-        (10, 'psionic_shield', 'Psychic barrier. Boosts Defense based on WIL.'),
-        (15, 'pyrokinesis', 'Massive fire mind damage. Scales with WIL.'),
-        (20, 'telekinesis', 'High physical mind damage. Scales with WIL.'),
-        (25, 'mind_control', 'Target strikes themselves. Effectiveness based on WIL.'),
-        (30, 'soul_annihilation', 'Ultimate psychic collapse. Scales with WIL.'),
+        (1, 'mind_bolt', 'MND', 'Intelligence-based energy damage. Scales with INT.'),
+        (5, 'soul_drain', 'SDL', 'Damage target, heal self. Scales with INT.'),
+        (10, 'psionic_shield', 'PSI', 'Psychic barrier. Boosts Defense based on INT.'),
+        (15, 'pyrokinesis', 'PYR', 'Massive fire mind damage. Scales with INT.'),
+        (20, 'telekinesis', 'TEK', 'High physical mind damage. Scales with INT.'),
+        (25, 'mind_control', 'MNC', 'Target strikes themselves. Effectiveness based on INT.'),
+        (30, 'soul_annihilation', 'SOL', 'Ultimate psychic collapse. Scales with INT.'),
     ],
     'Warlock': [
-        (1, 'curse', 'Weaken target. Lowers ATK/DEF based on WIL.'),
-        (5, 'chaos_bolt', 'Random high-energy surge. Scales with WIL.'),
-        (10, 'blood_pact', 'Sacrifice HP for massive damage. Scales with WIL/Current HP.'),
-        (15, 'shadow_bolt', 'Dark water damage. Scales with WIL.'),
-        (20, 'necrosis', 'High rot damage over time. Scales with WIL.'),
-        (25, 'demonic_tether', 'Siphon HP and Mana. Scales with WIL.'),
-        (30, 'armageddon', 'Ultimate chaotic destruction. Scales with WIL.'),
+        (1, 'curse', 'CRS', 'Weaken target. Lowers ATK/DEF based on INT.'),
+        (5, 'chaos_bolt', 'CHB', 'Random high-energy surge. Scales with INT.'),
+        (10, 'blood_pact', 'BLP', 'Sacrifice HP for massive damage. Scales with INT/Current HP.'),
+        (15, 'shadow_bolt', 'SDB', 'Dark water damage. Scales with INT.'),
+        (20, 'necrosis', 'NEC', 'High rot damage over time. Scales with INT.'),
+        (25, 'demonic_tether', 'DMT', 'Siphon HP and Mana. Scales with INT.'),
+        (30, 'armageddon', 'ARM', 'Ultimate chaotic destruction. Scales with INT.'),
     ],
     'Priest': [
-        (1, 'heal', 'Holy restoration. Heals based on WIL.'),
-        (5, 'bless', 'Soul fortification. Boosts ATK/DEF based on WIL.'),
-        (10, 'purify', 'Clear addiction and heal. Scales with WIL.'),
-        (15, 'holy_fire', 'Fire damage to the wicked. Scales with WIL.'),
-        (20, 'divine_shield', 'Temporary invulnerability. Large DEF boost based on WIL.'),
-        (25, 'judgment', 'Air damage based on Karma and WIL.'),
-        (30, 'heavenly_ascent', 'Ultimate divine power. Massive heal and damage based on WIL.'),
+        (1, 'heal', 'HEL', 'Holy restoration. Heals based on WIL.'),
+        (5, 'bless', 'BLS', 'Soul fortification. Boosts ATK/DEF based on WIL.'),
+        (10, 'purify', 'PUR', 'Clear addiction and heal. Scales with WIL.'),
+        (15, 'holy_fire', 'HLF', 'Fire damage to the wicked. Scales with WIL.'),
+        (20, 'divine_shield', 'DSH', 'Temporary invulnerability. Large DEF boost based on WIL.'),
+        (25, 'judgment', 'JUD', 'Air damage based on Karma and WIL.'),
+        (30, 'heavenly_ascent', 'HVA', 'Ultimate divine power. Massive heal and damage based on WIL.'),
     ],
     'Trickster': [
-        (1, 'bamboozle', 'Confuse target. Lowers DEF based on CHA/LUCK.'),
-        (5, 'sneak', 'Attempt to hide. Chance based on AGI/CHA.'),
-        (10, 'jackpot', 'Massive damage or credits. Scales with CHA.'),
-        (15, 'sleight_of_hand', 'Steal item or credits. Success based on CHA.'),
-        (20, 'mirror_image', 'Illusionary defense. Large DEF boost based on CHA.'),
-        (25, 'wild_card', 'Random effect. Scaling based on primary stats.'),
-        (30, 'royal_flush', 'Ultimate luck-based destruction. Scales with CHA.'),
+        (1, 'bamboozle', 'BAM', 'Confuse target. Lowers DEF based on CHA/LUCK.'),
+        (5, 'sneak', 'SNK', 'Attempt to hide. Chance based on AGI/CHA.'),
+        (10, 'jackpot', 'JAK', 'Massive damage or credits. Scales with CHA.'),
+        (15, 'sleight_of_hand', 'SOH', 'Steal item or credits. Success based on CHA.'),
+        (20, 'mirror_image', 'MIR', 'Illusionary defense. Large DEF boost based on CHA.'),
+        (25, 'wild_card', 'WCD', 'Random effect. Scaling based on primary stats.'),
+        (30, 'royal_flush', 'RFL', 'Ultimate luck-based destruction. Scales with CHA.'),
+    ],
+    'Jade Dragon': [
+        (1, 'palm_strike', 'PLM', 'Open-palm chi strike. Scales with AGI/STR. Unarmed bonus when no weapon equipped.'),
+        (5, 'crane_kick', 'CRK', 'Soaring aerial kick. Scales with AGI/STR.'),
+        (10, 'iron_palm', 'IRP', 'Reinforced chi palm. Boosts Defense based on AGI.'),
+        (15, 'tiger_claw', 'TGR', 'Rending claw strikes. Scales with AGI/STR.'),
+        (20, 'dragon_kick', 'DGK', 'Explosive spinning kick. Scales with AGI/STR.'),
+        (25, 'chi_burst', 'CHI', 'Internal energy blast. Air damage. Scales with AGI/INT.'),
+        (30, 'jade_ascension', 'JDA', 'Ultimate martial trance. Massive combo. Scales with AGI/STR.'),
     ]
 }
 
@@ -131,6 +141,7 @@ GEAR_LIMITS = {
               'weapon': ['one-handed', 'two-handed']},
     'Street Samurai': {'armor': ['leather', 'light', 'medium', 'heavy'],
                        'weapon': ['one-handed', 'two-handed']},
+    'Jade Dragon': {'armor': ['leather', 'light'], 'weapon': ['jade']},
 }
 
 
@@ -294,6 +305,7 @@ def get_help(player):
     sb.append("USE <item>    : Use hardware/consumable/drug/scroll")
     sb.append("TRAIN <stat>  : Spend stat points (STR, INT, WIL, AGI, HEA, CHA)")
     sb.append("REST          : Rest to recover HP (broken by movement/combat/full HP)")
+    sb.append("PARTY <cmd>   : Party system (CREATE, INVITE <player>, ACCEPT, LEAVE, STATUS)")
     sb.append("EXIT          : Log out and disconnect from the grid")
 
     if room.exits:
@@ -323,9 +335,9 @@ def get_help(player):
 
     sb.append("\n=== CLASS ABILITIES ===")
     moves = CLASS_MOVES.get(player.game_class, [])
-    for lvl, name, desc in moves:
+    for lvl, name, acronym, desc in moves:
         if player.lvl >= lvl:
-            sb.append(f"  {name.upper():15} (Lv {lvl}): {desc}")
+            sb.append(f"  {name.upper():15} ({acronym}) (Lv {lvl}): {desc}")
 
     return "\n".join(sb)
 
@@ -334,7 +346,8 @@ def get_top_ten():
     top_players = Player.objects.order_by('-lvl', '-exp')[:10]
     sb = ["\n=== TOP 10 ADVENTURERS ==="]
     for i, p in enumerate(top_players, 1):
-        sb.append(f"{i:2}. {p.user.username:15} | Threat: {get_threat_desc(p.lvl)} | "
+        bot_marker = " (bot)" if p.is_bot else ""
+        sb.append(f"{i:2}. {p.user.username}{bot_marker:15} | Lv {p.lvl:2} | EXP: {p.exp:5} | "
                   f"Class: {p.game_class}")
     return "\n".join(sb)
 
@@ -368,16 +381,20 @@ def get_procedural_desc(obj, viewer=None):
                 names = [ei.item.name for ei in other_equipped]
                 desc += f"You also have {', '.join(names)} active. "
         else:
-            desc = f"{pronoun_cap} is a {obj.race} {obj.game_class} known as a {rep}. "
+            verb_are = "are" if pronoun_cap == "They" else "is"
+            verb_wearing = "are" if pronoun_cap == "They" else "is"
+            verb_wielding = "are" if pronoun_cap == "They" else "is"
+            verb_has = "have" if pronoun_cap == "They" else "has"
+            desc = f"{pronoun_cap} {verb_are} a {obj.race} {obj.game_class} known as a {rep}. "
             if armor:
-                desc += f"{pronoun_cap} is wearing {armor.item.name}. "
+                desc += f"{pronoun_cap} {verb_wearing} wearing {armor.item.name}. "
             else:
-                desc += f"{pronoun_cap} is wearing standard-issue synth-rags. "
+                desc += f"{pronoun_cap} {verb_wearing} wearing standard-issue synth-rags. "
             if weapon:
-                desc += f"{pronoun_cap} is wielding {weapon.item.name}. "
+                desc += f"{pronoun_cap} {verb_wielding} wielding {weapon.item.name}. "
             if other_equipped.exists():
                 names = [ei.item.name for ei in other_equipped]
-                desc += f"{pronoun_cap} also has {', '.join(names)} active. "
+                desc += f"{pronoun_cap} also {verb_has} {', '.join(names)} active. "
 
         desc += f"{get_combat_desc(obj.attack, obj.defense, is_self=is_self)} "
 
@@ -1029,14 +1046,14 @@ def process_combat_tick(player):
 
 
 def rest_command(player):
-    """Allows player to rest and regenerate HP over time."""
+    """Allows player to rest and regenerate HP and Mana over time."""
     # Can't rest if in combat
     if player.last_combat_npc or player.last_combat_player:
         return "Cannot rest while engaged in combat."
 
-    # Can't rest if already at full HP
-    if player.hp >= player.hp_max:
-        return "Already at full health. No need to rest."
+    # Can't rest if already at full HP and Mana
+    if player.hp >= player.hp_max and player.mana >= player.mana_max:
+        return "Already at full health and mana. No need to rest."
 
     # Can't rest if already resting
     if player.resting:
@@ -1047,17 +1064,17 @@ def rest_command(player):
     player.rest_started_at = timezone.now()
     player.save()
 
-    return "\nYou settle down to rest and recover HP..."
+    return "\nYou settle down to rest and recover HP and Mana..."
 
 
 def process_resting(player):
-    """Process HP regeneration for resting players. Called during polling."""
+    """Process HP and Mana regeneration for resting players. Called during polling."""
     if not player.resting:
         return ""
 
     # Check if rest should be interrupted
-    # Interrupted by: combat, movement (handled elsewhere), or full HP
-    if player.hp >= player.hp_max:
+    # Interrupted by: combat, movement (handled elsewhere), or full HP and Mana
+    if player.hp >= player.hp_max and player.mana >= player.mana_max:
         player.resting = False
         player.rest_started_at = None
         player.save()
@@ -1072,7 +1089,9 @@ def process_resting(player):
     # Calculate HP regeneration
     # Base regen: 1 HP per 3 seconds, modified by health stat
     # Higher HEA = faster regen
-    regen_rate = max(1, player.hea_stat // 5)  # 1-4 HP per tick depending on HEA
+    hp_regen_rate = max(1, player.hea_stat // 5)  # 1-4 HP per tick depending on HEA
+    # Mana regen: 1 Mana per tick, modified by INT stat
+    mana_regen_rate = max(1, player.int_stat // 5)  # 1-4 Mana per tick depending on INT
     regen_interval = max(2, 5 - (player.hea_stat // 10))
     # 2-5 seconds between regen
 
@@ -1086,18 +1105,27 @@ def process_resting(player):
     if time_resting >= regen_interval:
         # Regenerate HP
         old_hp = player.hp
-        player.hp = min(player.hp_max, player.hp + regen_rate)
+        player.hp = min(player.hp_max, player.hp + hp_regen_rate)
+        # Regenerate Mana
+        old_mana = player.mana
+        player.mana = min(player.mana_max, player.mana + mana_regen_rate)
         player.rest_started_at = timezone.now()
         player.save()
 
+        msg_parts = []
         if player.hp != old_hp:
-            return f"\n[REST] Recovered {player.hp - old_hp} HP. ({player.hp}/{player.hp_max})"
+            msg_parts.append(f"Recovered {player.hp - old_hp} HP")
+        if player.mana != old_mana:
+            msg_parts.append(f"Recovered {player.mana - old_mana} Mana")
+        if msg_parts:
+            return f"\n[REST] {' and '.join(msg_parts)}. ({player.hp}/{player.hp_max} HP, {player.mana}/{player.mana_max} Mana)"
 
     return ""
 
 
 def use_ability(player, ability_name, target_name):
     ability_name = ability_name.lower()
+    original_ability_name = ability_name
 
     # Universal sneak/stealth - works for any class, but success varies
     if ability_name in ('stealth', 'sneak'):
@@ -1157,9 +1185,12 @@ def use_ability(player, ability_name, target_name):
     # Check if this command is actually a move for this class
     moves = CLASS_MOVES.get(player.game_class, [])
     req_lvl = 999
-    for lvl, name, desc in moves:
-        if name.lower() == ability_name:
+    found_name = None
+    for lvl, name, acronym, desc in moves:
+        # Match by full name or acronym
+        if name.lower() == ability_name or acronym.lower() == ability_name:
             req_lvl = lvl
+            found_name = name
             break
 
     if req_lvl == 999:  # Not a move for this class
@@ -1213,9 +1244,13 @@ def use_ability(player, ability_name, target_name):
         primary_stat = 10
         if player.game_class in ('Street Samurai', 'Heavy'):
             primary_stat = player.str_stat
+        elif player.game_class == 'Jade Dragon':
+            primary_stat = player.agi_stat
         elif player.game_class in ('Netrunner', 'Techie'):
             primary_stat = player.int_stat
-        elif player.game_class in ('Psycher', 'Warlock', 'Priest'):
+        elif player.game_class in ('Psycher', 'Warlock'):
+            primary_stat = player.int_stat
+        elif player.game_class in ('Priest',):
             primary_stat = player.wil_stat
         elif player.game_class in ('Thief'):
             primary_stat = player.agi_stat
@@ -1379,8 +1414,9 @@ def use_ability(player, ability_name, target_name):
         'boost', 'shield', 'iron', 'protocol', 'vanish', 'smoke', 'mirage', 'image', 'bless'
     ]):
         stat_val = (
-            player.wil_stat if player.game_class in ('Psycher', 'Priest')
-            else (player.agi_stat if player.game_class == 'Thief' else player.hea_stat)
+            player.int_stat if player.game_class == 'Psycher'
+            else (player.wil_stat if player.game_class == 'Priest'
+            else (player.agi_stat if player.game_class == 'Thief' else player.hea_stat))
         )
         buff = 10 + req_lvl + (stat_val // 2)
         player.defense += buff
@@ -1396,7 +1432,8 @@ def use_ability(player, ability_name, target_name):
         res += "\nHealed HP."
     elif ability_name == 'soul_drain':
         if target:
-            dmg, _ = calculate_damage(int(player.wil_stat * 2.5), target.defense, element='water')
+            soul_stat = player.int_stat if player.game_class == 'Psycher' else player.wil_stat
+            dmg, _ = calculate_damage(int(soul_stat * 2.5), target.defense, element='water')
             target.hp -= dmg
             player.hp = min(player.hp_max, player.hp + dmg // 2)
             target.save()
@@ -1426,6 +1463,34 @@ def use_ability(player, ability_name, target_name):
                 res += "\nJACKPOT! Credits siphoned!"
         else:
             res += "\nTarget required."
+    # Jade Dragon abilities
+    elif ability_name == 'palm_strike':
+        # Unarmed bonus: +50% damage if no weapon equipped
+        unarmed_mult = 1.5 if not InventoryItem.objects.filter(player=player, equipped=True, item__item_type='weapon').exists() else 1.0
+        deal_dmg(1.2 * unarmed_mult)
+    elif ability_name == 'crane_kick':
+        unarmed_mult = 1.5 if not InventoryItem.objects.filter(player=player, equipped=True, item__item_type='weapon').exists() else 1.0
+        deal_dmg(2.0 * unarmed_mult, 'air')
+    elif ability_name == 'iron_palm':
+        buff = 15 + (player.agi_stat // 3)
+        player.defense += buff
+        player.save()
+        res += "\nYour chi hardens your body. Defense boosted."
+    elif ability_name == 'tiger_claw':
+        unarmed_mult = 1.5 if not InventoryItem.objects.filter(player=player, equipped=True, item__item_type='weapon').exists() else 1.0
+        deal_dmg(2.5 * unarmed_mult)
+        deal_dmg(2.5 * unarmed_mult)
+    elif ability_name == 'dragon_kick':
+        unarmed_mult = 1.5 if not InventoryItem.objects.filter(player=player, equipped=True, item__item_type='weapon').exists() else 1.0
+        deal_dmg(4.0 * unarmed_mult, 'fire')
+    elif ability_name == 'chi_burst':
+        deal_dmg(3.5, 'air')
+    elif ability_name == 'jade_ascension':
+        unarmed_mult = 1.5 if not InventoryItem.objects.filter(player=player, equipped=True, item__item_type='weapon').exists() else 1.0
+        deal_dmg(2.5 * unarmed_mult)
+        deal_dmg(2.5 * unarmed_mult)
+        deal_dmg(2.5 * unarmed_mult)
+        deal_dmg(2.5 * unarmed_mult)
     elif ability_name == 'bamboozle':
         if target:
             debuff = 15 + (player.cha_stat // 3)
@@ -1591,9 +1656,9 @@ def get_status_detailed(player):
     sb.append("\nLearned Moves:")
     moves = CLASS_MOVES.get(player.game_class, [])
     found = False
-    for lvl, name, desc in moves:
+    for lvl, name, acronym, desc in moves:
         if player.lvl >= lvl:
-            sb.append(f"  {name.upper():15}: {desc}")
+            sb.append(f"  {name.upper():15} ({acronym}): {desc}")
             found = True
     if not found:
         sb.append("  None")
@@ -1620,9 +1685,9 @@ def check_level_up(player):
 
         # Notify about new moves
         moves = CLASS_MOVES.get(player.game_class, [])
-        for lvl, name, _ in moves:
+        for lvl, name, acronym, _ in moves:
             if player.lvl == lvl:
-                output += f"\n[SYSTEM] New move unlocked: {name.upper()}!"
+                output += f"\n[SYSTEM] New move unlocked: {name.upper()} ({acronym})!"
 
         if player.lvl == 5:
             output += "\n[NEW ABILITIES UNLOCKED! Type HELP for details]"
@@ -2014,6 +2079,134 @@ def check_procedural_weapon_spawns():
     return spawned_weapons
 
 
+def process_bot_ai(bot):
+    """Process AI behavior for bot players. Called during polling."""
+    if not bot.is_bot or not bot.online:
+        return ""
+    
+    output = ""
+    
+    # Skip if bot is in combat or resting (they're already "active")
+    if bot.last_combat_npc or bot.last_combat_player or bot.resting:
+        return ""
+    
+    # Only act every 10-30 seconds (randomized per bot)
+    # Use a simple counter-based system instead of database field
+    if not hasattr(bot, '_ai_counter'):
+        bot._ai_counter = 0
+    
+    bot._ai_counter += 1
+    ai_interval = random.randint(30, 90)  # Check every 30-90 polls (roughly 10-30 seconds)
+    
+    if bot._ai_counter < ai_interval:
+        return ""
+    
+    # Reset counter
+    bot._ai_counter = 0
+    
+    # AI Decision Making
+    room = bot.location
+    
+    # Check if bot should rest (low HP)
+    if bot.hp < bot.hp_max * 0.3:
+        rest_result = rest_command(bot)
+        if "settle down" in rest_result:
+            return ""  # Bot is now resting
+    
+    # Look for targets in current room
+    npcs = NPC.objects.filter(location=room, hp__gt=0)
+    players_here = Player.objects.filter(location=room, online=True).exclude(id=bot.id)
+    
+    # Decide whether to attack players (based on karma and aggression)
+    should_attack_players = (
+        bot.bot_aggression > 60 and 
+        bot.karma < -30 and 
+        not room.safe_zone and
+        bot.lvl >= 5
+    )
+    
+    # Find a target
+    target_npc = None
+    target_player = None
+    
+    # Priority 1: Attack evil players if we're good
+    if bot.karma > 50:
+        for p in players_here:
+            if p.karma < -50 and abs(bot.lvl - p.lvl) <= 3:
+                target_player = p
+                break
+    
+    # Priority 2: Attack good players if we're evil
+    if not target_npc and not target_player and should_attack_players:
+        for p in players_here:
+            if p.karma > 30 and abs(bot.lvl - p.lvl) <= 3:
+                target_player = p
+                break
+    
+    # Priority 3: Attack nearby NPCs
+    if not target_npc and not target_player:
+        aggressive_npcs = [n for n in npcs if n.aggressive]
+        if aggressive_npcs:
+            target_npc = random.choice(aggressive_npcs)
+    
+    # Execute combat
+    if target_npc or target_player:
+        target_name = target_npc.name if target_npc else target_player.user.username
+        combat_output = attack_target(bot, target_name, auto=True)
+        if combat_output:
+            output += f"\n[AI] {combat_output}"
+        # Notify players in room about the combat
+        for p in players_here:
+            p.notification = (p.notification + f"\n[COMBAT] {bot.user.username} attacks {target_name}!").strip()
+            p.save(update_fields=['notification'])
+        return output
+    
+    # Party behavior: invite players if social enough
+    if bot.bot_social > 60 and not bot.parties.exists() and players_here.exists():
+        for p in players_here:
+            if abs(bot.lvl - p.lvl) <= 3 and not p.parties.exists():
+                # Invite player to party
+                invite_result = invite_to_party(bot, p.user.username)
+                if "Invited" in invite_result:
+                    output += f"\n[AI] {invite_result}"
+                    # Notify the player
+                    p.notification = (p.notification + f"\n[PARTY] {invite_result}").strip()
+                    p.save(update_fields=['notification'])
+                    break
+    
+    # Random chat/say to players in room
+    if players_here.exists() and random.random() < 0.15:  # 15% chance to say something
+        player = random.choice(list(players_here))
+        greetings = [
+            "Hey there, choom.",
+            "Watch your back in this sector.",
+            "Looking for a party?",
+            "Stay frosty.",
+            "The grid's been weird lately.",
+            "Heard there's good loot in the wastes.",
+            "Beware the corporate enforcers.",
+            "Need a heal? I'm a Medie.",
+            "Let's wreck some drones.",
+            "Karma's a bitch, watch yours."
+        ]
+        message = random.choice(greetings)
+        ChatMessage.objects.create(sender=bot, room=room, message=message)
+        output += f"\n[CHAT] {bot.user.username} says: \"{message}\""
+    
+    # Wander to adjacent room
+    if room.exits and random.random() < 0.5:  # 50% chance to move
+        direction = random.choice(list(room.exits.keys()))
+        move_result = move_player(bot, direction)
+        if "PATH BLOCKED" not in move_result and "NAVIGATION ERROR" not in move_result:
+            output += f"\n[AI] {bot.user.username} moves {direction}."
+            # Notify players in old and new rooms
+            for p in Player.objects.filter(location=room, online=True).exclude(id=bot.id):
+                p.notification = (p.notification + f"\n[GRID] {bot.user.username} leaves the sector.").strip()
+                p.save(update_fields=['notification'])
+    
+    return output
+
+
 def get_poll_data(player):
     # Process auto-combat tick
     combat_msg = process_combat_tick(player)
@@ -2021,6 +2214,20 @@ def get_poll_data(player):
     # Process resting HP regeneration
     rest_msg = process_resting(player)
 
+    # Process bot AI for all online bots in the same room
+    bot_msg = ""
+    if player.location:
+        bots_here = Player.objects.filter(
+            location=player.location,
+            online=True,
+            is_bot=True
+        ).exclude(id=player.id)
+        
+        for bot in bots_here:
+            bot_result = process_bot_ai(bot)
+            if bot_result:
+                bot_msg += bot_result
+    
     # Check for procedural weapon spawns (once per poll cycle is fine, it's time-gated)
     if random.random() < 0.1:  # 10% chance each poll to check (roughly every 30 seconds)
         check_procedural_weapon_spawns()
@@ -2059,3 +2266,193 @@ def get_poll_data(player):
         "location": (player.location.name if player.location else "Unknown"),
         "notification": notification,
     }
+
+
+# Party System Functions
+
+def create_party(player, party_name=None):
+    """Create a new party with the player as leader."""
+    # Check if player is already in a party
+    if player.parties.exists():
+        return "You are already in a party. Leave it first to create a new one."
+
+    # Create the party
+    party = Party.objects.create(
+        leader=player,
+        name=party_name or f"{player.user.username}'s Party"
+    )
+    # Add leader as a member
+    PartyMembership.objects.create(party=party, player=player, invited=False)
+
+    return f"Party '{party.name}' created. You are the leader."
+
+
+def invite_to_party(leader, target_name):
+    """Invite another player to join the party."""
+    # Check if leader is in a party
+    if not leader.parties.exists():
+        return "You are not in a party. Create one with PARTY CREATE first."
+
+    party = Party.objects.get(id=leader.parties.first().id)
+
+    # Check if leader is the party leader
+    if party.leader != leader:
+        return "Only the party leader can invite members."
+
+    # Check if party is full
+    if party.members.count() >= 3:
+        return "Party is full (max 3 members). Cannot invite more."
+
+    # Find target player
+    target = Player.objects.filter(
+        user__username__icontains=target_name,
+        online=True
+    ).first()
+
+    if not target:
+        return "Player not found or not online."
+
+    # Check if target is in the same room
+    if target.location != leader.location:
+        return "Target must be in the same sector to invite."
+
+    # Check if target is already in a party
+    if target.parties.exists():
+        return "That player is already in a party."
+
+    # Check if target already has an invite
+    if target.party_invite and target.party_invite == party:
+        return "That player already has a pending invite from your party."
+
+    # Send invite
+    target.party_invite = party
+    target.save(update_fields=['party_invite'])
+
+    return f"Invited {target.user.username} to the party. They have 60 seconds to accept."
+
+
+def accept_party_invite(player):
+    """Accept a pending party invitation."""
+    if not player.party_invite:
+        return "No pending party invitation."
+
+    party = Party.objects.get(id=player.party_invite.id)
+
+    # Check if party is still valid and not full
+    if not party.members.exists():
+        player.party_invite = None
+        player.save(update_fields=['party_invite'])
+        return "Party no longer exists."
+
+    if party.members.count() >= 3:
+        player.party_invite = None
+        player.save(update_fields=['party_invite'])
+        return "Party is now full. Cannot join."
+
+    # Add player to party
+    PartyMembership.objects.create(party=party, player=player, invited=True)
+    player.party_invite = None
+    player.save(update_fields=['party_invite'])
+
+    # Notify other party members
+    for member in party.members.all():
+        if member != player:
+            member.notification = (
+                f"\n[PARTY] {player.user.username} has joined the party."
+            ).strip()
+            member.save(update_fields=['notification'])
+
+    return f"You have joined {party.name}."
+
+
+def leave_party(player):
+    """Leave the current party."""
+    if not player.parties.exists():
+        return "You are not in a party."
+
+    party = player.parties.first()
+
+    # If leader leaves, disband the party
+    if party.leader == player:
+        # Notify all members
+        for member in party.members.all():
+            if member != player:
+                member.notification = (
+                    f"\n[PARTY] {player.user.username} has disbanded the party. "
+                    "You are no longer in a party."
+                ).strip()
+                member.party_invite = None
+                member.save(update_fields=['notification', 'party_invite'])
+
+        party.delete()
+        return "You have disbanded the party."
+
+    # Remove player from party
+    PartyMembership.objects.filter(party=party, player=player).delete()
+
+    # Notify other members
+    for member in party.members.all():
+        member.notification = (
+            f"\n[PARTY] {player.user.username} has left the party."
+        ).strip()
+        member.save(update_fields=['notification'])
+
+    return "You have left the party."
+
+
+def get_party_status(player):
+    """Get the current party status for a player."""
+    if not player.parties.exists():
+        return "You are not in a party."
+
+    party = player.parties.first()
+    members = list(party.members.all().values_list('user__username', flat=True))
+    leader_name = party.leader.user.username
+
+    sb = [f"\n=== Party: {party.name} ==="]
+    sb.append(f"Leader: {leader_name}")
+    sb.append("Members:")
+    for m in members:
+        if m == leader_name:
+            sb.append(f"  - {m} (Leader)")
+        else:
+            sb.append(f"  - {m}")
+    sb.append(f"Size: {len(members)}/3")
+
+    return "\n".join(sb)
+
+
+def move_party_leader(player, direction):
+    """Move the party leader and all party members together."""
+    # Check if player is in a party and is the leader
+    if not player.parties.exists():
+        return "You are not in a party. Create one with PARTY CREATE first."
+
+    party = player.parties.first()
+    if party.leader != player:
+        return "Only the party leader can move the party."
+
+    # Store the party id to use after move
+    party_id = party.id
+
+    # Move the leader
+    result = move_player(player, direction)
+
+    # Refresh party to get updated members
+    party = Party.objects.get(id=party_id)
+
+    # Move all party members
+    for member in party.members.all():
+        if member != player and member.online:
+            # Store their old room for broadcast
+            old_room = member.location
+            # Move them to the same room as the leader
+            member.location = player.location
+            member.save(update_fields=['location'])
+
+            # Broadcast exit/enter for party members
+            if old_room and old_room != member.location:
+                broadcast_room_event(member, old_room, None, 'exit')
+                broadcast_room_event(member, None, member.location, 'enter')
+
+    return result

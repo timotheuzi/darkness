@@ -115,6 +115,7 @@ def register_view(request):
                 'Psycher': {'mana_max': 40},
                 'Warlock': {'mana_max': 40},
                 'Priest': {'hp_max': 45},
+                'Jade Dragon': {'attack': 3, 'hp_max': 25},
                 'Trickster': {'mana_max': 30},
             }
 
@@ -221,7 +222,8 @@ def command_view(request):
             online_players = Player.objects.filter(online=True)
             lines = ["\n=== Nodes Currently Linked ==="]
             for p in online_players:
-                lines.append(f"  {p.user.username} (Lvl {p.lvl}) - {p.game_class}")
+                bot_marker = " (bot)" if p.is_bot else ""
+                lines.append(f"  {p.user.username}{bot_marker} (Lvl {p.lvl}) - {p.game_class}")
             output = "\n".join(lines)
         elif command == 'top':
             output = services.get_top_ten()
@@ -257,6 +259,25 @@ def command_view(request):
             output = services.train_stat(player, args)
         elif command == 'rest':
             output = services.rest_command(player)
+        elif command == 'party':
+            if not args:
+                output = "Party commands: CREATE, INVITE <player>, ACCEPT, LEAVE, STATUS"
+            else:
+                parts = args.split(' ', 1)
+                subcmd = parts[0].lower()
+                subargs = parts[1] if len(parts) > 1 else ""
+                if subcmd == 'create':
+                    output = services.create_party(player, subargs)
+                elif subcmd == 'invite':
+                    output = services.invite_to_party(player, subargs)
+                elif subcmd == 'accept':
+                    output = services.accept_party_invite(player)
+                elif subcmd == 'leave':
+                    output = services.leave_party(player)
+                elif subcmd == 'status':
+                    output = services.get_party_status(player)
+                else:
+                    output = "Party commands: CREATE, INVITE <player>, ACCEPT, LEAVE, STATUS"
         else:
             # Check for special moves dynamically
             move_output = services.use_ability(player, command, args)

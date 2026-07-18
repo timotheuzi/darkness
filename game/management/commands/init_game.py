@@ -44,6 +44,19 @@ WEAPON_TABLE = [
      {"int_bonus": 8, "agi_bonus": 4}),
     ("Toxic Dart Gun", "Injects neurotoxins silently.", 22, 1800, "rare", 5, "one-handed",
      {"int_bonus": 6, "cha_bonus": 3}),
+    # Jade Dragon Weapons
+    ("Jade Nunchuks", "Twin dragon-engraved nunchuks. Only a Jade Dragon can wield them.",
+     18, 1200, "rare", 15, "jade", {"str_bonus": 5, "agi_bonus": 5}),
+    ("Jade Bo Staff", "A staff carved from ancient jade. Channels chi with every strike.",
+     25, 2000, "rare", 10, "jade", {"str_bonus": 8, "agi_bonus": 3}),
+    ("Jade Sai", "Three-pronged jade daggers. Swift and precise.",
+     15, 1500, "rare", 18, "jade", {"agi_bonus": 8, "str_bonus": 2}),
+    ("Jade Tonfa", "Jade-reinforced tonfa. Blocks and strikes in fluid motion.",
+     22, 1800, "rare", 8, "jade", {"str_bonus": 6, "hea_bonus": 4}),
+    ("Jade War Fans", "Deadly folding fans edged with jade. Elegant and lethal.",
+     20, 2200, "epic", 20, "jade", {"agi_bonus": 10, "cha_bonus": 5}),
+    ("Jade Crescent Blades", "Twin crescent-shaped jade blades. Whirlwind of death.",
+     30, 3500, "epic", 12, "jade", {"str_bonus": 10, "agi_bonus": 8}),
 ]
 
 DRUG_TABLE = [
@@ -110,7 +123,16 @@ BOSS_WEAPONS = {
         ("Shadow's Embrace", "A dagger that drinks light.", 110, 0, "legendary", 20, "one-handed",
          {"agi_bonus": 25}),
         ("Crypt-Keeper's Scythe", "Harvests the code of the dead.", 105, 0, "legendary", -10,
-         "two-handed", {"wil_bonus": 30})
+         "two-handed", {"wil_bonus": 30}),
+        ("Void Heart Amulet", "Pulsing with dark energy. Grants immense power.", 0, 0,
+         "legendary", 0, "one-handed", {"str_bonus": 20, "int_bonus": 20, "wil_bonus": 20,
+         "agi_bonus": 20, "hea_bonus": 20, "cha_bonus": 20}),
+        ("The Last Echo", "A gun that fires silenced screams.", 130, 0, "legendary", 25,
+         "one-handed", {"agi_bonus": 30, "int_bonus": 15}),
+        ("Oblivion's Gate", "A shield that devours light and hope.", 0, 0, "legendary", 0,
+         "one-handed", {"hea_bonus": 40, "str_bonus": 15, "wil_bonus": 15}),
+        ("Soul Reaver", "A blade that consumes the souls of the fallen.", 150, 0, "legendary", 5,
+         "two-handed", {"str_bonus": 35, "agi_bonus": 10}),
     ],
 }
 
@@ -337,7 +359,11 @@ ZONE_TEMPLATES = [
         "npc_prefix": "Shadow", "npc_types": ["gang", "drone", "cultist", "stalker"],
         "bosses": [
             {"name": "The Hollow One", "desc": "A creature of pure shadow and malicious code."},
-            {"name": "Under-King Silas", "desc": "Corporate genius who built a sewer kingdom."}
+            {"name": "Under-King Silas", "desc": "Corporate genius who built a sewer kingdom."},
+            {"name": "The Lich Programmer", "desc": "Undead coder whose algorithms devour souls."},
+            {"name": "Void Matriarch", "desc": "Queen of the forgotten depths, wielding ancient power."},
+            {"name": "The Null Entity", "desc": "An anti-existence being that erases matter."},
+            {"name": "Corrupted Titan", "desc": "A colossal war machine gone rogue."},
         ],
         "shop": "Shadow Market",
         "room_names": ["Tunnel", "Cave", "Chamber", "Crypt", "Passage", "Sewer", "Catacomb",
@@ -417,6 +443,10 @@ class Command(BaseCommand):
                             break
 
             Player.objects.all().update(location=hub)
+
+            # Create AI bots
+            from django.core.management import call_command
+            call_command('create_bots', count=7, reset=False)
 
             GameWorld.objects.all().delete()
             GameWorld.objects.create(
@@ -635,10 +665,13 @@ class Command(BaseCommand):
             is_boss_room = "BOSS LAIR" in room.name
             if is_boss_room:
                 lvl = zone['max_lvl'] + 2
-                boss_info = (zone['bosses'][0] if "A" in room.name or "C" in room.name
-                             else zone['bosses'][1])
+                # Determine boss index from room letter: A=0, B=1, C=2, D=3, E=4, F=5
+                boss_letter = room.name.split("BOSS LAIR ")[-1] if "BOSS LAIR " in room.name else "A"
+                boss_index = (ord(boss_letter) - ord('A')) % len(zone['bosses'])
+                boss_info = zone['bosses'][boss_index]
                 bw_list = BOSS_WEAPONS.get(room.zone, [])
-                bw_info = bw_list[0] if boss_info == zone['bosses'][0] else bw_list[1]
+                bw_index = boss_index % len(bw_list)
+                bw_info = bw_list[bw_index]
                 name, bdesc, batk, bpr, brarity, bspeed, bsub, bbonuses = bw_info
                 unique_weapon = Item.objects.create(
                     name=name, description=bdesc, item_type='weapon',
@@ -652,6 +685,21 @@ class Command(BaseCommand):
                     money_drop=lvl * 50, exp_drop=lvl * 100,
                     aggressive=True, npc_type='boss')
                 boss.drops.add(unique_weapon)
+                # For undercity, add additional unique drops for extra bosses
+                if room.zone == 'undercity' and boss_index >= 2:
+                    extra_drop = bw_list[(boss_index + 1) % len(bw_list)]
+                    ename, edesc, eatk, epr, erarity, espeed, esub, ebonuses = extra_drop
+                    extra_item = Item.objects.create(
+                        name=ename, description=edesc, item_type='weapon',
+                        attack_bonus=eatk, price=epr, rarity=erarity,
+                        speed_bonus=espeed, subtype=esub, **ebonuses
+                    )
+                    boss.drops.add(extra_item)
+                    boss.money_drop = lvl * 100
+                    boss.exp_drop = lvl * 200
+                    boss.hp = lvl * 80
+                    boss.hp_max = lvl * 80
+                    boss.save()
                 continue
             prob = 0.5 if "Entry" not in room.name else 0.2
             if random.random() < prob:

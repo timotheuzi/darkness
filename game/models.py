@@ -127,6 +127,17 @@ class Player(models.Model):
     # PvP notification - message shown to player on next poll
     notification = models.TextField(default='', blank=True)
 
+    # Party invitation notification
+    party_invite = models.ForeignKey(
+        'Party', on_delete=models.SET_NULL, null=True, blank=True, related_name='invited_players'
+    )
+
+    # Bot identification
+    is_bot = models.BooleanField(default=False)
+    bot_karma = models.IntegerField(default=0)  # Bot's alignment for behavior
+    bot_aggression = models.IntegerField(default=50)  # 0-100, likelihood to attack players
+    bot_social = models.IntegerField(default=50)  # 0-100, likelihood to party with players
+
     def __str__(self):
         return self.user.username
 
@@ -198,3 +209,37 @@ class ProceduralWeaponSpawn(models.Model):
 
     class Meta:
         unique_together = ['zone', 'item']
+
+
+class Party(models.Model):
+    """A party of up to 3 players led by one player."""
+    name = models.CharField(max_length=100, default='Unnamed Party')
+    leader = models.ForeignKey(
+        Player, on_delete=models.CASCADE, related_name='led_parties'
+    )
+    members = models.ManyToManyField(
+        Player, through='PartyMembership', related_name='parties'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} (Leader: {self.leader.user.username})"
+
+    @property
+    def member_count(self):
+        return self.members.count()
+
+    @property
+    def is_full(self):
+        return self.member_count >= 3
+
+
+class PartyMembership(models.Model):
+    """Through model for Party membership with invitation status."""
+    party = models.ForeignKey(Party, on_delete=models.CASCADE)
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    invited = models.BooleanField(default=False)
+    joined_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ['party', 'player']
