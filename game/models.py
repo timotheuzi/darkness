@@ -137,6 +137,7 @@ class Player(models.Model):
     bot_karma = models.IntegerField(default=0)  # Bot's alignment for behavior
     bot_aggression = models.IntegerField(default=50)  # 0-100, likelihood to attack players
     bot_social = models.IntegerField(default=50)  # 0-100, likelihood to party with players
+    last_bot_action = models.DateTimeField(null=True, blank=True)  # Track last AI action
 
     def __str__(self):
         return self.user.username

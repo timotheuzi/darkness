@@ -10,18 +10,18 @@ from game.models import Player, User, Room, Item, InventoryItem, Party, PartyMem
 from game import services
 
 
-# Cyberpunk-themed bot names
+# Cyberpunk-themed bot names (using camelCase instead of underscores)
 BOT_NAMES = [
-    "Neon_Shade", "Chrome_Wraith", "Glitch_Monk", "Byte_Hunter", "Circuit_Breaker",
-    "Synth_Runner", "Data_Phantom", "Volt_Striker", "Zero_Cool", "Pixel_Slayer",
-    "Rogue_AI", "Neural_Jack", "Cyber_Witch", "Binary_Storm", "Quantum_Shade",
-    "Echo_Protocol", "Void_Walker", "Static_Ghost", "Laser_Monk", "Titan_Byte",
-    "Nova_Blade", "Cipher_Punk", "Drift_Wire", "Flux_Core", "Hex_Matrix",
-    "Jade_Spirit", "Kira_Code", "Lynx_System", "Mako_Shift", "Nexus_Flame",
-    "Onyx_Data", "Prism_Hack", "Quake_Bot", "Rift_Walker", "Spark_Agent",
-    "Talon_Net", "Urban_Glitch", "Viper_Code", "Warp_Entity", "Xeno_Byte",
-    "Yuri_Shift", "Zen_Hacker", "Apex_Drone", "Blitz_Coder", "Crack_Shell",
-    "Dusk_Loader", "Ember_Sync", "Frost_Byte", "Grim_Access", "Haze_Proxy"
+    "NeonShade", "ChromeWraith", "GlitchMonk", "ByteHunter", "CircuitBreaker",
+    "SynthRunner", "DataPhantom", "VoltStriker", "ZeroCool", "PixelSlayer",
+    "RogueAI", "NeuralJack", "CyberWitch", "BinaryStorm", "QuantumShade",
+    "EchoProtocol", "VoidWalker", "StaticGhost", "LaserMonk", "TitanByte",
+    "NovaBlade", "CipherPunk", "DriftWire", "FluxCore", "HexMatrix",
+    "JadeSpirit", "KiraCode", "LynxSystem", "MakoShift", "NexusFlame",
+    "OnyxData", "PrismHack", "QuakeBot", "RiftWalker", "SparkAgent",
+    "TalonNet", "Derpydo", "ViperCode", "WarpEntity", "XenoByte",
+    "YuriShift", "ZenHacker", "ApexDrone", "BlitzCoder", "CrackShell",
+    "DuskLoader", "EmberSync", "FrostByte", "GrimAccess", "Tim Bob"
 ]
 
 # Sensible race/class combinations

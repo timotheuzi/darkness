@@ -836,6 +836,14 @@ def combat_round(player):
             player.auto_attack = False
             player.save()
             return f"\n[COMBAT] {target.user.username} is no longer here."
+    
+    # Get all players in the room for combat broadcasting
+    room_players = Player.objects.filter(
+        location=player.location, 
+        online=True
+    ).exclude(id=player.id)
+    if target_player:
+        room_players = room_players.exclude(id=target_player.id)
 
     # Player attacks
     equipped_weapon = InventoryItem.objects.filter(
@@ -868,8 +876,12 @@ def combat_round(player):
         target.save()
         if is_crit:
             output += f"\n[CRIT] You hit {target_name} for {dmg} damage!"
+            # Broadcast crit to room
+            broadcast_combat_to_room(player, target_name, f"[CRIT] {player.user.username} hits {target_name} for {dmg} damage!", room_players)
         else:
             output += f"\nYou hit {target_name} for {dmg} damage."
+            # Broadcast hit to room
+            broadcast_combat_to_room(player, target_name, f"{player.user.username} hits {target_name} for {dmg} damage.", room_players)
 
         if target.hp <= 0:
             # Win logic
@@ -890,6 +902,8 @@ def combat_round(player):
 
                 output += (f"\nTarget neutralized! +{target.exp_drop} exp, "
                            f"+{target.money_drop} credits.")
+                # Broadcast victory to room
+                broadcast_combat_to_room(player, target_name, f"{player.user.username} neutralized {target_name}!", room_players)
                 for item in target.drops.all():
                     ii, created = InventoryItem.objects.get_or_create(player=player, item=item)
                     if not created:
@@ -915,6 +929,8 @@ def combat_round(player):
                 target.save()
                 output += (f"\nYou neutralized {target_name}! +{exp_gain} exp, "
                            f"+{stolen} credits.")
+                # Broadcast PvP victory to room
+                broadcast_combat_to_room(player, target_name, f"{player.user.username} neutralized {target_name}!", room_players)
                 output += check_level_up(player)
 
             player.auto_attack = False
@@ -923,6 +939,12 @@ def combat_round(player):
 
     # Target counter-attacks
     output += execute_opponent_attack(player, target)
+    
+    # Broadcast counter-attack to room
+    if "hits you" in output:
+        counter_msg = f"{target_name} hits {player.user.username}!"
+        broadcast_combat_to_room(player, target_name, counter_msg, room_players)
+    
     return output
 
 
@@ -964,6 +986,13 @@ def execute_opponent_attack(player, target):
         output += handle_player_defeat(player, victor_player=(None if target_npc else target))
 
     return output
+
+
+def broadcast_combat_to_room(attacker, target_name, message, room_players):
+    """Broadcast combat message to all other players in the room."""
+    for p in room_players:
+        p.notification = (p.notification + f"\n[COMBAT] {message}").strip()
+        p.save(update_fields=['notification'])
 
 
 def attack_target(player, target_name, auto=False):
@@ -2090,19 +2119,16 @@ def process_bot_ai(bot):
     if bot.last_combat_npc or bot.last_combat_player or bot.resting:
         return ""
     
-    # Only act every 10-30 seconds (randomized per bot)
-    # Use a simple counter-based system instead of database field
-    if not hasattr(bot, '_ai_counter'):
-        bot._ai_counter = 0
+    # Only act every 10-30 seconds (using persistent database field)
+    now = timezone.now()
+    if bot.last_bot_action:
+        time_since_last = (now - bot.last_bot_action).total_seconds()
+        if time_since_last < random.randint(10, 30):
+            return ""
     
-    bot._ai_counter += 1
-    ai_interval = random.randint(30, 90)  # Check every 30-90 polls (roughly 10-30 seconds)
-    
-    if bot._ai_counter < ai_interval:
-        return ""
-    
-    # Reset counter
-    bot._ai_counter = 0
+    # Update last action time
+    bot.last_bot_action = now
+    bot.save(update_fields=['last_bot_action'])
     
     # AI Decision Making
     room = bot.location
@@ -2199,10 +2225,7 @@ def process_bot_ai(bot):
         move_result = move_player(bot, direction)
         if "PATH BLOCKED" not in move_result and "NAVIGATION ERROR" not in move_result:
             output += f"\n[AI] {bot.user.username} moves {direction}."
-            # Notify players in old and new rooms
-            for p in Player.objects.filter(location=room, online=True).exclude(id=bot.id):
-                p.notification = (p.notification + f"\n[GRID] {bot.user.username} leaves the sector.").strip()
-                p.save(update_fields=['notification'])
+            # Note: move_player already broadcasts exit/enter events to players
     
     return output
 
