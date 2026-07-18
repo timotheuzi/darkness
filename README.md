@@ -20,6 +20,7 @@ A professional multi-user, terminal-style cyberpunk RPG (MUD) built with Django.
 - **Drug & Addiction System**: Temporary stat boosts with risk of dependency and withdrawal damage.
 - **Unique Loot**: Sector bosses drop legendary gear not found in shops.
 - **Leaderboards**: Use the `TOP` command to see the grid's most elite adventurers.
+- **AI Bot System**: Autonomous AI-controlled players with cyberpunk names that wander, fight, and interact with players.
 
 ## Setup
 
@@ -62,6 +63,14 @@ make run
 2. Click **"Initialize New Profile"** to create a character.
 3. Select your **Race** and **Class**, then optionally customize your 6 base stats.
 4. Log in and arrive at **The Neon Hub**, the grid's central safe zone.
+
+### AI Bots
+The grid is populated with AI-controlled players that:
+- Have cyberpunk-themed names (e.g., Neon_Shade, Chrome_Wraith, Glitch_Monk)
+- Automatically wander the grid and fight NPCs
+- May attack players based on their karma alignment
+- Can invite players to parties
+- Appear in the `WHO` list and `TOP` rankings with a `(bot)` marker
 
 ## Documentation
 

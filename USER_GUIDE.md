@@ -28,11 +28,12 @@ Key Features:
 - **Deep Character Customization**: 10 races and 11 classes with unique abilities.
 - **Manual Stat Training**: Earn 1 point per level to spend on specific attributes.
 - **Tactical Combat**: PvP support (+/- 3 levels), weapon speed, and elemental damage (fire > air > earth > water > fire).
-- **Karma System**: Alignment from -100 (Villain) to 100 (Saint).
+- **Karma System**: Alignment from -100 (Villain) to +100 (Saint).
 - **Stealth System**: Hide and perform backstab attacks with bonus damage.
 - **Drug & Addiction**: Temporary stat boosts with dependency risk and withdrawal damage.
 - **Leaderboards**: Competitive ranking of the top adventurers on the grid.
 - **Boss Encounters**: Sector-specific bosses with unique legendary loot.
+- **AI Bot System**: Autonomous AI players with cyberpunk names that wander, fight, and interact with players.
 
 ---
 
@@ -268,6 +269,8 @@ Use `TRAIN <stat>` to spend stat points:
 ### Class Abilities
 Each class has 8 unique abilities unlocked at specific levels. Type `HELP` or `ST` in-game to see your available moves. All class abilities consume Mana (`5 + ability_level // 2` cost).
 
+Abilities can be invoked using either their full name or a 3-letter acronym (e.g., `BLADE` or `BLD` for Street Samurai's basic attack).
+
 Universal abilities available to all classes:
 - `STEALTH` / `SNEAK`: Attempt to hide. Base success depends on class (Thief/Trickster: 70% + AGI/2, others: 30% + AGI/4). Low-level characters have a -20 penalty.
 
@@ -353,3 +356,46 @@ python manage.py init_game --seed 12345 --rooms 200
 ```
 
 The `init_game` algorithm ensures the central Hub is always linked to every sector entry point, preventing player isolation. Data is submitted as a single atomic transaction.
+
+### AI Bot Management
+
+The game includes an AI bot system that creates autonomous players. Bots are automatically generated when you run `make init` or `python manage.py init_game`.
+
+#### Manual Bot Creation
+To create or recreate bots:
+```bash
+# Create 7 bots (default)
+python manage.py create_bots
+
+# Create a specific number (3-10)
+python manage.py create_bots --count 5
+
+# Delete all existing bots and create new ones
+python manage.py create_bots --reset --count 10
+```
+
+#### Bot Behavior
+AI bots:
+- Have cyberpunk-themed names (e.g., Neon_Shade, Chrome_Wraith, Glitch_Monk)
+- Automatically wander the grid and fight NPCs appropriate to their level
+- May attack players based on their karma alignment and aggression settings
+- Can invite players to parties if they have high social ratings
+- Send chat messages to players in the same room
+- Level up, gain stat points, and equip gear just like human players
+- Appear in the `WHO` list and `TOP` rankings with a `(bot)` marker
+
+#### Bot Processing Daemon
+To enable continuous bot AI behavior (wandering, fighting, chatting), run the bot processor as a background daemon:
+```bash
+python manage.py process_bots
+```
+
+This command runs continuously, processing bot actions every 3 seconds. Press `Ctrl+C` to stop the daemon.
+
+#### Bot Characteristics
+Each bot has:
+- **Race/Class**: Sensible combinations (e.g., Cyborg Street Samurai, Android Netrunner, Bio-hacked Medie)
+- **Karma**: Random alignment from -100 to +100
+- **Aggression**: 0-100 rating determining likelihood to attack players
+- **Social**: 0-100 rating determining likelihood to party with players
+- **Level**: 1-15, placed in appropriate zones for their level
