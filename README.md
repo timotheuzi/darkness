@@ -12,7 +12,7 @@ A professional multi-user, terminal-style cyberpunk RPG (MUD) built with Django.
 ## Core Features
 
 - **Procedural Sectors**: 8 distinct zones from Corporate Plazas to the Undercity.
-- **Deep Progression**: 10 Races and 11 Classes with unique abilities and stat modifiers.
+- **Deep Progression**: 10 Races and 13 Classes with unique abilities and stat modifiers.
 - **Manual Training**: Earn 1 stat point per level to manually improve STR, INT, WIL, AGI, HEA, or CHA.
 - **Tactical Combat**: PvP support (within 3 levels), weapon speed mechanics, and elemental damage (fire > air > earth > water > fire).
 - **Karma System**: Alignment ranges from -100 (Villain) to 100 (Saint), affecting NPC aggression.
@@ -21,41 +21,6 @@ A professional multi-user, terminal-style cyberpunk RPG (MUD) built with Django.
 - **Unique Loot**: Sector bosses drop legendary gear not found in shops.
 - **Leaderboards**: Use the `TOP` command to see the grid's most elite adventurers.
 - **AI Bot System**: Autonomous AI-controlled players with cyberpunk names that wander, fight, and interact with players.
-
-## Setup
-
-### Prerequisites
-- Python 3.11+
-- pip
-- make (optional)
-
-### Local Setup
-```bash
-# Clone and enter directory
-git clone https://github.com/timotheuzi/darknesses.git
-cd darknesses
-
-# Create environment
-make venv
-source .venv/bin/activate
-
-# Install dependencies
-make setup
-
-# Nuke database and build fresh schema
-make clean
-
-# Generate world data
-make init
-
-# Start the grid
-make run
-```
-
-### Make Commands
-- `make clean`: **Destructive**. Nukes the DB, clears migration history, and rebuilds the schema.
-- `make init`: Procedurally generates 200+ rooms, NPCs, bosses, and items.
-- `make run`: Launches the Django development server on port 8008.
 
 ## Quick Start
 

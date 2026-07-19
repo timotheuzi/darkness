@@ -8,10 +8,10 @@ class Item(models.Model):
     # weapon, armor, consumable, misc, drug, scroll
     item_type = models.CharField(max_length=50)
     # e.g., 'leather', 'heavy', 'one-handed', 'two-handed'
-    subtype = models.CharField(max_length=50, default='none')
+    subtype = models.CharField(max_length=50, default="none")
     price = models.IntegerField(default=0)
     # common, uncommon, rare, epic, legendary
-    rarity = models.CharField(max_length=20, default='common')
+    rarity = models.CharField(max_length=20, default="common")
 
     # Weapon/Armor stats
     attack_bonus = models.IntegerField(default=0)
@@ -28,12 +28,12 @@ class Item(models.Model):
     cha_bonus = models.IntegerField(default=0)
 
     # physical, fire, water, earth, air
-    element = models.CharField(max_length=20, default='physical')
+    element = models.CharField(max_length=20, default="physical")
 
     # Drug/Scroll effects
     addiction_chance = models.FloatField(default=0.0)
     warp_to_room = models.ForeignKey(
-        'Room', on_delete=models.SET_NULL, null=True, blank=True, related_name='warp_items'
+        "Room", on_delete=models.SET_NULL, null=True, blank=True, related_name="warp_items"
     )
 
     def __str__(self):
@@ -46,12 +46,12 @@ class Room(models.Model):
     exits = models.JSONField(default=dict)
     shop_name = models.CharField(max_length=255, null=True, blank=True)
     safe_zone = models.BooleanField(default=False)
-    zone = models.CharField(max_length=100, default='hub')  # zone identifier
-    theme = models.CharField(max_length=100, default='urban')  # visual theme
+    zone = models.CharField(max_length=100, default="hub")  # zone identifier
+    theme = models.CharField(max_length=100, default="urban")  # visual theme
     map_x = models.IntegerField(default=0)  # grid position for map
     map_y = models.IntegerField(default=0)
-    items = models.ManyToManyField(Item, blank=True, related_name='rooms')
-    shop_inventory = models.ManyToManyField(Item, blank=True, related_name='shops')
+    items = models.ManyToManyField(Item, blank=True, related_name="rooms")
+    shop_inventory = models.ManyToManyField(Item, blank=True, related_name="shops")
     # Procedural flags
     respawn_npcs = models.BooleanField(default=True)
     respawn_timer = models.IntegerField(default=300)  # seconds until NPC respawn
@@ -88,7 +88,7 @@ class Player(models.Model):
     # Cyborg, Bio-hacked, Android, Mutant, Human
     race = models.CharField(max_length=50)
     # Male, Female, Non-binary, Other
-    gender = models.CharField(max_length=20, default='Other')
+    gender = models.CharField(max_length=20, default="Other")
     # Street Samurai, Netrunner, Techie, Medie, Fixer
     game_class = models.CharField(max_length=50)
     online = models.BooleanField(default=False)
@@ -100,7 +100,7 @@ class Player(models.Model):
     # Death counter for wall of death
     deaths = models.IntegerField(default=0)
 
-    inventory = models.ManyToManyField(Item, through='InventoryItem')
+    inventory = models.ManyToManyField(Item, through="InventoryItem")
 
     # Drug/Addiction System
     addiction_points = models.IntegerField(default=0)  # 0 to 100
@@ -108,11 +108,14 @@ class Player(models.Model):
 
     # Combat/Stalking state
     last_combat_npc = models.ForeignKey(
-        'NPC', on_delete=models.SET_NULL, null=True, blank=True, related_name='combating_players'
+        "NPC", on_delete=models.SET_NULL, null=True, blank=True, related_name="combating_players"
     )
     last_combat_player = models.ForeignKey(
-        'Player', on_delete=models.SET_NULL, null=True, blank=True,
-        related_name='combating_players_target'
+        "Player",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="combating_players_target",
     )
     stalk_count = models.IntegerField(default=0)
 
@@ -128,11 +131,11 @@ class Player(models.Model):
     rest_started_at = models.DateTimeField(null=True, blank=True)
 
     # PvP notification - message shown to player on next poll
-    notification = models.TextField(default='', blank=True)
+    notification = models.TextField(default="", blank=True)
 
     # Party invitation notification
     party_invite = models.ForeignKey(
-        'Party', on_delete=models.SET_NULL, null=True, blank=True, related_name='invited_players'
+        "Party", on_delete=models.SET_NULL, null=True, blank=True, related_name="invited_players"
     )
 
     # Bot identification
@@ -166,7 +169,7 @@ class NPC(models.Model):
     exp_drop = models.IntegerField()
     aggressive = models.BooleanField(default=True)
     # drone, gang, corporate, boss, dealer, vigilante
-    npc_type = models.CharField(max_length=50, default='drone')
+    npc_type = models.CharField(max_length=50, default="drone")
     respawnable = models.BooleanField(default=True)
 
     # Karma Alignment: -100 to 100.
@@ -174,9 +177,9 @@ class NPC(models.Model):
     karma_alignment = models.IntegerField(default=0)
 
     # Elemental system
-    element = models.CharField(max_length=20, default='physical')
-    weakness = models.CharField(max_length=20, default='none')
-    resistance = models.CharField(max_length=20, default='none')
+    element = models.CharField(max_length=20, default="physical")
+    weakness = models.CharField(max_length=20, default="none")
+    resistance = models.CharField(max_length=20, default="none")
 
     drops = models.ManyToManyField(Item, blank=True)
 
@@ -191,11 +194,12 @@ class ChatMessage(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['timestamp']
+        ordering = ["timestamp"]
 
 
 class GameWorld(models.Model):
     """Singleton model to store world generation metadata."""
+
     seed = models.IntegerField(default=0)
     generated_at = models.DateTimeField(auto_now=True)
     total_rooms = models.IntegerField(default=0)
@@ -206,24 +210,22 @@ class GameWorld(models.Model):
 
 class ProceduralWeaponSpawn(models.Model):
     """Tracks procedurally generated weapons in each zone."""
+
     zone = models.CharField(max_length=100)
     room = models.ForeignKey(Room, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     spawned_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ['zone', 'item']
+        unique_together = ["zone", "item"]
 
 
 class Party(models.Model):
     """A party of up to 3 players led by one player."""
-    name = models.CharField(max_length=100, default='Unnamed Party')
-    leader = models.ForeignKey(
-        Player, on_delete=models.CASCADE, related_name='led_parties'
-    )
-    members = models.ManyToManyField(
-        Player, through='PartyMembership', related_name='parties'
-    )
+
+    name = models.CharField(max_length=100, default="Unnamed Party")
+    leader = models.ForeignKey(Player, on_delete=models.CASCADE, related_name="led_parties")
+    members = models.ManyToManyField(Player, through="PartyMembership", related_name="parties")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -240,10 +242,11 @@ class Party(models.Model):
 
 class PartyMembership(models.Model):
     """Through model for Party membership with invitation status."""
+
     party = models.ForeignKey(Party, on_delete=models.CASCADE)
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     invited = models.BooleanField(default=False)
     joined_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ['party', 'player']
+        unique_together = ["party", "player"]

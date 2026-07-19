@@ -7,46 +7,85 @@ import random
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
-from game.models import Player, User, Room, Item, InventoryItem, Party, PartyMembership
-from game import services
+from game.models import Player, User, Room, Item, InventoryItem
 
 
 # Cyberpunk-themed bot names (using camelCase instead of underscores)
 BOT_NAMES = [
-    "NeonShade", "ChromeWraith", "GlitchMonk", "ByteHunter", "CircuitBreaker",
-    "SynthRunner", "DataPhantom", "VoltStriker", "ZeroCool", "PixelSlayer",
-    "RogueAI", "NeuralJack", "CyberWitch", "BinaryStorm", "QuantumShade",
-    "EchoProtocol", "VoidWalker", "StaticGhost", "LaserMonk", "Innit",
-    "NovaBlade", "CipherPunk", "DriftWire", "FluxCore", "Geostomping",
-    "JadeSpirit", "KiraCode", "LynxSystem", "MakoShift", "NexusFlame",
-    "OnyxData", "PrismHack", "QuakeBot", "RiftWalker", "SparkAgent",
-    "TalonNet", "Derpydo", "ViperCode", "WarpEntity", "XenoByte",
-    "YuriShift", "ZenHacker", "Some Guy", "BlitzCoder", "CrackShell",
-    "DuskLoader", "EmberSync", "FrostByte", "GrimAccess", "Tim Bob"
+    "NeonShade",
+    "ChromeWraith",
+    "GlitchMonk",
+    "wut",
+    "CircuitBreaker",
+    "SynthRunner",
+    "DataPhantom",
+    "VoltStriker",
+    "ZeroCool",
+    "PixelSlayer",
+    "RogueAI",
+    "NeuralJack",
+    "CyberWitch",
+    "BinaryStorm",
+    "QuantumShade",
+    "EchoProtocol",
+    "VoidWalker",
+    "drama",
+    "LaserMonk",
+    "Innit",
+    "NovaBlade",
+    "CipherPunk",
+    "DriftWire",
+    "FluxCore",
+    "Geostomping",
+    "JadeSpirit",
+    "KiraCode",
+    "LynxSystem",
+    "MakoShift",
+    "NexusFlame",
+    "OnyxData",
+    "PrismHack",
+    "QuakeBot",
+    "RiftWalker",
+    "SparkAgent",
+    "TalonNet",
+    "Derpydo",
+    "ViperCode",
+    "fuuu",
+    "x",
+    "YuriShift",
+    "ZenHacker",
+    "Some Guy",
+    "Blitz",
+    "CrackShell",
+    "DuskLoader",
+    "EmberSync",
+    "FrostByte",
+    "GrimAccess",
+    "Tim Bob",
 ]
 
 # Sensible race/class combinations
 RACE_CLASS_COMBOS = [
-    ('Cyborg', 'Street Samurai'),
-    ('Cyborg', 'Heavy'),
-    ('Android', 'Netrunner'),
-    ('Android', 'Techie'),
-    ('Bio-hacked', 'Medie'),
-    ('Bio-hacked', 'Psycher'),
-    ('Mutant', 'Heavy'),
-    ('Mutant', 'Jade Dragon'),
-    ('Human', 'Fixer'),
-    ('Human', 'Trickster'),
-    ('Elf', 'Thief'),
-    ('Elf', 'Jade Dragon'),
-    ('Goblin', 'Thief'),
-    ('Goblin', 'Trickster'),
-    ('Void-Walker', 'Psycher'),
-    ('Void-Walker', 'Warlock'),
-    ('Synth-Soul', 'Netrunner'),
-    ('Synth-Soul', 'Warlock'),
-    ('Chrome-Crawler', 'Street Samurai'),
-    ('Chrome-Crawler', 'Heavy'),
+    ("Cyborg", "Street Samurai"),
+    ("Cyborg", "Heavy"),
+    ("Android", "Netrunner"),
+    ("Android", "Techie"),
+    ("Bio-hacked", "Medie"),
+    ("Bio-hacked", "Psycher"),
+    ("Mutant", "Heavy"),
+    ("Mutant", "Jade Dragon"),
+    ("Human", "Fixer"),
+    ("Human", "Trickster"),
+    ("Elf", "Thief"),
+    ("Elf", "Jade Dragon"),
+    ("Goblin", "Thief"),
+    ("Goblin", "Trickster"),
+    ("Void-Walker", "Psycher"),
+    ("Void-Walker", "Warlock"),
+    ("Synth-Soul", "Netrunner"),
+    ("Synth-Soul", "Warlock"),
+    ("Chrome-Crawler", "Street Samurai"),
+    ("Chrome-Crawler", "Heavy"),
 ]
 
 
@@ -54,12 +93,12 @@ class Command(BaseCommand):
     help = "Create AI bot players with cyberpunk names"
 
     def add_arguments(self, parser):
-        parser.add_argument('--count', type=int, default=15, help='Number of bots to create (3-20)')
-        parser.add_argument('--reset', action='store_true', help='Delete all existing bots first')
+        parser.add_argument("--count", type=int, default=15, help="Number of bots to create (3-20)")
+        parser.add_argument("--reset", action="store_true", help="Delete all existing bots first")
 
     def handle(self, *args, **kwargs):
-        count = min(max(3, kwargs.get('count', 15)), 20)  # Clamp between 3-20
-        reset = kwargs.get('reset', False)
+        count = min(max(3, kwargs.get("count", 15)), 20)  # Clamp between 3-20
+        reset = kwargs.get("reset", False)
 
         with transaction.atomic():
             if reset:
@@ -77,18 +116,20 @@ class Command(BaseCommand):
                 if zone not in zone_rooms:
                     zone_rooms[zone] = []
                 zone_rooms[zone].append(room)
-            
+
             if not zone_rooms:
                 self.stdout.write(self.style.WARNING("No rooms available. Run init_game first."))
                 return
 
             # Get all items for equipping bots
             all_items = list(Item.objects.all())
-            weapons = [i for i in all_items if i.item_type == 'weapon']
-            armor = [i for i in all_items if i.item_type == 'armor']
+            weapons = [i for i in all_items if i.item_type == "weapon"]
+            armor = [i for i in all_items if i.item_type == "armor"]
 
             created_count = 0
-            used_names = set(Player.objects.filter(is_bot=True).values_list('user__username', flat=True))
+            used_names = set(
+                Player.objects.filter(is_bot=True).values_list("user__username", flat=True)
+            )
 
             for _ in range(count):
                 # Find unused bot name
@@ -114,26 +155,26 @@ class Command(BaseCommand):
                 social = random.randint(0, 100)  # Likelihood to party with players
 
                 # Create user
-                user = User.objects.create_user(username=bot_name, password='bot')
+                user = User.objects.create_user(username=bot_name, password="bot")
 
                 # Choose level-appropriate room based on bot level
                 appropriate_rooms = []
                 for zone, rooms in zone_rooms.items():
                     # Match bot level to zone (simplified logic)
-                    if lvl <= 5 and zone in ['slums', 'neon', 'hub']:
+                    if lvl <= 5 and zone in ["slums", "neon", "hub"]:
                         appropriate_rooms.extend(rooms)
-                    elif lvl <= 10 and zone in ['slums', 'neon', 'industrial', 'corporate']:
+                    elif lvl <= 10 and zone in ["slums", "neon", "industrial", "corporate"]:
                         appropriate_rooms.extend(rooms)
-                    elif lvl <= 15 and zone in ['industrial', 'corporate', 'undergrid']:
+                    elif lvl <= 15 and zone in ["industrial", "corporate", "undergrid"]:
                         appropriate_rooms.extend(rooms)
                     elif lvl >= 10:
                         # High level bots can go anywhere
                         appropriate_rooms.extend(rooms)
-                
+
                 # Fallback to any room if no appropriate rooms found
                 if not appropriate_rooms:
                     appropriate_rooms = list(Room.objects.filter(safe_zone=False))
-                
+
                 location = random.choice(appropriate_rooms)
 
                 # Calculate stats based on level
@@ -153,7 +194,7 @@ class Command(BaseCommand):
                 bot = Player.objects.create(
                     user=user,
                     race=race,
-                    gender=random.choice(['Male', 'Female', 'Other']),
+                    gender=random.choice(["Male", "Female", "Other"]),
                     game_class=game_class,
                     location=location,
                     lvl=lvl,
@@ -178,7 +219,8 @@ class Command(BaseCommand):
                     bot_aggression=aggression,
                     bot_social=social,
                     stat_points=random.randint(0, lvl // 2),
-                    last_bot_action=timezone.now() - timezone.timedelta(seconds=random.randint(30, 60))
+                    last_bot_action=timezone.now()
+                    - timezone.timedelta(seconds=random.randint(30, 60)),
                 )
 
                 # Equip bot with random gear
