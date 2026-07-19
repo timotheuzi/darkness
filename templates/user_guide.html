@@ -199,35 +199,6 @@
         <h2>Overview</h2>
         <p><strong>Darkness BBS</strong> is a multi-user, terminal-style cyberpunk RPG inspired by classic BBS games like MajorMUD. Players explore a procedurally generated grid, engage in tactical combat, customize their builds via manual stat training, and compete with other users in a gritty, neon-soaked world.</p>
 
-        <h2>Installation</h2>
-        <h3>Prerequisites</h3>
-        <ul>
-            <li>Python 3.11+</li>
-            <li>pip</li>
-            <li>make (optional)</li>
-        </ul>
-
-        <h3>Local Setup</h3>
-        <pre><code># Clone and enter directory
-git clone https://github.com/timotheuzi/darknesses.git
-cd darknesses
-
-# Create environment
-make venv
-source .venv/bin/activate
-
-# Install dependencies
-make setup
-
-# Nuke database and build fresh schema
-make repair
-
-# Generate world data
-make init
-
-# Start the grid
-make run</code></pre>
-
         <h2>Getting Started</h2>
         <ol>
             <li>Navigate to the terminal in your browser.</li>
@@ -434,23 +405,4 @@ make run</code></pre>
             <li><code>PARTY STATUS</code> - See current members</li>
             <li><strong>Group Movement:</strong> When the leader moves, all online party members move with them.</li>
         </ul>
-
-        <h2>Server Administration</h2>
-        <pre><code># Full database reset (wipes players)
-make repair
-
-# Wipes world data but keeps players
-make clean
-
-# Generates new world state
-make init
-
-# Starts the AI daemon
-python manage.py process_bots</code></pre>
-
-        <div style="text-align:center; margin-top:30px; padding-top:20px; border-top:1px solid var(--ansi-green); color:var(--ansi-bright-black);">
-            <p>Created by <a href="https://autarkylabs.pythonanywhere.com/" target="_blank">Autarky Labs</a></p>
-        </div>
-    </div>
-</body>
 </html>
