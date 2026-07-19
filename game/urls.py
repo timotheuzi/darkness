@@ -11,4 +11,5 @@ urlpatterns = [
     path("poll/", views.poll_view, name="poll"),
     path("map/", views.map_api_view, name="map_api"),
     path("player/info/", views.player_info_view, name="player_info"),
+    path("guide/", views.user_guide_view, name="user_guide"),
 ]

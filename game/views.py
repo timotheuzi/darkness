@@ -329,6 +329,8 @@ def command_view(request):
             output = services.rest_command(player)
         elif command == "disengage":
             output = services.disengage_combat(player)
+        elif command == "steal":
+            output = services.steal_from_target(player, args)
         elif command == "party":
             if not args:
                 output = "Party commands: CREATE, INVITE <player>, ACCEPT, LEAVE, STATUS"
@@ -415,3 +417,8 @@ def player_info_view(request):
         )
     except (OperationalError, Exception):
         return JsonResponse({"player_name": "Unknown", "authenticated": False})
+
+
+def user_guide_view(request):
+    """Render the user guide HTML page."""
+    return render(request, "user_guide.html")

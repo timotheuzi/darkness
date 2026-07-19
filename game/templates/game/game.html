@@ -359,9 +359,69 @@
                 </div>
             </div>
             <button id="actionButton" onclick="doLogin()">Connect</button>
-            <div class="toggle-link" id="toggleForm" onclick="toggleLoginRegister()">Initialize New Profile</div>
-        </div>
-    </div>
+                 <div class="toggle-link" id="toggleForm" onclick="toggleLoginRegister()">Initialize New Profile</div>
+                 <div class="toggle-link" onclick="showCharHelp()" style="margin-top:5px;">Character Creation Help</div>
+                 <a href="/guide/" class="toggle-link" style="margin-top:5px; display:block;">Full User Guide</a>
+         </div>
+     </div>
+
+     <!-- Character Creation Help Modal -->
+     <div id="charHelpModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:200; padding:20px; overflow-y:auto;">
+         <div style="max-width:600px; margin:0 auto; color:var(--ansi-white); font-family:inherit;">
+             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid var(--ansi-green); padding-bottom:10px;">
+                 <h2 style="color:var(--ansi-bright-cyan); margin:0;">CHARACTER CREATION GUIDE</h2>
+                 <button onclick="hideCharHelp()" style="background:var(--ansi-red); color:#fff; border:none; padding:5px 15px; cursor:pointer;">X</button>
+             </div>
+
+             <h3 style="color:var(--ansi-bright-green); margin-top:15px;">STAT REFERENCE</h3>
+             <div style="font-size:12px; line-height:1.4;">
+                 <p><span style="color:var(--ansi-bright-yellow);">STR (Strength):</span> Physical power. Increases Attack and carrying capacity. Essential for melee classes.</p>
+                 <p><span style="color:var(--ansi-bright-yellow);">AGI (Agility):</span> Speed and reflexes. Increases Defense, crit chance, and stealth effectiveness. Key for dodging and Thief/Ninja.</p>
+                 <p><span style="color:var(--ansi-bright-yellow);">HEA (Health):</span> Physical resilience. Increases max HP. Vital for survivability.</p>
+                 <p><span style="color:var(--ansi-bright-yellow);">INT (Intelligence):</span> Mental acuity. Powers tech, netrunning, and spellcasting. Increases mana for some classes.</p>
+                 <p><span style="color:var(--ansi-bright-yellow);">WIL (Willpower):</span> Mental fortitude. Increases max Mana and resistance to mind effects. Core for Priests.</p>
+                 <p><span style="color:var(--ansi-bright-yellow);">CHA (Charisma):</span> Social presence. Used by Fixers and Tricksters. Affects NPC interactions and some abilities.</p>
+             </div>
+
+             <h3 style="color:var(--ansi-bright-green); margin-top:15px;">RACE DESCRIPTIONS</h3>
+             <div style="font-size:12px; line-height:1.4;">
+                 <p><span style="color:var(--ansi-bright-cyan);">HUMAN:</span> Balanced stats, high CHA. Versatile potential - gains 1.5x stat points on level up. STR:7 INT:8 WIL:13 AGI:10 HEA:7 CHA:15</p>
+                 <p><span style="color:var(--ansi-bright-cyan);">ELF:</span> Agile and graceful. +10% crit chance. STR:8 INT:9 WIL:10 AGI:14 HEA:7 CHA:12</p>
+                 <p><span style="color:var(--ansi-bright-cyan);">GOBLIN:</span> Cunning and quick. +15% chance to find extra loot. STR:5 INT:12 WIL:7 AGI:13 HEA:8 CHA:15</p>
+                 <p><span style="color:var(--ansi-bright-cyan);">MUTANT:</span> Adaptive biology. Stats can exceed normal caps. STR:13 INT:5 WIL:7 AGI:11 HEA:18 CHA:6</p>
+                 <p><span style="color:var(--ansi-bright-yellow);">CYBORG:</span> Cybernetic resilience. +10% resistance to debuffs. STR:15 INT:12 WIL:8 AGI:8 HEA:12 CHA:5</p>
+                 <p><span style="color:var(--ansi-bright-yellow);">ANDROID:</span> Systematic mind. +15% mana efficiency, immune to mind effects. STR:10 INT:17 WIL:12 AGI:8 HEA:8 CHA:5</p>
+                 <p><span style="color:var(--ansi-bright-yellow);">BIO-HACKED:</span> Adrenal efficiency. Natural healing 20% faster. STR:12 INT:8 WIL:5 AGI:12 HEA:15 CHA:8</p>
+                 <p><span style="color:var(--ansi-bright-magenta);">VOID-WALKER:</span> Phase shift ability. Can dodge 10% of incoming attacks. STR:5 INT:10 WIL:20 AGI:12 HEA:8 CHA:5</p>
+                 <p><span style="color:var(--ansi-bright-magenta);">SYNTH-SOUL:</span> Digital presence. +20% stealth, reduced physical stats. STR:5 INT:22 WIL:15 AGI:8 HEA:5 CHA:5</p>
+                 <p><span style="color:var(--ansi-bright-magenta);">CHROME-CRAWLER:</span> Overclocked. +1 extra attack per round. STR:18 INT:5 WIL:4 AGI:18 HEA:10 CHA:5</p>
+             </div>
+
+             <h3 style="color:var(--ansi-bright-green); margin-top:15px;">CLASS STRATEGIES</h3>
+             <div style="font-size:12px; line-height:1.4;">
+                 <p><span style="color:var(--ansi-bright-cyan);">STREET SAMURAI (STR/AGI):</span> Physical combat specialist. High attack, excels in direct confrontations. Abilities scale with STR/ATK.</p>
+                 <p><span style="color:var(--ansi-bright-cyan);">NETRUNNER (INT):</span> Tech-hacker. Uses water/ice and air-based attacks. High mana pool, debuffs enemies.</p>
+                 <p><span style="color:var(--ansi-bright-cyan);">TECHIE (INT/AGI):</span> Drone operator. Earth and fire damage, can heal with nanobots. Balanced offense/support.</p>
+                 <p><span style="color:var(--ansi-bright-cyan);">MEDIE (HEA/INT):</span> Field medic. Healing and support abilities, can deal water/rot damage. High HP pool.</p>
+                 <p><span style="color:var(--ansi-bright-cyan);">FIXER (CHA):</span> Social manipulator. Drains credits, calls in attacks. Money-based abilities.</p>
+                 <p><span style="color:var(--ansi-bright-cyan);">THIEF (AGI):</span> Stealth assassin. Backstab crits, poison, smoke bombs. High crit from shadows.</p>
+                 <p><span style="color:var(--ansi-bright-cyan);">HEAVY (STR/HEA):</span> Tank specialist. High HP and defense, earth-based AOE attacks. Juggernaut playstyle.</p>
+                 <p><span style="color:var(--ansi-bright-cyan);">PSYKCER (INT):</span> Psychic warrior. Mind-based attacks, telekinesis, shields. Fire and physical mental damage.</p>
+                 <p><span style="color:var(--ansi-bright-cyan);">WARLOCK (INT):</span> Dark spellcaster. Curses, chaos damage, blood pacts. Rot and dark water attacks.</p>
+                 <p><span style="color:var(--ansi-bright-cyan);">PRIEST (WIL):</span> Holy healer. Healing, blessings, divine shields. Fire and air damage based on karma.</p>
+                 <p><span style="color:var(--ansi-bright-cyan);">TRICKSTER (CHA):</span> Chaos agent. Random effects, stealth, luck-based abilities. Unpredictable gameplay.</p>
+                 <p><span style="color:var(--ansi-bright-cyan);">JADE DRAGON (AGI/STR):</span> Martial artist. Chi-based attacks, unarmed combat bonus. High mobility.</p>
+                 <p><span style="color:var(--ansi-bright-cyan);">NINJA (AGI):</span> Shadow warrior. Stealth, teleport, kunai throws. High crit from concealment.</p>
+             </div>
+
+             <h3 style="color:var(--ansi-bright-green); margin-top:15px;">GEAR RESTRICTIONS</h3>
+             <div style="font-size:12px; line-height:1.4;">
+                 <p><span style="color:var(--ansi-bright-yellow);">Thief/Netrunner/Trickster/Priest/Psycher/Warlock/Medie/Fixer:</span> Leather/Light armor, One-handed weapons.</p>
+                 <p><span style="color:var(--ansi-bright-yellow);">Heavy/Street Samurai:</span> All armor types, One/Two-handed weapons.</p>
+                 <p><span style="color:var(--ansi-bright-yellow);">Jade Dragon/Ninja:</span> Light armor only, Jade/Ninja weapons only.</p>
+             </div>
+         </div>
+     </div>
 
     <div id="pollIndicator" class="poll-on">POLL</div>
     <div id="gameScreen">
@@ -789,6 +849,15 @@
                 }
             }
         });
+
+        // Character Creation Help Modal
+        function showCharHelp() {
+            $('#charHelpModal').show();
+        }
+
+        function hideCharHelp() {
+            $('#charHelpModal').hide();
+        }
     </script>
 </body>
 </html>

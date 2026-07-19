@@ -49,38 +49,6 @@ Key Features:
 
 ---
 
-## Installation
-
-### Prerequisites
-- Python 3.11+
-- pip
-- make (optional)
-
-### Local Setup
-```bash
-# Clone and enter directory
-git clone https://github.com/timotheuzi/darknesses.git
-cd darknesses
-
-# Create environment
-make venv
-source .venv/bin/activate
-
-# Install dependencies
-make setup
-
-# Nuke database and build fresh schema
-make repair
-
-# Generate world data
-make init
-
-# Start the grid
-make run
-```
-
----
-
 ## Login & Registration
 
 ### Races (Augmentation Paths)
@@ -99,24 +67,47 @@ Each race grants a specific set of stat modifiers and a unique **Race Trait**:
 | **Elf** | AGI+8, WIL+4, HEA-5 | **Ancient Grace**: +10% critical hit chance. |
 | **Goblin** | CHA+10, AGI+5, STR-8 | **Street Cunning**: +15% chance for extra loot. |
 
+### Stats Reference
+- **STR (Strength)**: Physical power. Increases Attack and carrying capacity. Essential for melee classes.
+- **AGI (Agility)**: Speed and reflexes. Increases Defense, crit chance, and stealth effectiveness. Key for dodging and Thief/Ninja.
+- **HEA (Health)**: Physical resilience. Increases max HP. Vital for survivability.
+- **INT (Intelligence)**: Mental acuity. Powers tech, netrunning, and spellcasting. Increases mana for some classes.
+- **WIL (Willpower)**: Mental fortitude. Increases max Mana and resistance to mind effects. Core for Priests.
+- **CHA (Charisma)**: Social presence. Used by Fixers and Tricksters. Affects NPC interactions and some abilities.
+
 ### Classes (Operational Classes)
 Abilities are learned at levels 1, 5, 10, 15, 20, 25, and 30.
 
-| Class | Starting Focus | Specialization |
-|-------|----------------|----------------|
-| **Street Samurai** | ATK, STR, AGI | Multi-strike Melee |
-| **Netrunner** | INT, Mana | System Hacking (Water/Air) |
-| **Techie** | INT, WIL, DEF | Drones & Engineering |
-| **Medie** | HEA, HP | Healing & Detoxification |
-| **Fixer** | CHA, Money | Credit Siphoning & Contracts |
-| **Thief** | AGI, ATK | Stealth & Backstabbing |
-| **Heavy** | STR, HEA, DEF | Tanking & Earth Damage |
-| **Psycher** | WIL, Mana | Neural Energy & Mind Control |
-| **Warlock** | INT, WIL, Mana | Debuffs & Chaos |
-| **Priest** | WIL, HEA, HP | Divine Restoration & Air Damage |
-| **Trickster** | CHA, AGI | Luck & Confusion |
-| **Jade Dragon** | AGI, STR, DEF | Unarmed Martial Arts |
-| **Ninja** | AGI, ATK | Stealth & Thrown Weapons |
+| Class | Starting Focus | Specialization | Gear Restrictions |
+|-------|----------------|----------------|-----------------|
+| **Street Samurai** | ATK, STR, AGI | Multi-strike Melee | All armor, One/Two-handed weapons |
+| **Netrunner** | INT, Mana | System Hacking (Water/Air) | Leather/Light armor, One-handed weapons |
+| **Techie** | INT, WIL, DEF | Drones & Engineering | Leather/Light armor, One-handed weapons |
+| **Medie** | HEA, HP | Healing & Detoxification | Leather/Light armor, One-handed weapons |
+| **Fixer** | CHA, Money | Credit Siphoning & Contracts | Leather/Light armor, One-handed weapons |
+| **Thief** | AGI, ATK | Stealth & Backstabbing | Leather armor, One-handed weapons |
+| **Heavy** | STR, HEA, DEF | Tanking & Earth Damage | All armor, One/Two-handed weapons |
+| **Psycher** | WIL, Mana | Neural Energy & Mind Control | Leather/Light armor, One-handed weapons |
+| **Warlock** | INT, WIL, Mana | Debuffs & Chaos | Leather/Light armor, One-handed weapons |
+| **Priest** | WIL, HEA, HP | Divine Restoration & Air Damage | Leather/Light armor, One-handed weapons |
+| **Trickster** | CHA, AGI | Luck & Confusion | Leather/Light armor, One-handed weapons |
+| **Jade Dragon** | AGI, STR, DEF | Unarmed Martial Arts | Light armor only, Jade weapons |
+| **Ninja** | AGI, ATK | Stealth & Thrown Weapons | Light armor only, Ninja weapons |
+
+**Class Strategies:**
+- **Street Samurai**: Physical combat specialist. High attack, excels in direct confrontations.
+- **Netrunner**: Tech-hacker. Uses water/ice and air-based attacks. High mana pool, debuffs enemies.
+- **Techie**: Drone operator. Earth and fire damage, can heal with nanobots.
+- **Medie**: Field medic. Healing and support abilities, can deal water/rot damage.
+- **Fixer**: Social manipulator. Drains credits, calls in attacks.
+- **Thief**: Stealth assassin. Backstab crits, poison, smoke bombs.
+- **Heavy**: Tank specialist. High HP and defense, earth-based AOE attacks.
+- **Psycher**: Psychic warrior. Mind-based attacks, telekinesis, shields.
+- **Warlock**: Dark spellcaster. Curses, chaos damage, blood pacts.
+- **Priest**: Holy healer. Healing, blessings, divine shields.
+- **Trickster**: Chaos agent. Random effects, stealth, luck-based abilities.
+- **Jade Dragon**: Martial artist. Chi-based attacks, unarmed combat bonus.
+- **Ninja**: Shadow warrior. Stealth, teleport, kunai throws, high crit from concealment.
 
 ---
 

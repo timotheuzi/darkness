@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Darkness BBS - User Guide</title>
+    <link rel="icon" href="data:,">
+    <style>
+        :root {
+            --ansi-black: #000000;
+            --ansi-red: #bb0000;
+            --ansi-green: #00bb00;
+            --ansi-yellow: #bbbb00;
+            --ansi-blue: #0000bb;
+            --ansi-magenta: #bb00bb;
+            --ansi-cyan: #00bbbb;
+            --ansi-white: #bbbbbb;
+            --ansi-bright-black: #555555;
+            --ansi-bright-red: #ff5555;
+            --ansi-bright-green: #55ff55;
+            --ansi-bright-yellow: #ffff55;
+            --ansi-bright-blue: #5555ff;
+            --ansi-bright-magenta: #ff55ff;
+            --ansi-bright-cyan: #55ffff;
+            --ansi-bright-white: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: var(--ansi-white);
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 100;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        h1 {
+            color: var(--ansi-bright-cyan);
+            text-align: center;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px var(--ansi-cyan);
+            font-size: 24px;
+        }
+
+        h2 {
+            color: var(--ansi-bright-green);
+            margin-top: 25px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--ansi-green);
+            padding-bottom: 5px;
+        }
+
+        h3 {
+            color: var(--ansi-bright-yellow);
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        a {
+            color: var(--ansi-bright-blue);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin: 20px 0;
+            color: var(--ansi-bright-blue);
+            cursor: pointer;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        th, td {
+            border: 1px solid var(--ansi-green);
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background: var(--ansi-bright-black);
+            color: var(--ansi-bright-cyan);
+        }
+
+        tr:nth-child(even) {
+            background: rgba(0, 50, 0, 0.2);
+        }
+
+        code {
+            color: var(--ansi-bright-yellow);
+            background: rgba(0, 0, 0, 0.5);
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        ul, ol {
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+
+        li {
+            margin-bottom: 5px;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .stat-card {
+            border: 1px solid var(--ansi-green);
+            padding: 10px;
+            background: rgba(0, 20, 0, 0.2);
+        }
+
+        .stat-name {
+            color: var(--ansi-bright-yellow);
+            font-weight: bold;
+        }
+
+        .class-strategies {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .class-card {
+            border: 1px solid var(--ansi-green);
+            padding: 10px;
+            background: rgba(0, 20, 0, 0.2);
+        }
+
+        .class-name {
+            color: var(--ansi-bright-cyan);
+            font-weight: bold;
+        }
+
+        pre {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--ansi-green);
+            padding: 15px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+
+        @media (min-width: 768px) {
+            body { font-size: 16px; }
+            h1 { font-size: 32px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>DARKNESS BBS - USER GUIDE</h1>
+        
+        <a href="/" class="back-link">← Return to Terminal</a>
+
+        <h2>Overview</h2>
+        <p><strong>Darkness BBS</strong> is a multi-user, terminal-style cyberpunk RPG inspired by classic BBS games like MajorMUD. Players explore a procedurally generated grid, engage in tactical combat, customize their builds via manual stat training, and compete with other users in a gritty, neon-soaked world.</p>
+
+        <h2>Installation</h2>
+        <h3>Prerequisites</h3>
+        <ul>
+            <li>Python 3.11+</li>
+            <li>pip</li>
+            <li>make (optional)</li>
+        </ul>
+
+        <h3>Local Setup</h3>
+        <pre><code># Clone and enter directory
+git clone https://github.com/timotheuzi/darknesses.git
+cd darknesses
+
+# Create environment
+make venv
+source .venv/bin/activate
+
+# Install dependencies
+make setup
+
+# Nuke database and build fresh schema
+make repair
+
+# Generate world data
+make init
+
+# Start the grid
+make run</code></pre>
+
+        <h2>Getting Started</h2>
+        <ol>
+            <li>Navigate to the terminal in your browser.</li>
+            <li>Click "Initialize New Profile" to create a character.</li>
+            <li>Enter a handle (username) and password.</li>
+            <li>Select your Race (Augmentation Path) and Class (Operational Class).</li>
+            <li>Optionally customize your 6 base stats (STR, INT, WIL, AGI, HEA, CHA) — total must not exceed 85 points.</li>
+            <li>Log in and arrive at The Neon Hub, the grid's central safe zone.</li>
+        </ol>
+
+        <h2>Races (Augmentation Paths)</h2>
+        <p>Each race grants a specific set of stat modifiers and a unique Race Trait:</p>
+        <table>
+            <tr><th>Race</th><th>Modifiers</th><th>Special Trait</th></tr>
+            <tr><td><span style="color:var(--ansi-bright-cyan)">Human</span></td><td>CHA+10, WIL+5, STR-5, HEA-5</td><td>Versatile Potential: Gains 1.5x stat points on level up.</td></tr>
+            <tr><td><span style="color:var(--ansi-bright-cyan)">Elf</span></td><td>AGI+8, WIL+4, HEA-5</td><td>Ancient Grace: +10% crit chance, natural affinity for precision.</td></tr>
+            <tr><td><span style="color:var(--ansi-bright-cyan)">Goblin</span></td><td>CHA+10, AGI+5, STR-8</td><td>Street Cunning: +15% chance for extra loot.</td></tr>
+            <tr><td><span style="color:var(--ansi-bright-cyan)">Mutant</span></td><td>Random (+7/-3)</td><td>Adaptive Biology: Stats can exceed normal caps by 5.</td></tr>
+            <tr><td><span style="color:var(--ansi-bright-yellow)">Cyborg</span></td><td>STR+5, HEA+2, AGI-2, INT+2</td><td>Cybernetic Resilience: +10% resistance to debuffs.</td></tr>
+            <tr><td><span style="color:var(--ansi-bright-yellow)">Bio-hacked</span></td><td>HEA+5, STR+2, CHA-2</td><td>Adrenal Efficiency: 20% faster healing, reduced addiction.</td></tr>
+            <tr><td><span style="color:var(--ansi-bright-yellow)">Android</span></td><td>INT+8, WIL+2, CHA-5, HEA-2</td><td>Systematic Mind: +15% mana efficiency, mental immunity.</td></tr>
+            <tr><td><span style="color:var(--ansi-bright-magenta)">Void-Walker</span></td><td>WIL+12, AGI+5, STR-8, HEA-4</td><td>Phase Shift: 10% chance to dodge any attack.</td></tr>
+            <tr><td><span style="color:var(--ansi-bright-magenta)">Synth-Soul</span></td><td>INT+15, CHA-10</td><td>Digital Presence: +20% stealth effectiveness.</td></tr>
+            <tr><td><span style="color:var(--ansi-bright-magenta)">Chrome-Crawler</span></td><td>STR+10, AGI+10, INT-10, CHA-5</td><td>Overclocked: +1 extra attack per combat round.</td></tr>
+        </table>
+
+        <h2>Stats Reference</h2>
+        <div class="stat-grid">
+            <div class="stat-card"><span class="stat-name">STR (Strength):</span> Physical power. Increases Attack and carrying capacity. Essential for melee classes.</div>
+            <div class="stat-card"><span class="stat-name">AGI (Agility):</span> Speed and reflexes. Increases Defense, crit chance, and stealth effectiveness. Key for dodging and Thief/Ninja.</div>
+            <div class="stat-card"><span class="stat-name">HEA (Health):</span> Physical resilience. Increases max HP. Vital for survivability.</div>
+            <div class="stat-card"><span class="stat-name">INT (Intelligence):</span> Mental acuity. Powers tech, netrunning, and spellcasting. Increases mana for some classes.</div>
+            <div class="stat-card"><span class="stat-name">WIL (Willpower):</span> Mental fortitude. Increases max Mana and resistance to mind effects. Core for Priests.</div>
+            <div class="stat-card"><span class="stat-name">CHA (Charisma):</span> Social presence. Used by Fixers and Tricksters. Affects NPC interactions and some abilities.</div>
+        </div>
+
+        <h2>Classes (Operational Classes)</h2>
+        <p>Abilities are learned at levels 1, 5, 10, 15, 20, 25, and 30.</p>
+        <table>
+            <tr><th>Class</th><th>Focus</th><th>Specialization</th><th>Gear Restrictions</th></tr>
+            <tr><td>Street Samurai</td><td>ATK, STR, AGI</td><td>Multi-strike Melee</td><td>All armor, One/Two-handed weapons</td></tr>
+            <tr><td>Netrunner</td><td>INT, Mana</td><td>System Hacking (Water/Air)</td><td>Leather/Light armor, One-handed weapons</td></tr>
+            <tr><td>Techie</td><td>INT, WIL, DEF</td><td>Drones & Engineering</td><td>Leather/Light armor, One-handed weapons</td></tr>
+            <tr><td>Medie</td><td>HEA, HP</td><td>Healing & Detoxification</td><td>Leather/Light armor, One-handed weapons</td></tr>
+            <tr><td>Fixer</td><td>CHA, Money</td><td>Credit Siphoning & Contracts</td><td>Leather/Light armor, One-handed weapons</td></tr>
+            <tr><td>Thief</td><td>AGI, ATK</td><td>Stealth & Backstabbing</td><td>Leather armor, One-handed weapons</td></tr>
+            <tr><td>Heavy</td><td>STR, HEA, DEF</td><td>Tanking & Earth Damage</td><td>All armor, One/Two-handed weapons</td></tr>
+            <tr><td>Psycher</td><td>WIL, Mana</td><td>Neural Energy & Mind Control</td><td>Leather/Light armor, One-handed weapons</td></tr>
+            <tr><td>Warlock</td><td>INT, WIL, Mana</td><td>Debuffs & Chaos</td><td>Leather/Light armor, One-handed weapons</td></tr>
+            <tr><td>Priest</td><td>WIL, HEA, HP</td><td>Divine Restoration & Air Damage</td><td>Leather/Light armor, One-handed weapons</td></tr>
+            <tr><td>Trickster</td><td>CHA, AGI</td><td>Luck & Confusion</td><td>Leather/Light armor, One-handed weapons</td></tr>
+            <tr><td>Jade Dragon</td><td>AGI, STR, DEF</td><td>Unarmed Martial Arts</td><td>Light armor only, Jade weapons</td></tr>
+            <tr><td>Ninja</td><td>AGI, ATK</td><td>Stealth & Thrown Weapons</td><td>Light armor only, Ninja weapons</td></tr>
+        </table>
+
+        <h3>Class Strategies</h3>
+        <div class="class-strategies">
+            <div class="class-card"><span class="class-name">Street Samurai:</span> Physical combat specialist. High attack, excels in direct confrontations.</div>
+            <div class="class-card"><span class="class-name">Netrunner:</span> Tech-hacker. Uses water/ice and air-based attacks. High mana pool, debuffs enemies.</div>
+            <div class="class-card"><span class="class-name">Techie:</span> Drone operator. Earth and fire damage, can heal with nanobots.</div>
+            <div class="class-card"><span class="class-name">Medie:</span> Field medic. Healing and support abilities, can deal water/rot damage.</div>
+            <div class="class-card"><span class="class-name">Fixer:</span> Social manipulator. Drains credits, calls in attacks.</div>
+            <div class="class-card"><span class="class-name">Thief:</span> Stealth assassin. Backstab crits, poison, smoke bombs. Can STEAL while hidden.</div>
+            <div class="class-card"><span class="class-name">Heavy:</span> Tank specialist. High HP and defense, earth-based AOE attacks.</div>
+            <div class="class-card"><span class="class-name">Psycher:</span> Psychic warrior. Mind-based attacks, telekinesis, shields.</div>
+            <div class="class-card"><span class="class-name">Warlock:</span> Dark spellcaster. Curses, chaos damage, blood pacts.</div>
+            <div class="class-card"><span class="class-name">Priest:</span> Holy healer. Healing, blessings, divine shields.</div>
+            <div class="class-card"><span class="class-name">Trickster:</span> Chaos agent. Random effects, stealth, can STEAL while hidden.</div>
+            <div class="class-card"><span class="class-name">Jade Dragon:</span> Martial artist. Chi-based attacks, unarmed combat bonus.</div>
+            <div class="class-card"><span class="class-name">Ninja:</span> Shadow warrior. Stealth, teleport, kunai throws, high crit from concealment.</div>
+        </div>
+
+        <h2>Game Commands</h2>
+        <h3>Navigation</h3>
+        <ul>
+            <li><code>N, S, E, W</code> - Movement</li>
+            <li><code>EXIT</code> - Log out safely</li>
+        </ul>
+
+        <h3>Information</h3>
+        <ul>
+            <li><code>L / LOOK</code> - Scan sector. <code>LOOK <target></code> to examine entity.</li>
+            <li><code>WHO</code> - List active nodes</li>
+            <li><code>TOP</code> - Top 25 ranking</li>
+            <li><code>WALL</code> - Top 25 deaths</li>
+            <li><code>ST / STATUS</code> - Detailed profile</li>
+            <li><code>I / INVENTORY</code> - List gear</li>
+            <li><code>HELP / ?</code> - Command manual</li>
+        </ul>
+
+        <h3>Communication</h3>
+        <ul>
+            <li><code>SAY <msg></code> - Local chat</li>
+            <li><code>BROADCAST <msg></code> - Global chat</li>
+        </ul>
+
+        <h3>Combat & Action</h3>
+        <ul>
+            <li><code>A <target></code> - Attack one round</li>
+            <li><code>AA <target></code> - Auto-attack until victory/defeat</li>
+            <li><code><ABILITY> <target></code> - Use class skill (e.g., <code>HCK</code>, <code>BLD</code>, <code>PTC</code>)</li>
+            <li><code>STEALTH / SNEAK</code> - Hide (influenced by AGI and Class)</li>
+            <li><code>STEAL <target></code> - Steal credits (Thief/Trickster only, must be hidden)</li>
+            <li><code>REST</code> - Recover HP/Mana (requires standing still)</li>
+        </ul>
+
+        <h3>Items</h3>
+        <ul>
+            <li><code>USE <item></code> - Consumables/Drugs</li>
+            <li><code>GET <item> / DROP <item></code> - Ground interaction</li>
+            <li><code>EQUIP <item></code> - Manage hardware</li>
+            <li><code>LIST / BUY / SELL</code> - Commerce</li>
+        </ul>
+
+        <h2>Combat System</h2>
+        <h3>Damage & Crits</h3>
+        <p>Damage: <code>max(1, ATK - DEF/2)</code> ± variance. Critical Hits: 2.0x damage. Chance based on AGI (physical) or INT (abilities).</p>
+
+        <h3>Elemental Wheel</h3>
+        <p><strong>Fire</strong> > <strong>Air</strong> > <strong>Earth</strong> > <strong>Water</strong> > <strong>Fire</strong></p>
+        <p>Strength: 1.5x damage. Weakness: 0.5x damage.</p>
+
+        <h3>Weapon Speed</h3>
+        <p>10 Speed Bonus = 1 extra attack/round. 10 Agility = 1 extra attack/round.</p>
+
+        <h2>World Structure</h2>
+        <p>The grid consists of 8 distinct zones:</p>
+        <ul>
+            <li><strong>The Neon Hub</strong> - Central safe zone, starting location</li>
+            <li><strong>Slums</strong> - Low-level area with basic threats</li>
+            <li><strong>Industrial</strong> - Mid-level area with corporate presence</li>
+            <li><strong>Corporate</strong> - High-level area with elite enemies</li>
+            <li><strong>Undergrid</strong> - Dark area with unique loot</li>
+            <li><strong>Neon</strong> - Vibrant area with balanced challenges</li>
+            <li><strong>Wastes</strong> - Dangerous area with rare rewards</li>
+            <li><strong>Nexus</strong> - High-level area with powerful foes</li>
+            <li><strong>Undercity</strong> - End-game area with legendary gear</li>
+        </ul>
+
+        <h2>Items & Equipment</h2>
+        <p>Items come in several types:</p>
+        <ul>
+            <li><strong>Weapons</strong> - Increase attack power and may have speed bonuses</li>
+            <li><strong>Armor</strong> - Increase defense and may have stat bonuses</li>
+            <li><strong>Consumables</strong> - Restore HP or provide temporary effects</li>
+            <li><strong>Drugs</strong> - Provide stat boosts but risk addiction</li>
+            <li><strong>Scrolls</strong> - Teleport to specific locations</li>
+        </ul>
+
+        <h2>Character Progression</h2>
+        <p>Level up by gaining experience from defeating NPCs and players. Each level grants:</p>
+        <ul>
+            <li>+1 Stat Point (use TRAIN to spend)</li>
+            <li>+20 Max HP</li>
+            <li>+10 Max Mana</li>
+            <li>New class abilities at levels 1, 5, 10, 15, 20, 25, 30</li>
+        </ul>
+
+        <h2>Karma & Reputation</h2>
+        <p>Your karma affects NPC behavior and available quests:</p>
+        <ul>
+            <li><strong>Saint (80+)</strong> - Holy alignment, good NPCs are friendly</li>
+            <li><strong>Paragon (50-79)</strong> - Lawful alignment</li>
+            <li><strong>Lawful (20-49)</strong> - Neutral-good alignment</li>
+            <li><strong>Neutral (-19 to 19)</strong> - Balanced alignment</li>
+            <li><strong>Renegade (-49 to -20)</strong> - Neutral-evil alignment</li>
+            <li><strong>Outlaw (-79 to -50)</strong> - Chaotic alignment</li>
+            <li><strong>Utter Villain (-100 to -80)</strong> - Evil alignment, aggressive NPCs target you</li>
+        </ul>
+
+        <h2>Stealth System</h2>
+        <p>Use STEALTH or SNEAK to become hidden. While hidden:</p>
+        <ul>
+            <li>You can perform backstab attacks for bonus damage</li>
+            <li>You avoid auto-attack from NPCs</li>
+            <li>Moving may reveal you based on threat level</li>
+            <li>Thief and Trickster classes have better stealth chances</li>
+        </ul>
+
+        <h2>Drug & Addiction System</h2>
+        <p>Drugs provide powerful temporary boosts but carry risks:</p>
+        <ul>
+            <li>Each use has a chance to increase addiction</li>
+            <li>Higher addiction causes withdrawal damage over time</li>
+            <li>Detox abilities and time can reduce addiction</li>
+            <li>Dealers in the undercity buy drugs for higher prices</li>
+        </ul>
+
+        <h2>NPC Aggression & Stalking</h2>
+        <p>NPCs may become aggressive based on karma alignment. Defeated NPCs can stalk you:</p>
+        <ul>
+            <li>Stalking NPCs follow you to new rooms</li>
+            <li>Each move reduces stalk count by 1</li>
+            <li>Stalked NPCs will re-engage in combat</li>
+        </ul>
+
+        <h2>Party System</h2>
+        <p>Team up with other players to explore and move together.</p>
+        <ul>
+            <li><code>PARTY CREATE</code> - Start a new party as leader</li>
+            <li><code>PARTY INVITE <player></code> - Invite a player in your current room</li>
+            <li><code>PARTY ACCEPT</code> - Join a party after receiving an invite</li>
+            <li><code>PARTY LEAVE</code> - Exit your current party</li>
+            <li><code>PARTY STATUS</code> - See current members</li>
+            <li><strong>Group Movement:</strong> When the leader moves, all online party members move with them.</li>
+        </ul>
+
+        <h2>Server Administration</h2>
+        <pre><code># Full database reset (wipes players)
+make repair
+
+# Wipes world data but keeps players
+make clean
+
+# Generates new world state
+make init
+
+# Starts the AI daemon
+python manage.py process_bots</code></pre>
+    </div>
+</body>
+</html>

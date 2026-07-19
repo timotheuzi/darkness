@@ -189,8 +189,8 @@ GEAR_LIMITS = {
         "armor": ["leather", "light", "medium", "heavy"],
         "weapon": ["one-handed", "two-handed"],
     },
-    "Jade Dragon": {"armor": ["leather", "light"], "weapon": ["jade"]},
-    "Ninja": {"armor": ["leather", "light"], "weapon": ["ninja"]},
+    "Jade Dragon": {"armor": ["light"], "weapon": ["jade"]},
+    "Ninja": {"armor": ["light"], "weapon": ["ninja"]},
     "Medie": {"armor": ["leather", "light"], "weapon": ["one-handed"]},
     "Fixer": {"armor": ["leather", "light"], "weapon": ["one-handed"]},
     "Psycher": {"armor": ["leather", "light"], "weapon": ["one-handed"]},
@@ -395,6 +395,15 @@ def get_help(player):
     for lvl, name, acronym, desc in moves:
         if player.lvl >= lvl:
             sb.append(f"  {name.upper():15} ({acronym}) (Lv {lvl}): {desc}")
+
+    sb.append("\n=== CHARACTER CREATION ===")
+    sb.append("STATS: STR(Attack), AGI(Defense/Crit), HEA(HP), INT(Mana/Abilities), WIL(Mana), CHA(Social)")
+    sb.append("RACES: Human(versatile), Elf(agile/crit), Goblin(cunning/loot), Mutant(adaptive/tank)")
+    sb.append("       Cyborg(resilient), Android(mana-efficient), Bio-hacked(healing), Void-Walker(dodge)")
+    sb.append("       Synth-Soul(stealth), Chrome-Crawler(overclocked)")
+    sb.append("CLASSES: Street Samurai(melee), Netrunner(tech), Techie(drones), Medie(healer)")
+    sb.append("         Fixer(social), Thief(stealth), Heavy(tank), Psycher(psychic), Warlock(dark)")
+    sb.append("         Priest(holy), Trickster(chaos), Jade Dragon(martial), Ninja(shadow)")
 
     return "\n".join(sb)
 
@@ -2879,3 +2888,64 @@ def move_party_leader(player, direction):
                 broadcast_room_event(member, None, member.location, "enter")
 
     return result
+
+
+def steal_from_target(player, args):
+    """Steal from NPCs or players. Only works for Thief and Trickster classes while sneaking."""
+    # Check if player is hidden/sneaking
+    if not player.hidden:
+        return "You must be sneaking to attempt theft."
+
+    # Check if player is Thief or Trickster
+    if player.game_class not in ["Thief", "Trickster"]:
+        return "Your class cannot steal."
+
+    if not args:
+        return "Steal from whom?"
+
+    # Find target in room
+    target_npc = NPC.objects.filter(location=player.location, name__iexact=args, hp__gt=0).first()
+    target_player = Player.objects.filter(location=player.location, online=True, user__username__iexact=args).first()
+
+    if not target_npc and not target_player:
+        return f"No target named '{args}' here."
+
+    # Calculate steal chance based on AGI and class
+    base_chance = 0.15 if player.game_class == "Thief" else 0.10
+    agi_bonus = player.agi_stat * 0.01
+    steal_chance = min(0.50, base_chance + agi_bonus)
+
+    # Random roll
+    if random.random() > steal_chance:
+        # Failed steal - reveal player
+        player.hidden = False
+        player.save(update_fields=["hidden"])
+        if target_player:
+            return f"You failed to steal from {target_player.user.username}. You were spotted!"
+        else:
+            return f"You failed to steal from {target_npc.name}. You were spotted!"
+
+    # Successful steal
+    player.hidden = False
+    player.save(update_fields=["hidden"])
+
+    if target_player:
+        # Steal from player
+        stolen = target_player.money // 4
+        if stolen > 0:
+            target_player.money -= stolen
+            target_player.save(update_fields=["money"])
+            player.money += stolen
+            player.save(update_fields=["money"])
+            return f"You pilfered {stolen} credits from {target_player.user.username}!"
+        else:
+            return f"{target_player.user.username} has no credits to steal."
+    else:
+        # Steal from NPC
+        stolen = target_npc.money_drop // 2
+        if stolen > 0:
+            player.money += stolen
+            player.save(update_fields=["money"])
+            return f"You lifted {stolen} credits from {target_npc.name}!"
+        else:
+            return f"{target_npc.name} has no credits to steal."
