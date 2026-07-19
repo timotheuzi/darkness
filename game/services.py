@@ -740,18 +740,6 @@ def move_player(player, direction):
     if direction not in player.location.exits:
         return "PATH BLOCKED."
 
-    stalk_msg = ""
-    if player.last_combat_npc and player.stalk_count > 0:
-        npc = player.last_combat_npc
-        if npc.hp > 0:
-            npc.location = player.location
-            npc.save()
-            player.stalk_count -= 1
-            stalk_msg = f"\n[ALERT] {npc.name} is following you!"
-        else:
-            player.last_combat_npc = None
-            player.stalk_count = 0
-
     new_room_id = player.location.exits[direction]
     try:
         # Store old room for broadcast
@@ -830,7 +818,6 @@ def move_player(player, direction):
 
         return (
             look_text
-            + stalk_msg
             + stealth_break_msg
             + addiction_msg
             + respawn_msg

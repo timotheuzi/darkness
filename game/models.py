@@ -106,7 +106,7 @@ class Player(models.Model):
     addiction_points = models.IntegerField(default=0)  # 0 to 100
     withdrawal_timer = models.IntegerField(default=0)  # ticks since last use
 
-    # Combat/Stalking state
+    # Combat state
     last_combat_npc = models.ForeignKey(
         "NPC", on_delete=models.SET_NULL, null=True, blank=True, related_name="combating_players"
     )
@@ -117,7 +117,6 @@ class Player(models.Model):
         blank=True,
         related_name="combating_players_target",
     )
-    stalk_count = models.IntegerField(default=0)
 
     # Combat Mode
     auto_attack = models.BooleanField(default=False)
