@@ -38,5 +38,4 @@ The grid is populated with AI-controlled players that:
 - Appear in the `WHO` list and `TOP` rankings with a `(bot)` marker
 
 ## Documentation
-
 For a full manual of commands, combat formulas, and world lore, see the [USER_GUIDE.md](USER_GUIDE.md).
