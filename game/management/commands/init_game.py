@@ -1455,7 +1455,7 @@ NPC_ADJECTIVES = [
     "Binary",
     "Cyber",
     "Dark",
-    "Shithouse",
+    "Broken",
     "Glitch",
     "Hollow",
     "Iron",
@@ -1491,10 +1491,10 @@ NPC_ADJECTIVES = [
     "Twisted",
 ]
 NPC_NOUNS = [
-    "Shithead",
+    "Elite",
     "Hound",
     "Ghost",
-    "Piss",
+    "Lousey",
     "Razor",
     "Berger",
     "Pulse",
@@ -1589,7 +1589,7 @@ class Command(BaseCommand):
             # Create AI bots
             from django.core.management import call_command
 
-            call_command("create_bots", count=22, reset=False)
+            call_command("create_bots", count=12, reset=False)
 
             GameWorld.objects.all().delete()
             GameWorld.objects.create(

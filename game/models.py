@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models import Index
 
 
 class Item(models.Model):
@@ -36,6 +37,14 @@ class Item(models.Model):
         "Room", on_delete=models.SET_NULL, null=True, blank=True, related_name="warp_items"
     )
 
+    class Meta:
+        indexes = [
+            Index(fields=["item_type", "subtype"]),
+            Index(fields=["name"]),
+            Index(fields=["price"]),
+            Index(fields=["rarity"]),
+        ]
+
     def __str__(self):
         return self.name
 
@@ -54,8 +63,14 @@ class Room(models.Model):
     shop_inventory = models.ManyToManyField(Item, blank=True, related_name="shops")
     # Procedural flags
     respawn_npcs = models.BooleanField(default=True)
-    respawn_timer = models.IntegerField(default=300)  # seconds until NPC respawn
+    respawn_timer = models.IntegerField(default=600)  # seconds until NPC respawn (10 min)
     last_npc_spawn = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        indexes = [
+            Index(fields=["zone"]),
+            Index(fields=["safe_zone"]),
+        ]
 
     def __str__(self):
         return self.name
@@ -144,6 +159,16 @@ class Player(models.Model):
     bot_social = models.IntegerField(default=50)  # 0-100, likelihood to party with players
     last_bot_action = models.DateTimeField(null=True, blank=True)  # Track last AI action
 
+    class Meta:
+        indexes = [
+            Index(fields=["online", "is_bot"]),
+            Index(fields=["location", "online"]),
+            Index(fields=["lvl", "exp"]),
+            Index(fields=["karma"]),
+            Index(fields=["deaths"]),
+            Index(fields=["is_bot", "online"]),
+        ]
+
     def __str__(self):
         return self.user.username
 
@@ -153,6 +178,12 @@ class InventoryItem(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     equipped = models.BooleanField(default=False)
     quantity = models.IntegerField(default=1)
+
+    class Meta:
+        indexes = [
+            Index(fields=["player", "equipped"]),
+            Index(fields=["player", "item"]),
+        ]
 
 
 class NPC(models.Model):
@@ -190,6 +221,14 @@ class NPC(models.Model):
 
     drops = models.ManyToManyField(Item, blank=True)
 
+    class Meta:
+        indexes = [
+            Index(fields=["location", "hp"]),
+            Index(fields=["hp"]),
+            Index(fields=["npc_type"]),
+            Index(fields=["location"]),
+        ]
+
     def __str__(self):
         return self.name
 
@@ -215,6 +254,10 @@ class ChatMessage(models.Model):
 
     class Meta:
         ordering = ["timestamp"]
+        indexes = [
+            Index(fields=["timestamp"]),
+            Index(fields=["room", "timestamp"]),
+        ]
 
 
 class GameWorld(models.Model):
@@ -238,6 +281,9 @@ class ProceduralWeaponSpawn(models.Model):
 
     class Meta:
         unique_together = ["zone", "item"]
+        indexes = [
+            Index(fields=["zone", "spawned_at"]),
+        ]
 
 
 class Party(models.Model):

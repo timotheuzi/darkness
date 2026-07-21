@@ -193,6 +193,8 @@
         .msg-player { color: var(--ansi-bright-green); }
         .msg-system { color: var(--ansi-bright-yellow); }
         .msg-combat-hit { color: var(--ansi-bright-red); font-weight: bold; }
+        .msg-combat-crit { color: var(--ansi-bright-blue); font-weight: bold; }
+        .msg-grid { color: var(--ansi-bright-yellow); }
         .msg-gain { color: var(--ansi-bright-yellow); }
 
         @media (min-width: 768px) {
@@ -345,9 +347,13 @@
             text = text.replace(/\[Exits: (.*)\]/g, '<span class="msg-exits">[Exits: $1]</span>');
             text = text.replace(/\[Entity\] (.*) is here\./g, '<span class="msg-npc">$1 is here.</span>');
             text = text.replace(/\[User\] (.*) is here\./g, '<span class="msg-player">$1 is here.</span>');
-            text = text.replace(/You hit (.*) for (.*) damage\./g, '<span class="msg-combat-hit">You hit $1 for $2 damage.</span>');
-            text = text.replace(/(.*) hits you for (.*) damage\./g, '<span class="msg-combat-hit">$1 hits you for $2 damage.</span>');
+            // Combat text: CRIT in blue, regular hits in red
+            text = text.replace(/\[CRIT\] (.*)/g, '<span class="msg-combat-crit">[CRIT] $1</span>');
+            text = text.replace(/^(You hit .+ for \d+ damage.+)$/gm, '<span class="msg-combat-hit">$1</span>');
+            text = text.replace(/^(.+ hits you for \d+ damage.*)$/gm, '<span class="msg-combat-hit">$1</span>');
             text = text.replace(/Gained (.*) exp and (.*) credits\./g, '<span class="msg-gain">Gained $1 exp and $2 credits.</span>');
+            // Grid messages in bright yellow
+            text = text.replace(/\[GRID\] (.*)/g, '<span class="msg-grid">[GRID] $1</span>');
             
             // Extract location for header
             var locMatch = text.match(/<span class="msg-room-name">(.*)<\/span>/);

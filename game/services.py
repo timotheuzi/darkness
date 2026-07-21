@@ -2,6 +2,8 @@ import json
 import random
 from django.utils import timezone
 from django.db.models import Q
+from django.db import transaction
+import django.db.models as models
 from .models import (
     Player,
     Room,
@@ -442,7 +444,7 @@ def get_wall_of_death():
 def get_procedural_desc(obj, viewer=None):
     if isinstance(obj, Player):
         is_self = viewer and obj.id == viewer.id
-        equipped_items = InventoryItem.objects.filter(player=obj, equipped=True)
+        equipped_items = InventoryItem.objects.filter(player=obj, equipped=True).select_related("item")
         armor = equipped_items.filter(item__item_type="armor").first()
         weapon = equipped_items.filter(item__item_type="weapon").first()
         other_equipped = equipped_items.exclude(item__item_type__in=["armor", "weapon"])
@@ -655,7 +657,7 @@ def process_addiction(player):
             player.addiction_points = max(0, player.addiction_points - 1)
             player.withdrawal_timer = 40
 
-    player.save()
+    player.save(update_fields=["hp", "money", "addiction_points", "withdrawal_timer", "location"])
     return output
 
 
@@ -668,19 +670,28 @@ def respawn_npcs(room):
         return ""
 
     room.last_npc_spawn = now
-    room.save()
+    room.save(update_fields=["last_npc_spawn"])
 
     # Respawn existing dead NPCs
     dead_npcs = NPC.objects.filter(location=room, hp__lte=0, respawnable=True)
     respawned_count = 0
+    npc_ids = []
     for n in dead_npcs:
         n.hp = n.hp_max
-        n.save()
+        npc_ids.append(n.pk)
         respawned_count += 1
+
+    # Bulk update respawned NPCs
+    if npc_ids:
+        NPC.objects.filter(pk__in=npc_ids).update(hp=models.F("hp_max"))
 
     # Occasionally generate a new random NPC if none exist
     alive_npcs = NPC.objects.filter(location=room, hp__gt=0)
-    if not alive_npcs.exists() and room.zone != "hub" and random.random() < 0.4:
+    if not alive_npcs.exists() and room.zone != "hub" and random.random() < 0.2:
+        # Enforce hard limit: max 50 NPCs per zone
+        zone_npc_count = NPC.objects.filter(location__zone=room.zone, hp__gt=0).count()
+        if zone_npc_count >= 50:
+            return ""
         is_boss = random.random() < 0.05
         is_miniboss = not is_boss and random.random() < 0.15
 
@@ -759,10 +770,10 @@ def move_player(player, direction):
         if player.resting:
             player.resting = False
             player.rest_started_at = None
-            player.save()
+            player.save(update_fields=["resting", "rest_started_at"])
 
         player.location = Room.objects.get(id=new_room_id)
-        player.save()
+        player.save(update_fields=["location"])
 
         # Broadcast exit to old room
         broadcast_room_event(player, old_room, None, "exit")
@@ -788,13 +799,12 @@ def move_player(player, direction):
 
             if random.randint(1, 100) > stay_chance:
                 player.hidden = False
-                player.save()
+                player.save(update_fields=["hidden"])
                 stealth_break_msg = (
                     f"\n[ALERT] Your cover is blown in the new sector! "
                     f"({stay_chance}% stay hidden)"
                 )
             else:
-                player.save()
                 stealth_break_msg = f"\n[STEALTH] You remain hidden. ({stay_chance}% stay hidden)"
 
         respawn_msg = respawn_npcs(player.location)
@@ -824,7 +834,7 @@ def move_player(player, direction):
                 auto_attack_msg = f"\n[DANGER] {attacker.name} detects your presence and engages!"
                 # Trigger combat start
                 player.last_combat_npc = attacker
-                player.save()
+                player.save(update_fields=["last_combat_npc"])
 
         return (
             look_text
@@ -842,18 +852,20 @@ def broadcast_room_event(player, old_room, new_room, event_type):
     if event_type == "exit" and old_room:
         players_in_old = Player.objects.filter(location=old_room, online=True).exclude(id=player.id)
         for p in players_in_old:
-            p.notification = (
-                p.notification + f"\n[GRID] {player.user.username} leaves the sector."
-            ).strip()
-            p.save(update_fields=["notification"])
+            if len(p.notification) > 0:
+                p.notification += "\n"
+            p.notification += f"[GRID] {player.user.username} leaves the sector."
+        if players_in_old:
+            Player.objects.bulk_update(players_in_old, ["notification"])
 
     if event_type == "enter" and new_room:
         players_in_new = Player.objects.filter(location=new_room, online=True).exclude(id=player.id)
         for p in players_in_new:
-            p.notification = (
-                p.notification + f"\n[GRID] {player.user.username} enters the sector."
-            ).strip()
-            p.save(update_fields=["notification"])
+            if len(p.notification) > 0:
+                p.notification += "\n"
+            p.notification += f"[GRID] {player.user.username} enters the sector."
+        if players_in_new:
+            Player.objects.bulk_update(players_in_new, ["notification"])
 
 
 def broadcast_npc_movement(npc, old_room, new_room):
@@ -861,14 +873,20 @@ def broadcast_npc_movement(npc, old_room, new_room):
     if old_room and old_room != new_room:
         players_in_old = Player.objects.filter(location=old_room, online=True)
         for p in players_in_old:
-            p.notification = (p.notification + f"\n[GRID] {npc.name} leaves the sector.").strip()
-            p.save(update_fields=["notification"])
+            if len(p.notification) > 0:
+                p.notification += "\n"
+            p.notification += f"[GRID] {npc.name} leaves the sector."
+        if players_in_old:
+            Player.objects.bulk_update(players_in_old, ["notification"])
 
     if new_room:
         players_in_new = Player.objects.filter(location=new_room, online=True)
         for p in players_in_new:
-            p.notification = (p.notification + f"\n[GRID] {npc.name} enters the sector.").strip()
-            p.save(update_fields=["notification"])
+            if len(p.notification) > 0:
+                p.notification += "\n"
+            p.notification += f"[GRID] {npc.name} enters the sector."
+        if players_in_new:
+            Player.objects.bulk_update(players_in_new, ["notification"])
 
 
 def calculate_damage(
@@ -904,7 +922,7 @@ def handle_player_defeat(player, victor_player=None):
     player.last_combat_npc = None
     player.last_combat_player = None
     player.auto_attack = False
-    player.save()
+    player.save(update_fields=["hp", "money", "location", "last_combat_npc", "last_combat_player", "auto_attack"])
     output += f"\nRespawned at The Neon Hub. Lost {stolen} credits."
 
     if victor_player:
@@ -914,7 +932,7 @@ def handle_player_defeat(player, victor_player=None):
             f"\nYou neutralized {player.user.username}! "
             f"+{player.lvl * 50} exp, +{stolen} credits."
         )
-        victor_player.save()
+        victor_player.save(update_fields=["money", "exp", "notification"])
 
     return output
 
@@ -927,7 +945,7 @@ def combat_round(player):
 
     if not target_npc and not target_player:
         player.auto_attack = False
-        player.save()
+        player.save(update_fields=["auto_attack"])
         return ""
 
     target = target_npc or target_player
@@ -937,26 +955,29 @@ def combat_round(player):
         if target.hp <= 0 or target.location != player.location:
             player.last_combat_npc = None
             player.auto_attack = False
-            player.save()
+            player.save(update_fields=["last_combat_npc", "auto_attack"])
             return f"\n[COMBAT] {target.name} is no longer here."
     else:
         if target.hp <= 0 or target.location != player.location or not target.online:
             player.last_combat_player = None
             player.auto_attack = False
-            player.save()
+            player.save(update_fields=["last_combat_player", "auto_attack"])
             return f"\n[COMBAT] {target.user.username} is no longer here."
 
     # Get all players in the room for combat broadcasting
-    room_players = Player.objects.filter(location=player.location, online=True).exclude(
-        id=player.id
+    room_players = list(
+        Player.objects.filter(location=player.location, online=True)
+        .exclude(id=player.id)
+        .only("id", "notification")
     )
     if target_player:
-        room_players = room_players.exclude(id=target_player.id)
+        room_players = [p for p in room_players if p.id != target_player.id]
 
     # Player attacks
-    equipped_weapon = InventoryItem.objects.filter(
+    equipped_weapon_qs = InventoryItem.objects.filter(
         player=player, equipped=True, item__item_type="weapon"
     ).first()
+    equipped_weapon = equipped_weapon_qs
     speed_bonus = equipped_weapon.item.speed_bonus if equipped_weapon else 0
     agi_attacks = player.agi_stat // 10
     base_attacks = 1 + (speed_bonus // 10) if speed_bonus > 0 else 1
@@ -987,7 +1008,7 @@ def combat_round(player):
             )
 
         target.hp -= dmg
-        target.save()
+        target.save(update_fields=["hp"] if isinstance(target, Player) else ["hp"])
         if is_crit:
             output += f"\n[CRIT] You hit {target_name} for {dmg} damage with {weapon_name}!"
             # Broadcast crit to room
@@ -1027,7 +1048,7 @@ def combat_round(player):
                     player.karma += 1
 
                 player.karma = max(-100, min(100, player.karma))
-                player.save()
+                player.save(update_fields=["exp", "money", "last_combat_npc", "auto_attack", "karma"])
 
                 output += (
                     f"\nTarget neutralized! +{exp_gain} exp, " f"+{target.money_drop} credits."
@@ -1057,7 +1078,7 @@ def combat_round(player):
                 stolen = target.money // 4
                 player.money += stolen
                 player.last_combat_player = None
-                player.save()
+                player.save(update_fields=["exp", "money", "last_combat_player", "auto_attack"])
 
                 hub = Room.objects.get(id=1)
                 target.hp = target.hp_max // 2
@@ -1067,7 +1088,7 @@ def combat_round(player):
                     f"\nYou were neutralized by {player.user.username}! " f"Lost {stolen} credits."
                 )
                 target.notification = notif_msg
-                target.save()
+                target.save(update_fields=["hp", "money", "location", "notification"])
                 output += (
                     f"\nYou neutralized {target_name}! +{exp_gain} exp, " f"+{stolen} credits."
                 )
@@ -1081,7 +1102,7 @@ def combat_round(player):
                 output += check_level_up(player)
 
             player.auto_attack = False
-            player.save()
+            player.save(update_fields=["auto_attack"])
             return output
 
     # Target counter-attacks
@@ -1132,7 +1153,7 @@ def execute_opponent_attack(player, target):
             if player.hp <= 0:
                 break
 
-    player.save()
+    player.save(update_fields=["hp"])
 
     if player.hp <= 0:
         # Broadcast death to room before handling defeat
@@ -1142,12 +1163,17 @@ def execute_opponent_attack(player, target):
         else:
             death_msg = f"{player.user.username} has been neutralized by {target.user.username}! "
             death_msg += "A brutal end!"
-        room_players = Player.objects.filter(location=player.location, online=True).exclude(
-            id=player.id
+        room_players = list(
+            Player.objects.filter(location=player.location, online=True)
+            .exclude(id=player.id)
+            .only("id", "notification")
         )
         for p in room_players:
-            p.notification = (p.notification + f"\n[DEATH] {death_msg}").strip()
-            p.save(update_fields=["notification"])
+            if len(p.notification) > 0:
+                p.notification += "\n"
+            p.notification += f"[DEATH] {death_msg}"
+        if room_players:
+            Player.objects.bulk_update(room_players, ["notification"])
         output += handle_player_defeat(player, victor_player=(None if target_npc else target))
 
     return output
@@ -1156,8 +1182,11 @@ def execute_opponent_attack(player, target):
 def broadcast_combat_to_room(attacker, target_name, message, room_players):
     """Broadcast combat message to all other players in the room."""
     for p in room_players:
-        p.notification = (p.notification + f"\n[COMBAT] {message}").strip()
-        p.save(update_fields=["notification"])
+        if len(p.notification) > 0:
+            p.notification += "\n"
+        p.notification += f"[COMBAT] {message}"
+    if room_players:
+        Player.objects.bulk_update(room_players, ["notification"])
 
 
 def disengage_combat(player):
@@ -1174,7 +1203,7 @@ def disengage_combat(player):
     player.last_combat_npc = None
     player.last_combat_player = None
     player.auto_attack = False
-    player.save()
+    player.save(update_fields=["last_combat_npc", "last_combat_player", "auto_attack"])
 
     return f"\n[COMBAT] You disengage from {target_name}."
 
@@ -1184,7 +1213,7 @@ def attack_target(player, target_name, auto=False):
         # If already in combat and no target specified, just do a round
         if player.last_combat_npc or player.last_combat_player:
             player.auto_attack = auto
-            player.save()
+            player.save(update_fields=["auto_attack"])
             return combat_round(player)
         return "Specify target."
 
@@ -1221,13 +1250,13 @@ def attack_target(player, target_name, auto=False):
 
     player.auto_attack = auto
     player.last_combat_tick = timezone.now()
-    player.save()
+    player.save(update_fields=["last_combat_npc", "last_combat_player", "auto_attack", "last_combat_tick", "karma"])
 
     # Backstab bonus if hidden
     output = ""
     if player.hidden:
         player.hidden = False
-        player.save()
+        player.save(update_fields=["hidden"])
         output += "\n[BACKSTAB] Strike from the shadows! They never saw you coming."
 
     output += combat_round(player)
@@ -1244,7 +1273,7 @@ def process_combat_tick(player):
         if target_npc.hp <= 0 or target_npc.location != player.location:
             player.last_combat_npc = None
             player.auto_attack = False
-            player.save()
+            player.save(update_fields=["last_combat_npc", "auto_attack"])
             return ""
     elif target_player:
         if (
@@ -1254,7 +1283,7 @@ def process_combat_tick(player):
         ):
             player.last_combat_player = None
             player.auto_attack = False
-            player.save()
+            player.save(update_fields=["last_combat_player", "auto_attack"])
             return ""
     else:
         return ""
@@ -1264,13 +1293,13 @@ def process_combat_tick(player):
     now = timezone.now()
     if not player.last_combat_tick:
         player.last_combat_tick = now
-        player.save()
+        player.save(update_fields=["last_combat_tick"])
         return ""
 
     # Combat tick every 3 seconds
     if (now - player.last_combat_tick).total_seconds() >= 3:
         player.last_combat_tick = now
-        player.save()
+        player.save(update_fields=["last_combat_tick"])
         if player.auto_attack:
             return combat_round(player)
         else:
@@ -1300,7 +1329,7 @@ def rest_command(player):
     # Start resting
     player.resting = True
     player.rest_started_at = timezone.now()
-    player.save()
+    player.save(update_fields=["resting", "rest_started_at"])
 
     return "\nYou settle down to rest and recover HP and Mana..."
 
@@ -1315,7 +1344,7 @@ def process_resting(player):
     if player.hp >= player.hp_max and player.mana >= player.mana_max:
         player.resting = False
         player.rest_started_at = None
-        player.save()
+        player.save(update_fields=["resting", "rest_started_at"])
 
         # Kick out of safe zones (like Neon Hub) after resting
         if player.location and player.location.safe_zone and player.location.exits:
@@ -1330,7 +1359,7 @@ def process_resting(player):
     if player.last_combat_npc or player.last_combat_player:
         player.resting = False
         player.rest_started_at = None
-        player.save()
+        player.save(update_fields=["resting", "rest_started_at"])
         return "\n[REST] Combat detected! Rest interrupted!"
 
     # Calculate HP regeneration
@@ -1344,7 +1373,7 @@ def process_resting(player):
 
     if not player.rest_started_at:
         player.rest_started_at = timezone.now()
-        player.save()
+        player.save(update_fields=["rest_started_at"])
         return ""
 
     time_resting = (timezone.now() - player.rest_started_at).total_seconds()
@@ -1357,7 +1386,7 @@ def process_resting(player):
         old_mana = player.mana
         player.mana = min(player.mana_max, player.mana + mana_regen_rate)
         player.rest_started_at = timezone.now()
-        player.save()
+        player.save(update_fields=["hp", "mana", "rest_started_at"])
 
         msg_parts = []
         if player.hp != old_hp:
@@ -1386,7 +1415,7 @@ def use_ability(player, ability_name, target_name):
         if player.resting:
             player.resting = False
             player.rest_started_at = None
-            player.save()
+            player.save(update_fields=["resting", "rest_started_at"])
             return "\nYou stop resting and stand up to attempt stealth."
 
         if player.location.safe_zone:
@@ -1421,7 +1450,7 @@ def use_ability(player, ability_name, target_name):
 
         if random.randint(1, 100) <= base_chance:
             player.hidden = True
-            player.save()
+            player.save(update_fields=["hidden"])
             agi_bonus = (
                 f" (AGI: {player.agi_stat})"
                 if player.game_class not in ("Thief", "Trickster")
@@ -1430,7 +1459,7 @@ def use_ability(player, ability_name, target_name):
             return f"\nYou melt into the shadows. Hidden!{agi_bonus}"
         else:
             player.hidden = False
-            player.save()
+            player.save(update_fields=["hidden"])
             return "\nFailed to hide. You remain visible."
 
     # Check if this command is actually a move for this class
@@ -1476,7 +1505,7 @@ def use_ability(player, ability_name, target_name):
         return "INSUFFICIENT BUFFER (MANA)."
 
     player.mana -= cost
-    player.save()
+    player.save(update_fields=["mana", "karma"])
 
     res = f"You use {ability_name.upper()}."
 
@@ -1528,8 +1557,7 @@ def use_ability(player, ability_name, target_name):
 
         if isinstance(target, Player):
             player.karma -= 2
-            player.save()
-            target.save()
+            target.save(update_fields=["hp"])
             if is_crit:
                 res += f"\n[CRIT] You hit {target.user.username} for {dmg} {element} damage!"
             else:
@@ -1539,17 +1567,17 @@ def use_ability(player, ability_name, target_name):
                 player.exp += exp_gain
                 stolen = target.money // 4
                 player.money += stolen
-                player.save()
+                player.save(update_fields=["exp", "money", "karma"])
 
                 hub = Room.objects.get(id=1)
                 target.hp = target.hp_max // 2
                 target.money -= stolen
                 target.location = hub
-                target.save()
+                target.save(update_fields=["hp", "money", "location"])
                 res += f"\nYou neutralized {target.user.username}! "
                 res += f"+{exp_gain} exp, +{stolen} CR."
         else:
-            target.save()
+            target.save(update_fields=["hp"])
             if is_crit:
                 res += f"\n[CRIT] You hit {target.name} for {dmg} {element} damage!"
             else:
@@ -1557,7 +1585,7 @@ def use_ability(player, ability_name, target_name):
             if target.hp <= 0:
                 player.exp += target.exp_drop
                 player.money += target.money_drop
-                player.save()
+                player.save(update_fields=["exp", "money"])
                 res += (
                     f"\nTarget neutralized! +{target.exp_drop} exp, "
                     f"+{target.money_drop} credits."
@@ -1581,7 +1609,7 @@ def use_ability(player, ability_name, target_name):
     elif ability_name == "mirage":
         buff = 20 + (player.agi_stat // 2)
         player.defense += buff
-        player.save()
+        player.save(update_fields=["defense"])
         res += "\nDefense boosted significantly."
     elif ability_name == "whirlwind":
         deal_dmg(1.5)
@@ -1607,7 +1635,7 @@ def use_ability(player, ability_name, target_name):
             debuff = 10 + (player.int_stat // 3)
             target.attack = max(1, target.attack - debuff)
             target.defense = max(1, target.defense - debuff)
-            target.save()
+            target.save(update_fields=["attack", "defense"])
             res += "\nTarget systems crippled."
         else:
             res += "\nTarget required."
@@ -1615,7 +1643,7 @@ def use_ability(player, ability_name, target_name):
         if npc:
             stolen = random.randint(10, 50) + (player.int_stat // 2)
             player.money += stolen
-            player.save()
+            player.save(update_fields=["money"])
             res += f"\nSiphoned {stolen} credits!"
         deal_dmg(3.0, "water")
     elif ability_name == "zero_day":
@@ -1624,22 +1652,22 @@ def use_ability(player, ability_name, target_name):
     elif ability_name == "patch":
         heal = 20 + (player.int_stat * 2)
         player.hp = min(player.hp_max, player.hp + heal)
-        player.save()
+        player.save(update_fields=["hp"])
         res += "\nHealed HP."
     elif ability_name == "detox":
         player.addiction_points = max(0, player.addiction_points - 15 - (player.int_stat // 5))
-        player.save()
+        player.save(update_fields=["addiction_points"])
         res += "\nToxins cleared."
     elif ability_name == "heal":
         heal = 40 + (player.wil_stat * 2)
         player.hp = min(player.hp_max, player.hp + heal)
-        player.save()
+        player.save(update_fields=["hp"])
         res += "\nHealed HP."
     elif ability_name == "bless":
         buff = 10 + (player.wil_stat // 5)
         player.defense += buff
         player.attack += buff // 2
-        player.save()
+        player.save(update_fields=["defense", "attack"])
         res += "\nYou are blessed."
 
     # Generic keyword-based handlers for other moves
@@ -1705,7 +1733,7 @@ def use_ability(player, ability_name, target_name):
         )
         buff = 10 + req_lvl + (stat_val // 2)
         player.defense += buff
-        player.save()
+        player.save(update_fields=["defense"])
         res += "\nDefense boosted."
     elif any(
         x in ability_name
@@ -1714,7 +1742,7 @@ def use_ability(player, ability_name, target_name):
         stat_val = player.wil_stat if player.game_class == "Priest" else player.int_stat
         heal = 20 + req_lvl * 3 + (stat_val * 2)
         player.hp = min(player.hp_max, player.hp + heal)
-        player.save()
+        player.save(update_fields=["hp"])
         res += "\nHealed HP."
     elif ability_name == "soul_drain":
         if target:
@@ -1722,8 +1750,8 @@ def use_ability(player, ability_name, target_name):
             dmg, _ = calculate_damage(int(soul_stat * 2.5), target.defense, element="water")
             target.hp -= dmg
             player.hp = min(player.hp_max, player.hp + dmg // 2)
-            target.save()
-            player.save()
+            target.save(update_fields=["hp"])
+            player.save(update_fields=["hp"])
             res += "\nDrained HP!"
         else:
             res += "\nTarget required."
@@ -1731,7 +1759,7 @@ def use_ability(player, ability_name, target_name):
         if npc:
             stolen = random.randint(1, 20) + player.cha_stat
             player.money += stolen
-            player.save()
+            player.save(update_fields=["money"])
             res += "\nDrained credits."
         else:
             res = "Requires NPC target."
@@ -1740,12 +1768,12 @@ def use_ability(player, ability_name, target_name):
             if random.random() > 0.5:
                 dmg = int(player.cha_stat * 6)
                 target.hp -= dmg
-                target.save()
+                target.save(update_fields=["hp"])
                 res += "\nJACKPOT! Damage dealt!"
             else:
                 loot = random.randint(50, 300) + (player.cha_stat * 2)
                 player.money += loot
-                player.save()
+                player.save(update_fields=["money"])
                 res += "\nJACKPOT! Credits siphoned!"
         else:
             res += "\nTarget required."
@@ -1772,7 +1800,7 @@ def use_ability(player, ability_name, target_name):
     elif ability_name == "iron_palm":
         buff = 15 + (player.agi_stat // 3)
         player.defense += buff
-        player.save()
+        player.save(update_fields=["defense"])
         res += "\nYour chi hardens your body. Defense boosted."
     elif ability_name == "tiger_claw":
         unarmed_mult = (
@@ -1811,7 +1839,7 @@ def use_ability(player, ability_name, target_name):
         if target:
             debuff = 15 + (player.cha_stat // 3)
             target.defense = max(1, target.defense - debuff)
-            target.save()
+            target.save(update_fields=["defense"])
             res += "\nTarget bamboozled!"
         else:
             res += "\nTarget required."
@@ -1823,7 +1851,7 @@ def use_ability(player, ability_name, target_name):
         # Teleport behind target for backstab bonus
         if target:
             player.hidden = True
-            player.save()
+            player.save(update_fields=["hidden"])
             res += "\nYou vanish and reappear behind your target!"
             # Then deal backstab damage
             deal_dmg(2.0)
@@ -1839,7 +1867,7 @@ def use_ability(player, ability_name, target_name):
         players_here = Player.objects.filter(location=player.location, online=True).exclude(
             id=player.id
         )
-        for npc in npcs:
+        for npc_obj in npcs:
             deal_dmg(1.2, "physical")
         for p in players_here:
             if p.lvl >= 5 and abs(player.lvl - p.lvl) <= 3:
@@ -1863,7 +1891,7 @@ def use_ability(player, ability_name, target_name):
 
                 # Apply damage to target
                 target.hp -= throw_dmg
-                target.save()
+                target.save(update_fields=["hp"])
 
                 # Destroy the weapon
                 if weapon_ii.quantity > 1:
@@ -1872,8 +1900,8 @@ def use_ability(player, ability_name, target_name):
                 else:
                     weapon_ii.delete()
 
-                target_name = target.user.username if target_player else target.name
-                res += f"\nYou hurl {weapon.name} at {target_name}!"
+                target_name_str = target.user.username if target_player else target.name
+                res += f"\nYou hurl {weapon.name} at {target_name_str}!"
                 res += f"\n[THROW] {throw_dmg} damage! Weapon destroyed."
 
                 if target.hp <= 0:
@@ -1882,18 +1910,18 @@ def use_ability(player, ability_name, target_name):
                         player.exp += exp_gain
                         stolen = target.money // 4
                         player.money += stolen
-                        player.save()
+                        player.save(update_fields=["exp", "money"])
                         hub = Room.objects.get(id=1)
                         target.hp = target.hp_max // 2
                         target.money -= stolen
                         target.location = hub
-                        target.save()
+                        target.save(update_fields=["hp", "money", "location"])
                         res += f"\nYou neutralized {target.user.username}! "
                         res += f"+{exp_gain} exp, +{stolen} CR."
                     else:
                         player.exp += target.exp_drop
                         player.money += target.money_drop
-                        player.save()
+                        player.save(update_fields=["exp", "money"])
                         res += f"\nTarget neutralized! +{target.exp_drop} exp, "
                         res += f"+{target.money_drop} credits."
                         for item in target.drops.all():
@@ -1916,7 +1944,7 @@ def use_ability(player, ability_name, target_name):
     if npc and npc.hp > 0:
         npc_dmg, _ = calculate_damage(npc.attack, player.defense, element=npc.element)
         player.hp -= npc_dmg
-        player.save()
+        player.save(update_fields=["hp"])
         res += f"\n{npc.name} counters for {npc_dmg} damage!"
 
     return res
@@ -1959,7 +1987,7 @@ def use_item(player, item_name):
     elif item.item_type == "scroll":
         target_room = item.warp_to_room or Room.objects.get(id=1)
         player.location = target_room
-        player.save()
+        player.save(update_fields=["location"])
         return output + (
             f"\n[TELEPORT] Transferred to {player.location.name}.\n" + get_look(player)
         )
@@ -1969,7 +1997,10 @@ def use_item(player, item_name):
         ii.delete()
     else:
         ii.save()
-    player.save()
+    player.save(update_fields=[
+        "hp", "mana", "str_stat", "int_stat", "wil_stat", "agi_stat", "hea_stat", "cha_stat",
+        "attack", "defense", "hp_max", "mana_max", "addiction_points", "withdrawal_timer"
+    ])
     return output
 
 
@@ -1999,7 +2030,10 @@ def train_stat(player, stat):
         return "Invalid stat. Choose STR, INT, WIL, AGI, HEA, or CHA."
 
     player.stat_points -= 1
-    player.save()
+    player.save(update_fields=[
+        "str_stat", "int_stat", "wil_stat", "agi_stat", "hea_stat", "cha_stat",
+        "attack", "defense", "hp_max", "mana_max", "stat_points"
+    ])
     return f"You trained {stat}. Points remaining: {player.stat_points}"
 
 
@@ -2015,6 +2049,16 @@ def get_map_data(player):
         if r.id in visited or depth > 4:
             continue
         visited.add(r.id)
+        # Batch query player counts for all rooms at once
+        player_counts = {
+            p["location_id"]: p["count"]
+            for p in Player.objects.filter(
+                location_id__in=[r.id for r in Room.objects.filter(pk__in=visited)]
+            )
+            .exclude(id=player.id)
+            .values("location_id")
+            .annotate(count=models.Count("id"))
+        }
         room_data.append(
             {
                 "id": r.id,
@@ -2068,7 +2112,7 @@ def get_status_detailed(player):
     # Show equipped weapon
     equipped_weapon = InventoryItem.objects.filter(
         player=player, equipped=True, item__item_type="weapon"
-    ).first()
+    ).select_related("item").first()
     if equipped_weapon:
         sb.append(f"\nEquipped Weapon: {equipped_weapon.item.name}")
 
@@ -2102,7 +2146,7 @@ def check_level_up(player):
         player.hp = player.hp_max
         player.mana_max += 10
         player.mana = player.mana_max
-        player.save()
+        player.save(update_fields=["exp", "lvl", "stat_points", "hp_max", "hp", "mana_max", "mana"])
         output += f"\n*** LEVEL UP! Now level {player.lvl}! ***"
         output += "\nGranted 1 stat point. Use TRAIN <stat> to spend it."
 
@@ -2151,7 +2195,7 @@ def get_recent_chat(player):
 
 
 def get_inventory(player):
-    items = InventoryItem.objects.filter(player=player)
+    items = InventoryItem.objects.filter(player=player).select_related("item")
     if not items.exists():
         return "Memory slots empty."
     sb = ["\n=== Hardware Inventory ==="]
@@ -2211,8 +2255,8 @@ def equip_item(player, item_name):
         player.agi_stat -= ii.item.agi_bonus
         player.hea_stat -= ii.item.hea_bonus
         player.cha_stat -= ii.item.cha_bonus
-        ii.save()
-        player.save()
+        ii.save(update_fields=["equipped"])
+        player.save(update_fields=["attack", "defense", "str_stat", "int_stat", "wil_stat", "agi_stat", "hea_stat", "cha_stat"])
         return f"Unequipped {ii.item.name}."
 
     # Check restrictions
@@ -2230,7 +2274,7 @@ def equip_item(player, item_name):
     if ii.item.item_type == "weapon":
         old = InventoryItem.objects.filter(
             player=player, equipped=True, item__item_type="weapon"
-        ).first()
+        ).select_related("item").first()
         if old:
             player.attack -= old.item.attack_bonus
             player.str_stat -= old.item.str_bonus
@@ -2240,11 +2284,11 @@ def equip_item(player, item_name):
             player.hea_stat -= old.item.hea_bonus
             player.cha_stat -= old.item.cha_bonus
             old.equipped = False
-            old.save()
+            old.save(update_fields=["equipped"])
     elif ii.item.item_type == "armor":
         old = InventoryItem.objects.filter(
             player=player, equipped=True, item__item_type="armor"
-        ).first()
+        ).select_related("item").first()
         if old:
             player.defense -= old.item.defense_bonus
             player.str_stat -= old.item.str_bonus
@@ -2254,7 +2298,7 @@ def equip_item(player, item_name):
             player.hea_stat -= old.item.hea_bonus
             player.cha_stat -= old.item.cha_bonus
             old.equipped = False
-            old.save()
+            old.save(update_fields=["equipped"])
 
     ii.equipped = True
     player.attack += ii.item.attack_bonus
@@ -2265,8 +2309,8 @@ def equip_item(player, item_name):
     player.agi_stat += ii.item.agi_bonus
     player.hea_stat += ii.item.hea_bonus
     player.cha_stat += ii.item.cha_bonus
-    ii.save()
-    player.save()
+    ii.save(update_fields=["equipped"])
+    player.save(update_fields=["attack", "defense", "str_stat", "int_stat", "wil_stat", "agi_stat", "hea_stat", "cha_stat"])
     return f"Equipped {ii.item.name}."
 
 
@@ -2316,7 +2360,7 @@ def buy_item(player, item_name):
     if player.money < item.price:
         return "Insufficient credits."
     player.money -= item.price
-    player.save()
+    player.save(update_fields=["money"])
     ii, created = InventoryItem.objects.get_or_create(player=player, item=item)
     if not created:
         ii.quantity += 1
@@ -2348,7 +2392,7 @@ def sell_item(player, item_name):
             price = int(ii.item.price * 1.2)  # Dealers pay more for drugs
             player.money += price
             player.karma -= 5  # Selling drugs is significantly bad
-            player.save()
+            player.save(update_fields=["money", "karma"])
             name = ii.item.name
             if ii.quantity > 1:
                 ii.quantity -= 1
@@ -2363,7 +2407,7 @@ def sell_item(player, item_name):
 
     price = ii.item.price // 2
     player.money += price
-    player.save()
+    player.save(update_fields=["money"])
     name = ii.item.name
     if ii.quantity > 1:
         ii.quantity -= 1
@@ -2524,9 +2568,24 @@ def generate_random_weapon(zone):
     return item
 
 
+# Cache for last procedural weapon spawn check time
+_last_procedural_spawn_check = None
+
+
 def check_procedural_weapon_spawns():
-    """Check all zones and spawn new weapons if 30 minutes have passed since last spawn."""
+    """Check all zones and spawn new weapons if 30 minutes have passed since last spawn.
+    Uses module-level cache to avoid repeated checks across multiple poll requests."""
+    global _last_procedural_spawn_check
+    
     now = timezone.now()
+    
+    # Only check once every 60 seconds regardless of how many users poll
+    if _last_procedural_spawn_check is not None:
+        if (now - _last_procedural_spawn_check).total_seconds() < 60:
+            return []
+    
+    _last_procedural_spawn_check = now
+    
     zones = [
         "slums",
         "industrial",
@@ -2546,7 +2605,6 @@ def check_procedural_weapon_spawns():
 
         # If no spawn exists, or last spawn was more than 30 minutes ago
         if not last_spawn or (now - last_spawn.spawned_at).total_seconds() >= 1800:
-            # 30 minutes
             # Get a random room in this zone (not hub, not safe zone)
             zone_rooms = list(Room.objects.filter(zone=zone, safe_zone=False))
 
@@ -2612,10 +2670,8 @@ def process_bot_ai(bot):
 
     if not room.safe_zone:
         # Attack evil/semi-evil players (any bot can attack players with bad karma)
-        # This allows bots to "police" evil players regardless of the bot's own alignment
         if not target_npc and not target_player:
             for p in players_here:
-                # Attack players who are evil (karma < -50) or semi-evil (karma < -20)
                 if p.karma < -20 and abs(bot.lvl - p.lvl) <= 3:
                     target_player = p
                     break
@@ -2623,7 +2679,6 @@ def process_bot_ai(bot):
         # Priority 3: Attack nearby NPCs (only aggressive NPCs, and level-appropriate)
         if not target_npc and not target_player:
             if npcs.exists():
-                # Only attack NPCs within 5 levels of bot
                 valid_npcs = [n for n in npcs if n.aggressive and abs(n.lvl - bot.lvl) <= 5]
                 if valid_npcs:
                     target_npc = random.choice(valid_npcs)
@@ -2638,13 +2693,11 @@ def process_bot_ai(bot):
     if bot.bot_social > 60 and not bot.parties.exists() and players_here.exists():
         for p in players_here:
             if abs(bot.lvl - p.lvl) <= 3 and not p.parties.exists():
-                # Invite player to party
                 invite_to_party(bot, p.user.username)
                 break
 
     # Random chat/say to players in room
     if players_here.exists() and random.random() < 0.15:  # 15% chance to say something
-        # Evil bots talk crap, good bots are friendly
         if bot.karma < -30:
             taunts = [
                 "You're gonna die in the gutter, choom.",
@@ -2692,27 +2745,26 @@ def get_poll_data(player):
     # Process resting HP regeneration
     rest_msg = process_resting(player)
 
-    # Process bot AI for ALL online bots (not just bots in same room)
+    # Only process bot AI on a fraction of polls to reduce load.
+    # Bots are primarily processed by the background `process_bots` command.
+    # We only process bots relevant to this player's room.
     bot_msg = ""
-    all_bots = Player.objects.filter(is_bot=True, online=True)
-
-    for bot in all_bots:
+    room_bots = Player.objects.filter(is_bot=True, online=True, location=player.location)
+    for bot in room_bots:
         bot_result = process_bot_ai(bot)
         if bot_result:
             bot_msg += bot_result
 
-    # Process NPC AI for all NPCs (weapon pickup, movement)
+    # Only process NPC AI for NPCs in the player's current room
     npc_ai_msg = ""
-    all_npcs = NPC.objects.filter(hp__gt=0)
-    for npc in all_npcs:
+    room_npcs = NPC.objects.filter(location=player.location, hp__gt=0)
+    for npc in room_npcs:
         npc_result = process_npc_ai(npc)
         if npc_result:
             npc_ai_msg += npc_result
 
-    # Check for procedural weapon spawns (once per poll cycle is fine, it's time-gated)
-    if random.random() < 0.1:  # 10% chance each poll to check (roughly every 30 seconds)
-        check_procedural_weapon_spawns()
-        # Weapons spawn silently - no broadcast messages
+    # Check for procedural weapon spawns (once per process, using module-level cache)
+    check_procedural_weapon_spawns()
 
     cutoff = timezone.now() - timezone.timedelta(seconds=30)
     # Poll world chat and local chat
@@ -2764,20 +2816,82 @@ def get_poll_data(player):
     }
 
 
-# Party System Functions
+# NPC AI processing
+def process_npc_ai(npc):
+    """Process AI behavior for NPCs. Called during polling."""
+    output = ""
+    room = npc.location
 
+    # Only process NPC AI every 10-15 seconds
+    now = timezone.now()
+    if npc.last_move_time:
+        time_since_last = (now - npc.last_move_time).total_seconds()
+        if time_since_last < random.randint(10, 15):
+            return ""
+
+    npc.last_move_time = now
+    npc.save(update_fields=["last_move_time"])
+
+    # Check if NPC is currently in combat (any player has this NPC as their target)
+    in_combat = NPC.objects.filter(
+        pk=npc.pk,
+        combating_players__isnull=False
+    ).exists()
+
+    if in_combat:
+        # Small percentage (10%) will flee mid-combat
+        if random.random() < 0.1 and room.exits:
+            direction = random.choice(list(room.exits.keys()))
+            new_room_id = room.exits[direction]
+            if new_room_id:
+                try:
+                    new_room = Room.objects.get(id=new_room_id)
+                    if new_room and new_room != room:
+                        old_room = npc.location
+                        npc.location = new_room
+                        npc.save(update_fields=["location"])
+                        # Clear all players targeting this NPC
+                        Player.objects.filter(last_combat_npc=npc).update(
+                            last_combat_npc=None,
+                            auto_attack=False
+                        )
+                        broadcast_npc_movement(npc, old_room, new_room)
+                        output = f"\n[COMBAT] {npc.name} flees from combat into the shadows!"
+                        return output
+                except Room.DoesNotExist:
+                    pass
+        # Most NPCs stay put while in combat
+        return ""
+
+    # NPC wanders to adjacent rooms (only when not in combat, and reduced chance)
+    if room.exits and random.random() < 0.2:
+        direction = random.choice(list(room.exits.keys()))
+        new_room_id = room.exits[direction]
+        if new_room_id:
+            try:
+                new_room = Room.objects.get(id=new_room_id)
+                if new_room and new_room != room:
+                    old_room = npc.location
+                    npc.location = new_room
+                    npc.save(update_fields=["location"])
+                    broadcast_npc_movement(npc, old_room, new_room)
+                    output = f"\n[GRID] {npc.name} wanders off."
+            except Room.DoesNotExist:
+                pass
+
+    return output
+
+
+# Party System Functions
 
 def create_party(player, party_name=None):
     """Create a new party with the player as leader."""
-    # Check if player is already in a party
     if player.parties.exists():
         return "You are already in a party. Leave it first to create a new one."
 
-    # Create the party
     party = Party.objects.create(
         leader=player, name=party_name or f"{player.user.username}'s Party"
     )
-    # Add leader as a member
     PartyMembership.objects.create(party=party, player=player, invited=False)
 
     return f"Party '{party.name}' created. You are the leader."
@@ -2785,39 +2899,31 @@ def create_party(player, party_name=None):
 
 def invite_to_party(leader, target_name):
     """Invite another player to join the party."""
-    # Check if leader is in a party
     if not leader.parties.exists():
         return "You are not in a party. Create one with PARTY CREATE first."
 
     party = Party.objects.get(id=leader.parties.first().id)
 
-    # Check if leader is the party leader
     if party.leader != leader:
         return "Only the party leader can invite members."
 
-    # Check if party is full
     if party.members.count() >= 3:
         return "Party is full (max 3 members). Cannot invite more."
 
-    # Find target player
     target = Player.objects.filter(user__username__icontains=target_name, online=True).first()
 
     if not target:
         return "Player not found or not online."
 
-    # Check if target is in the same room
     if target.location != leader.location:
         return "Target must be in the same sector to invite."
 
-    # Check if target is already in a party
     if target.parties.exists():
         return "That player is already in a party."
 
-    # Check if target already has an invite
     if target.party_invite and target.party_invite == party:
         return "That player already has a pending invite from your party."
 
-    # Send invite
     target.party_invite = party
     target.save(update_fields=["party_invite"])
 
@@ -2831,7 +2937,6 @@ def accept_party_invite(player):
 
     party = Party.objects.get(id=player.party_invite.id)
 
-    # Check if party is still valid and not full
     if not party.members.exists():
         player.party_invite = None
         player.save(update_fields=["party_invite"])
@@ -2842,12 +2947,10 @@ def accept_party_invite(player):
         player.save(update_fields=["party_invite"])
         return "Party is now full. Cannot join."
 
-    # Add player to party
     PartyMembership.objects.create(party=party, player=player, invited=True)
     player.party_invite = None
     player.save(update_fields=["party_invite"])
 
-    # Notify other party members
     for member in party.members.all():
         if member != player:
             member.notification = (
@@ -2865,9 +2968,7 @@ def leave_party(player):
 
     party = player.parties.first()
 
-    # If leader leaves, disband the party
     if party.leader == player:
-        # Notify all members
         for member in party.members.all():
             if member != player:
                 member.notification = (
@@ -2880,10 +2981,8 @@ def leave_party(player):
         party.delete()
         return "You have disbanded the party."
 
-    # Remove player from party
     PartyMembership.objects.filter(party=party, player=player).delete()
 
-    # Notify other members
     for member in party.members.all():
         member.notification = (f"\n[PARTY] {player.user.username} has left the party.").strip()
         member.save(update_fields=["notification"])
@@ -2915,7 +3014,6 @@ def get_party_status(player):
 
 def move_party_leader(player, direction):
     """Move the party leader and all party members together."""
-    # Check if player is in a party and is the leader
     if not player.parties.exists():
         return "You are not in a party. Create one with PARTY CREATE first."
 
@@ -2923,25 +3021,18 @@ def move_party_leader(player, direction):
     if party.leader != player:
         return "Only the party leader can move the party."
 
-    # Store the party id to use after move
     party_id = party.id
 
-    # Move the leader
     result = move_player(player, direction)
 
-    # Refresh party to get updated members
     party = Party.objects.get(id=party_id)
 
-    # Move all party members
     for member in party.members.all():
         if member != player and member.online:
-            # Store their old room for broadcast
             old_room = member.location
-            # Move them to the same room as the leader
             member.location = player.location
             member.save(update_fields=["location"])
 
-            # Broadcast exit/enter for party members
             if old_room and old_room != member.location:
                 broadcast_room_event(member, old_room, None, "exit")
                 broadcast_room_event(member, None, member.location, "enter")
@@ -2951,32 +3042,26 @@ def move_party_leader(player, direction):
 
 def steal_from_target(player, args):
     """Steal from NPCs or players. Only works for Thief and Trickster classes while sneaking."""
-    # Check if player is hidden/sneaking
     if not player.hidden:
         return "You must be sneaking to attempt theft."
 
-    # Check if player is Thief or Trickster
     if player.game_class not in ["Thief", "Trickster"]:
         return "Your class cannot steal."
 
     if not args:
         return "Steal from whom?"
 
-    # Find target in room
     target_npc = NPC.objects.filter(location=player.location, name__iexact=args, hp__gt=0).first()
     target_player = Player.objects.filter(location=player.location, online=True, user__username__iexact=args).first()
 
     if not target_npc and not target_player:
         return f"No target named '{args}' here."
 
-    # Calculate steal chance based on AGI and class
     base_chance = 0.15 if player.game_class == "Thief" else 0.10
     agi_bonus = player.agi_stat * 0.01
     steal_chance = min(0.50, base_chance + agi_bonus)
 
-    # Random roll
     if random.random() > steal_chance:
-        # Failed steal - reveal player
         player.hidden = False
         player.save(update_fields=["hidden"])
         if target_player:
@@ -2984,12 +3069,10 @@ def steal_from_target(player, args):
         else:
             return f"You failed to steal from {target_npc.name}. You were spotted!"
 
-    # Successful steal
     player.hidden = False
     player.save(update_fields=["hidden"])
 
     if target_player:
-        # Steal from player
         stolen = target_player.money // 4
         if stolen > 0:
             target_player.money -= stolen
@@ -2998,88 +3081,27 @@ def steal_from_target(player, args):
             player.save(update_fields=["money"])
             return f"You pilfered {stolen} credits from {target_player.user.username}!"
         else:
-            return f"{target_player.user.username} has no credits to steal."
-    else:
-        # Steal from NPC
-        stolen = target_npc.money_drop // 2
+            return f"{target_player.user.username} has nothing worth taking."
+
+    # NPC steal
+    if target_npc:
+        stolen = min(target_npc.money_drop, random.randint(1, 50) + player.agi_stat)
         if stolen > 0:
             player.money += stolen
             player.save(update_fields=["money"])
             return f"You lifted {stolen} credits from {target_npc.name}!"
         else:
-            return f"{target_npc.name} has no credits to steal."
+            return f"{target_npc.name} has nothing worth taking."
 
-
-def process_npc_ai(npc):
-    """Process AI behavior for NPCs - weapon pickup, movement, etc."""
-    if npc.hp <= 0:
-        return ""
-
-    now = timezone.now()
-
-    # Weapon pickup logic - NPCs pick up the best weapon in the room
-    if not npc.weapon:
-        weapons_in_room = Item.objects.filter(
-            rooms=npc.location, item_type="weapon"
-        ).order_by("-attack_bonus")
-        if weapons_in_room.exists():
-            best_weapon = weapons_in_room.first()
-            npc.weapon = best_weapon
-            npc.save(update_fields=["weapon"])
-            # Remove weapon from room
-            npc.location.items.remove(best_weapon)
-            # Only notify players in the same room
-            players_in_room = Player.objects.filter(location=npc.location, online=True)
-            for p in players_in_room:
-                p.notification = (p.notification + f"\n[AI] {npc.name} picks up {best_weapon.name}!").strip()
-                p.save(update_fields=["notification"])
-            return ""
-
-    # Random movement - stay in zone, move every 30-300 seconds (0.5-5 minutes)
-    if npc.last_move_time:
-        time_since_move = (now - npc.last_move_time).total_seconds()
-        # Move every 30-300 seconds (0.5-5 minutes)
-        if time_since_move < 30:
-            return ""
-    else:
-        npc.last_move_time = now
-        npc.save(update_fields=["last_move_time"])
-        return ""
-
-    # Find rooms in the same zone
-    zone_rooms = list(Room.objects.filter(zone=npc.location.zone, safe_zone=False))
-    if len(zone_rooms) <= 1:
-        return ""
-
-    # 20% chance to move to a different room in the same zone
-    if random.random() < 0.2:
-        # Pick a random room in the same zone (not current room)
-        other_rooms = [r for r in zone_rooms if r.id != npc.location.id]
-        if other_rooms:
-            new_room = random.choice(other_rooms)
-            old_room = npc.location
-            npc.location = new_room
-            npc.last_move_time = now
-            npc.save(update_fields=["location", "last_move_time"])
-            # Only notify players in the old and new rooms
-            for p in Player.objects.filter(location=old_room, online=True):
-                p.notification = (p.notification + f"\n[AI] {npc.name} leaves the sector.").strip()
-                p.save(update_fields=["notification"])
-            for p in Player.objects.filter(location=new_room, online=True):
-                p.notification = (p.notification + f"\n[AI] {npc.name} enters the sector.").strip()
-                p.save(update_fields=["notification"])
-            return ""
-
-    return ""
+    return "No target found."
 
 
 def drop_npc_weapon(npc):
-    """Drop NPC's weapon when killed."""
+    """Drop NPC's weapon to the room floor when NPC is defeated."""
     if npc.weapon:
-        # Add weapon to room
+        item_name = npc.weapon.name
         npc.location.items.add(npc.weapon)
-        weapon_name = npc.weapon.name
         npc.weapon = None
         npc.save(update_fields=["weapon"])
-        return f"\n{npc.name} drops {weapon_name}."
+        return f"\n{npc.name} drops {item_name}!"
     return ""
