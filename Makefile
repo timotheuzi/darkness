@@ -1,6 +1,6 @@
 # DarknessMUD Django Makefile
 
-.PHONY: help venv setup lint clean migrate init run repair test deploy-init
+.PHONY: help venv setup lint clean lightclean migrate init run repair test deploy-init
 
 VENV := .venv
 PYTHON := $(VENV)/bin/python
@@ -40,6 +40,21 @@ clean: ## Wipe .venv, cache, and world data while KEEPING human players
 	rm -rf .pytest_cache .coverage htmlcov staticfiles
 	@echo "Cleaning world data (bots, maps, NPCs, items) while preserving human players..."
 	$(MANAGE) clean_world --confirm --settings=$(SETTINGS)
+	@echo "Cleaning app migrations (optional, usually keeps them for DB consistency)..."
+	# We keep migrations by default to ensure the DB can still be migrated. 
+	# If you want to wipe migrations, use 'make repair'.
+
+lightclean: ## Wipe .venv, cache, and world data but KEEP players (both human and bot)
+	@echo "Killing existing python processes..."
+	-pkill -9 python || true
+	@echo "Nuking virtual environment..."
+	rm -rf $(VENV)
+	@echo "Cleaning generated files..."
+	find . -type d -name "__pycache__" -exec rm -rf {} +
+	find . -type f -name "*.pyc" -exec rm -f {} +
+	rm -rf .pytest_cache .coverage htmlcov staticfiles
+	@echo "Cleaning world data (bots, maps, NPCs, items) while preserving ALL players..."
+	$(MANAGE) clean_world --confirm --keep-players --settings=$(SETTINGS)
 	@echo "Cleaning app migrations (optional, usually keeps them for DB consistency)..."
 	# We keep migrations by default to ensure the DB can still be migrated. 
 	# If you want to wipe migrations, use 'make repair'.

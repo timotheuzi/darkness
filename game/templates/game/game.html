@@ -285,8 +285,7 @@
                     <option value="Bio-hacked">Bio-hacked</option>
                     <option value="Void-Walker">Void-Walker</option>
                     <option value="Synth-Soul">Synth-Soul</option>
-                    <option value="Chrome-Crawler">Chrome-Crawler</option>
-                </select>
+					<option value="Orc">Orc</option></select>
                     <button type="button" class="stat-btn" onclick="rerollRaceStats()" style="width:auto; padding:0 12px; height:36px;" title="Reroll race stats">REROLL</button>
                 </div>
                 <label>OPERATIONAL CLASS</label>
@@ -394,7 +393,7 @@
                  <p><span style="color:var(--ansi-bright-yellow);">BIO-HACKED:</span> Adrenal efficiency. Natural healing 20% faster. STR:12 INT:8 WIL:5 AGI:12 HEA:15 CHA:8</p>
                  <p><span style="color:var(--ansi-bright-magenta);">VOID-WALKER:</span> Phase shift ability. Can dodge 10% of incoming attacks. STR:5 INT:10 WIL:20 AGI:12 HEA:8 CHA:5</p>
                  <p><span style="color:var(--ansi-bright-magenta);">SYNTH-SOUL:</span> Digital presence. +20% stealth, reduced physical stats. STR:5 INT:22 WIL:15 AGI:8 HEA:5 CHA:5</p>
-                 <p><span style="color:var(--ansi-bright-magenta);">CHROME-CRAWLER:</span> Overclocked. +1 extra attack per round. STR:18 INT:5 WIL:4 AGI:18 HEA:10 CHA:5</p>
+                 <p><span style="color:var(--ansi-bright-magenta);">Orc:</span> Overclocked. One extra attack per round. STR:18 INT:5 WIL:4 AGI:18 HEA:10 CHA:5</p>
              </div>
 
              <h3 style="color:var(--ansi-bright-green); margin-top:15px;">CLASS STRATEGIES</h3>
@@ -465,7 +464,7 @@
             'Bio-hacked': { str: 12, int: 8, wil: 5, agi: 12, hea: 15, cha: 8 },
             'Void-Walker': { str: 5, int: 10, wil: 20, agi: 12, hea: 8, cha: 5 },
             'Synth-Soul': { str: 5, int: 22, wil: 15, agi: 8, hea: 5, cha: 5 },
-            'Chrome-Crawler': { str: 18, int: 5, wil: 4, agi: 18, hea: 10, cha: 5 }
+            'Orc': { str: 15, int: 4, wil: 4, agi: 14, hea: 10, cha: 5 }
         };
 
     function changeStat(stat, delta) {

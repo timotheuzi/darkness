@@ -23,7 +23,7 @@ RACE_CHARACTERISTICS = {
     "Human": "Versatile Potential: Gains 1.5x stat points on level up.",
     "Void-Walker": "Phase Shift: Can dodge 10% of incoming attacks.",
     "Synth-Soul": "Digital Presence: +20% stealth effectiveness, reduced physical stats.",
-    "Chrome-Crawler": "Overclocked: +1 extra attack per combat round.",
+    "Orc": "Overclocked: +1 extra attack per combat round.",
     "Elf": "Ancient Grace: +10% crit chance, natural affinity for precision.",
     "Goblin": "Street Cunning: +15% chance to find extra loot from NPCs.",
 }
@@ -359,11 +359,15 @@ def get_help(player):
     sb.append("SAY <msg>     : Message to current sector")
     sb.append("BROADCAST <msg>: Message to the entire world")
     sb.append("HELP/?        : Display this manual")
+    sb.append("GUIDE         : Access the full user guide in browser")
     sb.append("USE <item>    : Use hardware/consumable/drug/scroll")
     sb.append("TRAIN <stat>  : Spend stat points (STR, INT, WIL, AGI, HEA, CHA)")
     sb.append("REST          : Rest to recover HP (broken by movement/combat/full HP)")
+    sb.append("DISENGAGE     : Stop combat and clear your target")
     sb.append("PARTY <cmd>   : Party system (CREATE, INVITE <player>, ACCEPT, LEAVE, STATUS)")
     sb.append("EXIT          : Log out and disconnect from the grid")
+    sb.append("")
+    sb.append("Created by <a href='https://autarkylabs.pythonanywhere.com/' target='_blank'>Autarky Labs</a>")
 
     if room.exits:
         sb.append(f"MOV/DIRS      : Navigation: {', '.join(room.exits.keys()).upper()}")
@@ -400,7 +404,7 @@ def get_help(player):
     sb.append("STATS: STR(Attack), AGI(Defense/Crit), HEA(HP), INT(Mana/Abilities), WIL(Mana), CHA(Social)")
     sb.append("RACES: Human(versatile), Elf(agile/crit), Goblin(cunning/loot), Mutant(adaptive/tank)")
     sb.append("       Cyborg(resilient), Android(mana-efficient), Bio-hacked(healing), Void-Walker(dodge)")
-    sb.append("       Synth-Soul(stealth), Chrome-Crawler(overclocked)")
+    sb.append("       Synth-Soul(stealth), Orc(overclocked)")
     sb.append("CLASSES: Street Samurai(melee), Netrunner(tech), Techie(drones), Medie(healer)")
     sb.append("         Fixer(social), Thief(stealth), Heavy(tank), Psycher(psychic), Warlock(dark)")
     sb.append("         Priest(holy), Trickster(chaos), Jade Dragon(martial), Ninja(shadow)")
@@ -514,7 +518,13 @@ def get_procedural_desc(obj, viewer=None):
     if isinstance(obj, NPC):
         desc = f"{obj.description} This entity appears to be a {get_threat_desc(obj.lvl)}. "
         desc += f"{get_combat_desc(obj.attack, obj.defense, is_self=False)} "
-        desc += f"It radiates an energy signature associated with {obj.element.upper()}."
+        
+        # Show weapon if equipped
+        if obj.weapon:
+            desc += f"It wields {obj.weapon.name}. "
+        
+        effective_element = obj.get_effective_element()
+        desc += f"It radiates an energy signature associated with {effective_element.upper()}."
 
         if obj.hp < obj.hp_max * 0.3:
             desc += " It's badly damaged and near failure."
@@ -954,6 +964,9 @@ def combat_round(player):
 
     target_name = target.name if target_npc else target.user.username
 
+    # Get weapon name for display
+    weapon_name = equipped_weapon.item.name if equipped_weapon else "fists"
+
     # Calculate critical strike chance based on agility (for physical attacks)
     # AGI stat: 1-25+ gives 1-5% crit chance, capping at 10%
     agi_crit_chance = min(10, max(1, player.agi_stat // 5))
@@ -976,21 +989,21 @@ def combat_round(player):
         target.hp -= dmg
         target.save()
         if is_crit:
-            output += f"\n[CRIT] You hit {target_name} for {dmg} damage!"
+            output += f"\n[CRIT] You hit {target_name} for {dmg} damage with {weapon_name}!"
             # Broadcast crit to room
             broadcast_combat_to_room(
                 player,
                 target_name,
-                f"[CRIT] {player.user.username} hits {target_name} for {dmg} damage!",
+                f"[CRIT] {player.user.username} hits {target_name} for {dmg} damage with {weapon_name}!",
                 room_players,
             )
         else:
-            output += f"\nYou hit {target_name} for {dmg} damage."
+            output += f"\nYou hit {target_name} for {dmg} damage with {weapon_name}."
             # Broadcast hit to room
             broadcast_combat_to_room(
                 player,
                 target_name,
-                f"{player.user.username} hits {target_name} for {dmg} damage.",
+                f"{player.user.username} hits {target_name} for {dmg} damage with {weapon_name}.",
                 room_players,
             )
 
@@ -1004,6 +1017,7 @@ def combat_round(player):
                 player.exp += exp_gain
                 player.money += target.money_drop
                 player.last_combat_npc = None
+                player.auto_attack = False
 
                 if target.karma_alignment < -30:
                     player.karma += 5
@@ -1018,6 +1032,8 @@ def combat_round(player):
                 output += (
                     f"\nTarget neutralized! +{exp_gain} exp, " f"+{target.money_drop} credits."
                 )
+                # Drop NPC's weapon
+                output += drop_npc_weapon(target)
                 # Broadcast victory to room
                 broadcast_combat_to_room(
                     player,
@@ -1085,9 +1101,14 @@ def execute_opponent_attack(player, target):
     target_npc = isinstance(target, NPC)
 
     if target_npc:
-        target_dmg, _ = calculate_damage(target.attack, player.defense, element=target.element)
+        # Use NPC's effective attack and element (including weapon bonuses)
+        effective_attack = target.get_effective_attack()
+        effective_element = target.get_effective_element()
+        target_dmg, _ = calculate_damage(effective_attack, player.defense, element=effective_element)
         player.hp -= target_dmg
-        output += f"\n{target.name} hits you for {target_dmg} damage."
+        # Show NPC's element in the attack message
+        element_str = f" {effective_element}" if effective_element and effective_element != "physical" else ""
+        output += f"\n{target.name} hits you for {target_dmg} damage{element_str}."
     else:
         # opponent is a Player - can also crit based on their AGI
         t_weapon = InventoryItem.objects.filter(
@@ -1137,6 +1158,25 @@ def broadcast_combat_to_room(attacker, target_name, message, room_players):
     for p in room_players:
         p.notification = (p.notification + f"\n[COMBAT] {message}").strip()
         p.save(update_fields=["notification"])
+
+
+def disengage_combat(player):
+    """Disengage from current combat, stopping auto-attack and clearing target."""
+    if not player.last_combat_npc and not player.last_combat_player:
+        return "You are not in combat."
+
+    target_name = None
+    if player.last_combat_npc:
+        target_name = player.last_combat_npc.name
+    elif player.last_combat_player:
+        target_name = player.last_combat_player.user.username
+
+    player.last_combat_npc = None
+    player.last_combat_player = None
+    player.auto_attack = False
+    player.save()
+
+    return f"\n[COMBAT] You disengage from {target_name}."
 
 
 def attack_target(player, target_name, auto=False):
@@ -1196,9 +1236,30 @@ def attack_target(player, target_name, auto=False):
 
 def process_combat_tick(player):
     """Called during polling to check if an auto-attack or opponent strike should happen."""
-    target = player.last_combat_npc or player.last_combat_player
-    if not target:
+    target_npc = player.last_combat_npc
+    target_player = player.last_combat_player
+
+    # Validate target before proceeding
+    if target_npc:
+        if target_npc.hp <= 0 or target_npc.location != player.location:
+            player.last_combat_npc = None
+            player.auto_attack = False
+            player.save()
+            return ""
+    elif target_player:
+        if (
+            target_player.hp <= 0
+            or target_player.location != player.location
+            or not target_player.online
+        ):
+            player.last_combat_player = None
+            player.auto_attack = False
+            player.save()
+            return ""
+    else:
         return ""
+
+    target = target_npc or target_player
 
     now = timezone.now()
     if not player.last_combat_tick:
@@ -2640,6 +2701,14 @@ def get_poll_data(player):
         if bot_result:
             bot_msg += bot_result
 
+    # Process NPC AI for all NPCs (weapon pickup, movement)
+    npc_ai_msg = ""
+    all_npcs = NPC.objects.filter(hp__gt=0)
+    for npc in all_npcs:
+        npc_result = process_npc_ai(npc)
+        if npc_result:
+            npc_ai_msg += npc_result
+
     # Check for procedural weapon spawns (once per poll cycle is fine, it's time-gated)
     if random.random() < 0.1:  # 10% chance each poll to check (roughly every 30 seconds)
         check_procedural_weapon_spawns()
@@ -2680,6 +2749,9 @@ def get_poll_data(player):
 
     if bot_msg:
         notification = (notification + "\n" + bot_msg).strip()
+
+    if npc_ai_msg:
+        notification = (notification + "\n" + npc_ai_msg).strip()
 
     return {
         "chat": chat,
@@ -2936,3 +3008,78 @@ def steal_from_target(player, args):
             return f"You lifted {stolen} credits from {target_npc.name}!"
         else:
             return f"{target_npc.name} has no credits to steal."
+
+
+def process_npc_ai(npc):
+    """Process AI behavior for NPCs - weapon pickup, movement, etc."""
+    if npc.hp <= 0:
+        return ""
+
+    now = timezone.now()
+
+    # Weapon pickup logic - NPCs pick up the best weapon in the room
+    if not npc.weapon:
+        weapons_in_room = Item.objects.filter(
+            rooms=npc.location, item_type="weapon"
+        ).order_by("-attack_bonus")
+        if weapons_in_room.exists():
+            best_weapon = weapons_in_room.first()
+            npc.weapon = best_weapon
+            npc.save(update_fields=["weapon"])
+            # Remove weapon from room
+            npc.location.items.remove(best_weapon)
+            # Only notify players in the same room
+            players_in_room = Player.objects.filter(location=npc.location, online=True)
+            for p in players_in_room:
+                p.notification = (p.notification + f"\n[AI] {npc.name} picks up {best_weapon.name}!").strip()
+                p.save(update_fields=["notification"])
+            return ""
+
+    # Random movement - stay in zone, move every 30-300 seconds (0.5-5 minutes)
+    if npc.last_move_time:
+        time_since_move = (now - npc.last_move_time).total_seconds()
+        # Move every 30-300 seconds (0.5-5 minutes)
+        if time_since_move < 30:
+            return ""
+    else:
+        npc.last_move_time = now
+        npc.save(update_fields=["last_move_time"])
+        return ""
+
+    # Find rooms in the same zone
+    zone_rooms = list(Room.objects.filter(zone=npc.location.zone, safe_zone=False))
+    if len(zone_rooms) <= 1:
+        return ""
+
+    # 20% chance to move to a different room in the same zone
+    if random.random() < 0.2:
+        # Pick a random room in the same zone (not current room)
+        other_rooms = [r for r in zone_rooms if r.id != npc.location.id]
+        if other_rooms:
+            new_room = random.choice(other_rooms)
+            old_room = npc.location
+            npc.location = new_room
+            npc.last_move_time = now
+            npc.save(update_fields=["location", "last_move_time"])
+            # Only notify players in the old and new rooms
+            for p in Player.objects.filter(location=old_room, online=True):
+                p.notification = (p.notification + f"\n[AI] {npc.name} leaves the sector.").strip()
+                p.save(update_fields=["notification"])
+            for p in Player.objects.filter(location=new_room, online=True):
+                p.notification = (p.notification + f"\n[AI] {npc.name} enters the sector.").strip()
+                p.save(update_fields=["notification"])
+            return ""
+
+    return ""
+
+
+def drop_npc_weapon(npc):
+    """Drop NPC's weapon when killed."""
+    if npc.weapon:
+        # Add weapon to room
+        npc.location.items.add(npc.weapon)
+        weapon_name = npc.weapon.name
+        npc.weapon = None
+        npc.save(update_fields=["weapon"])
+        return f"\n{npc.name} drops {weapon_name}."
+    return ""

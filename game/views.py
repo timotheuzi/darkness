@@ -123,7 +123,7 @@ def register_view(request):
                     "hea_stat": 10,
                     "agi_stat": 10,
                 },
-                "Chrome-Crawler": {
+                "Orc": {
                     "str_stat": 13,
                     "agi_stat": 13,
                     "int_stat": 8,
@@ -321,6 +321,9 @@ def command_view(request):
             output = services.handle_broadcast(player, args)
         elif command in ["help", "?"]:
             output = services.get_help(player)
+        elif command == "guide":
+            output = "Opening user guide in browser..."
+            return JsonResponse({"output": output, "status": services.get_status_str(player), "action": "open_guide"})
         elif command == "use":
             output = services.use_item(player, args)
         elif command == "train":

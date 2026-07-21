@@ -180,10 +180,31 @@ class NPC(models.Model):
     weakness = models.CharField(max_length=20, default="none")
     resistance = models.CharField(max_length=20, default="none")
 
+    # Weapon the NPC is currently using
+    weapon = models.ForeignKey(
+        "Item", on_delete=models.SET_NULL, null=True, blank=True, related_name="wielding_npcs"
+    )
+
+    # Last time the NPC moved (for random movement)
+    last_move_time = models.DateTimeField(null=True, blank=True)
+
     drops = models.ManyToManyField(Item, blank=True)
 
     def __str__(self):
         return self.name
+
+    def get_effective_attack(self):
+        """Calculate attack including weapon bonus."""
+        base_attack = self.attack
+        if self.weapon and self.weapon.attack_bonus:
+            base_attack += self.weapon.attack_bonus
+        return base_attack
+
+    def get_effective_element(self):
+        """Get element, preferring weapon element if available."""
+        if self.weapon and self.weapon.element and self.weapon.element != "physical":
+            return self.weapon.element
+        return self.element
 
 
 class ChatMessage(models.Model):

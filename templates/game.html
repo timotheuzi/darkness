@@ -231,9 +231,9 @@
                     <option value="Mutant">Mutant</option>
                     <option value="Void-Walker">Void-Walker</option>
                     <option value="Synth-Soul">Synth-Soul</option>
-                    <option value="Chrome-Crawler">Chrome-Crawler</option>
                     <option value="Elf">Elf</option>
                     <option value="Goblin">Goblin</option>
+					<option value="Orc">Orc</option>
                 </select>
                 <label>OPERATIONAL CLASS</label>
                 <select id="charClass">
@@ -318,10 +318,15 @@
                 data: JSON.stringify({ command: cmdText }),
                 headers: { 'X-CSRFToken': getCookie('csrftoken') },
                 success: function(res) {
-                    if (cmd !== 'look' && cmd !== 'l') {
-                        appendMessage('\n<span style="color:var(--ansi-bright-white)">' + cmdText + '</span>');
+                    if (res.action === 'open_guide') {
+                        window.open('/guide/');
+                        appendMessage(res.output);
+                    } else {
+                        if (cmd !== 'look' && cmd !== 'l') {
+                            appendMessage('\n<span style="color:var(--ansi-bright-white)">' + cmdText + '</span>');
+                        }
+                        appendMessage(res.output);
                     }
-                    appendMessage(res.output);
                     updatePrompt(res.status);
                 }
             });

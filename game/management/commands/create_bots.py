@@ -13,19 +13,19 @@ from game.models import Player, User, Room, Item, InventoryItem
 # Cyberpunk-themed bot names (using camelCase instead of underscores)
 BOT_NAMES = [
     "NeonShade",
-    "ChromeWraith",
-    "GlitchMonk",
+    "Wraith",
+    "Drama Queen",
     "Wut",
     "Circuitbreaker",
     "Synthrunner",
     "Dataphantom",
     "Voltstriker",
     "ZeroCool",
-    "PixelSlayer",
+    "Pixel Slayer",
     "RogueAI",
-    "NeuralJack",
-    "CyberWitch",
-    "BinaryStorm",
+    "Neural Jack",
+    "Cyber Witch",
+    "Binary Storm",
     "Quantumshade",
     "Echoprotocol",
     "Voidwalker",
@@ -37,30 +37,30 @@ BOT_NAMES = [
     "Driftire",
     "Fluxore",
     "Geostomping",
-    "JadeSpirit",
-    "KiraCode",
-    "LynxSystem",
-    "MakoShift",
-    "NexusFlame",
-    "OnyxData",
-    "PrismHack",
-    "QuakeBot",
-    "RiftWalker",
-    "SparkAgent",
-    "TalonNet",
+    "Jade Spirit",
+    "Kira Code",
+    "Lynx System",
+    "Mako Shift",
+    "Nexus Flame",
+    "Onyx Data",
+    "Prism Hack",
+    "Quake Bot",
+    "Rift Walker",
+    "Spark Agent",
+    "Talon Net",
     "Derpydo",
-    "ViperCode",
+    "Viper Code",
     "fuuu",
     "x",
-    "YuriShift",
-    "ZenHacker",
+    "Derp Shift",
+    "ZenH acker",
     "Some Guy",
     "Blitz",
-    "CrackShell",
-    "DuskLoader",
-    "EmberSync",
-    "FrostByte",
-    "GrimAccess",
+    "Crack Shell",
+    "Dusk Loader",
+    "Ember Sync",
+    "Frost Byte",
+    "Grim Access",
     "Tim Bob",
 ]
 
@@ -84,8 +84,8 @@ RACE_CLASS_COMBOS = [
     ("Void-Walker", "Warlock"),
     ("Synth-Soul", "Netrunner"),
     ("Synth-Soul", "Warlock"),
-    ("Chrome-Crawler", "Street Samurai"),
-    ("Chrome-Crawler", "Heavy"),
+    ("Orc", "Street Samurai"),
+    ("Orc", "Heavy"),
 ]
 
 
@@ -93,11 +93,11 @@ class Command(BaseCommand):
     help = "Create AI bot players with cyberpunk names"
 
     def add_arguments(self, parser):
-        parser.add_argument("--count", type=int, default=22, help="Number of bots to create (3-20)")
+        parser.add_argument("--count", type=int, default=12, help="Number of bots to create (3-20)")
         parser.add_argument("--reset", action="store_true", help="Delete all existing bots first")
 
     def handle(self, *args, **kwargs):
-        count = min(max(3, kwargs.get("count", 22)), 20)  # Clamp between 3-20
+        count = min(max(3, kwargs.get("count", 20)), 20)  # Clamp between 3-20
         reset = kwargs.get("reset", False)
 
         with transaction.atomic():

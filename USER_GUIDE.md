@@ -63,7 +63,7 @@ Each race grants a specific set of stat modifiers and a unique **Race Trait**:
 | **Human** | CHA+10, WIL+5, STR-5, HEA-5 | **Versatile Potential**: Gains 1.5x stat points on level up. |
 | **Void-Walker** | WIL+12, AGI+5, STR-8, HEA-4 | **Phase Shift**: 10% chance to dodge any attack. |
 | **Synth-Soul** | INT+15, CHA-10 | **Digital Presence**: +20% stealth effectiveness. |
-| **Chrome-Crawler** | STR+10, AGI+10, INT-10, CHA-5 | **Overclocked**: +1 extra attack per combat round. |
+| **Orc, AGI+10, INT-10, CHA-5 | **Overclocked**: +1 extra attack per combat round. |
 | **Elf** | AGI+8, WIL+4, HEA-5 | **Ancient Grace**: +10% critical hit chance. |
 | **Goblin** | CHA+10, AGI+5, STR-8 | **Street Cunning**: +15% chance for extra loot. |
 
