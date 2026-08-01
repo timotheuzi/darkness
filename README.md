@@ -1,6 +1,6 @@
 # Darkness BBS
 
-A professional multi-user, terminal-style cyberpunk RPG (MUD) built with Django. Explore a procedurally generated grid, engage in tactical combat, and compete with other users in a gritty neon-soaked world.
+A professional multi-user, terminal-style cyberpunk RPG (MUD) built with Django. Explore a procedurally generated grid, engage in tactical combat, and compete with other users in a gritty, neon-soaked world.
 
 ## Project Structure
 
@@ -24,10 +24,21 @@ A professional multi-user, terminal-style cyberpunk RPG (MUD) built with Django.
 
 ## Quick Start
 
+### Web Interface
 1. Navigate to the terminal in your browser.
 2. Click **"Initialize New Profile"** to create a character.
 3. Select your **Race** and **Class**, then optionally customize your 6 base stats.
 4. Log in and arrive at **The Neon Hub**, the grid's central safe zone.
+
+### MUD Client (Telnet)
+You can also connect using MUD clients like Mudlet, MUSHclient, or any Telnet client:
+
+1. **Create your character** using the web interface first (character creation is web-only)
+2. **Start the MUD server**: `python manage.py start_mud_server`
+3. **Connect** using your MUD client to `localhost:4000` (or your server's IP and port)
+4. **Log in** with your handle and password
+
+For detailed MUD client setup instructions, see the [USER_GUIDE.md](USER_GUIDE.md#mud-client-setup).
 
 ### AI Bots
 The grid is populated with AI-controlled players that:

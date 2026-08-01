@@ -315,6 +315,8 @@ def command_view(request):
             output = services.buy_item(player, args)
         elif command == "sell":
             output = services.sell_item(player, args)
+        elif command == "sellall":
+            output = services.sell_all_items(player)
         elif command in ["say", "'"]:
             output = services.handle_say(player, args)
         elif command in ["broadcast", "bcast"]:

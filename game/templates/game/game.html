@@ -704,11 +704,12 @@
             }
             $('#sideNpcs').html(npcHtml);
 
-            // Players
+            // Players (including bots)
             var playerHtml = '';
             if (data.players && data.players.length > 0) {
                 data.players.forEach(function(p) {
-                    playerHtml += '<div class="side-player">' + p.user__username + ' (Lvl ' + p.lvl + ')</div>';
+                    var isBot = p.is_bot ? ' <span style="color:#ffaa00">[BOT]</span>' : '';
+                    playerHtml += '<div class="side-player">' + p.user__username + ' (Lvl ' + p.lvl + ')' + isBot + '</div>';
                 });
             } else {
                 playerHtml = '<div class="side-status" style="color:#555">None</div>';
@@ -799,14 +800,15 @@
                     ctx.fillStyle = '#55ffff';
                     ctx.shadowColor = '#55ffff';
                     ctx.shadowBlur = 3;
+                } else if (r.bots > 0) {
+                    // Bots shown in bright yellow/orange - always visible
+                    ctx.fillStyle = '#ffaa00';
+                    ctx.shadowColor = '#ffaa00';
+                    ctx.shadowBlur = 4;
+                    sz = 5;
                 } else if (r.npcs > 0) {
                     ctx.fillStyle = '#ff5555';
                     ctx.shadowColor = '#ff5555';
-                    ctx.shadowBlur = 3;
-                } else if (r.bots > 0) {
-                    // Bots shown in yellow/orange
-                    ctx.fillStyle = '#ffaa00';
-                    ctx.shadowColor = '#ffaa00';
                     ctx.shadowBlur = 3;
                 } else if (r.players > 0) {
                     ctx.fillStyle = '#55ff55';

@@ -44,7 +44,7 @@ Key Features:
 2. Click **"Initialize New Profile"** to create a character.
 3. Enter a handle (username) and password.
 4. Select your **Race** (Augmentation Path) and **Class** (Operational Class).
-5. Optionally customize your 6 base stats (STR, INT, WIL, AGI, HEA, CHA) — total must not exceed 85 points.
+5. Optionally customize your 6 base stats (STR, INT, WIL, AGI, HEA, CHA) — total must not exceed 80 points.
 6. Log in and arrive at **The Neon Hub**, the grid's central safe zone.
 
 ---
@@ -142,6 +142,7 @@ Abilities are learned at levels 1, 5, 10, 15, 20, 25, and 30.
 - `GET <item>` / `DROP <item>`: Ground interaction.
 - `EQUIP <item>`: Manage hardware.
 - `LIST` / `BUY` / `SELL`: Commerce.
+- `SELLALL`: Sell all unequipped hardware in your inventory.
 
 ---
 
@@ -180,3 +181,171 @@ Team up with other players to explore and move together.
 - `make clean`: Wipes world data but **keeps players**.
 - `make init`: Generates new world state.
 - `python manage.py process_bots`: Starts the AI daemon.
+
+---
+
+## MUD Client Setup
+
+Darkness BBS supports traditional MUD clients like Mudlet, MUSHclient, and any standard Telnet client.
+
+### Prerequisites
+
+1. **Create your character** using the web interface first (character creation is web-only)
+2. **Start the MUD server**: `python manage.py start_mud_server`
+3. **Note the connection details**: By default, the server listens on port 4000
+
+### Connecting with a MUD Client
+
+#### Mudlet
+
+1. Open Mudlet
+2. Click **"Connect"** → **"Connect to..."**
+3. Enter your server details:
+   - **Host**: `localhost` (or your server's IP address)
+   - **Port**: `4000`
+   - **Name**: `Darkness BBS`
+4. **Important**: Uncheck the **"Use SSL/TLS"** option (the server uses plain Telnet, not encrypted)
+5. Click **"Connect"**
+6. Log in with your handle and password when prompted
+
+**Optional Mudlet Profile Setup:**
+- Enable **ANSI Colors** in Settings → General
+- Set **Command Separator** to `;` if you want to chain commands
+- Create aliases for common commands (e.g., `l` for `look`)
+
+#### MUSHclient
+
+1. Open MUSHclient
+2. Click **"File"** → **"Connect"**
+3. Enter connection details:
+   - **Host**: `localhost` (or your server's IP)
+   - **Port**: `4000`
+4. Click **"OK"**
+5. Log in with your handle and password
+
+#### Generic Telnet Client
+
+From a terminal/command prompt:
+```bash
+telnet localhost 4000
+```
+
+Or using netcat:
+```bash
+nc localhost 4000
+```
+
+### MUD Client Configuration Tips
+
+#### Recommended Settings
+
+- **Encoding**: UTF-8 or ASCII
+- **Line Endings**: CRLF (\r\n)
+- **Terminal Type**: ANSI or VT100
+- **Character Set**: ISO 8859-1 or UTF-8
+- **Echo**: Local (client-side echo)
+
+#### Mudlet-Specific Tips
+
+1. **Enable ANSI Colors**: Settings → General → Check "Use ANSI colors"
+2. **Set Prompt**: The game sends a status line after each command showing:
+   ```
+   HP:100/100|MA:20/20|LV:1|CR:25|[Neutral]
+   ```
+3. **Create Aliases** (optional):
+   ```
+   l = look
+   n = north
+   s = south
+   e = east
+   w = west
+   i = inventory
+   st = status
+   ```
+
+#### MUSHclient-Specific Tips
+
+1. **Enable ANSI**: File → World Properties → General → Check "Use ANSI colors"
+2. **Set Command Separator**: Use `;` to chain commands (e.g., `n;look`)
+3. **Create Triggers** (optional):
+   - Trigger on: `HP:(\d+)/(\d+)` to track health
+   - Trigger on: `\[(.*?)\]` to track karma alignment
+
+### Telnet Protocol Notes
+
+- The server uses standard Telnet protocol (port 23 by default, but configurable)
+- ANSI escape codes are used for screen clearing and text formatting
+- Line endings are CRLF (\r\n)
+- The server does not require Telnet option negotiation (works with basic clients)
+- Character creation must be done via the web interface
+
+### Troubleshooting
+
+**Can't connect:**
+- Ensure the MUD server is running: `python manage.py start_mud_server`
+- Check firewall settings allow port 4000
+- Verify the server is listening: `netstat -an | grep 4000`
+
+**Garbled text:**
+- Enable ANSI colors in your client
+- Check encoding settings (use UTF-8 or ASCII)
+- Ensure line endings are set to CRLF
+
+**Commands not working:**
+- Make sure you're logged in (you should see a room description)
+- Check that you're typing commands in lowercase (most commands are case-insensitive)
+- Use `HELP` or `?` to see available commands
+
+**Disconnections:**
+- The server has a 20-minute inactivity timeout
+- Use `EXIT` to log out cleanly
+- If disconnected unexpectedly, simply reconnect and log in again
+
+### Running Both Web and MUD Simultaneously
+
+You can run both the web interface and MUD server at the same time:
+
+```bash
+# Terminal 1: Start Django web server
+python manage.py runserver
+
+# Terminal 2: Start MUD server
+python manage.py start_mud_server
+```
+
+Players can use either interface interchangeably - they share the same game state and database.
+
+### PythonAnywhere Deployment
+
+On PythonAnywhere, you can run both the web interface and MUD server:
+
+**Web Interface:**
+- Configured via the PythonAnywhere "Web" tab
+- Runs on standard ports (80/443)
+- Uses WSGI configuration
+
+**MUD Telnet Server:**
+- Run as an "Always-On Task" in the PythonAnywhere dashboard
+- Default port: 4000
+- You can customize the port with: `python manage.py start_mud_server --port 5000`
+- **Important**: On PythonAnywhere free accounts, you can only run the web app. The MUD server requires a paid account to run as an always-on task.
+- On paid accounts, configure the always-on task to run: `python manage.py start_mud_server --port 4000`
+
+**Firewall/Port Configuration:**
+- PythonAnywhere allows outbound connections on any port
+- For inbound MUD connections, use a port like 4000, 5000, or 8000
+- Players connect to: `yourusername.pythonanywhere.com:4000`
+
+**Example PythonAnywhere Setup:**
+1. Deploy web app via the "Web" tab (standard Django setup)
+2. Go to "Tasks" tab → "Always-On Tasks"
+3. Add command: `python manage.py start_mud_server --port 4000 --settings=darkness_django.settings.production`
+4. Players can now connect via MUD client to `yourusername.pythonanywhere.com:4000`
+
+### Security Notes
+
+- The MUD server does not use encryption (standard Telnet)
+- For production deployments, consider using SSH tunneling or a VPN
+- Passwords are transmitted in plain text over Telnet
+- Use strong passwords for your account
+- The web interface uses HTTPS when properly configured

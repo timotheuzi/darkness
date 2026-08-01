@@ -1,6 +1,6 @@
 # DarknessMUD Django Makefile
 
-.PHONY: help venv setup lint clean lightclean migrate init run repair test deploy-init
+.PHONY: help venv setup lint clean lightclean migrate init run repair test deploy-init mud
 
 VENV := .venv
 PYTHON := $(VENV)/bin/python
@@ -80,6 +80,12 @@ run: venv ## Run the Django development server (kills existing ones first)
 	-pkill -9 python || true
 	$(MANAGE) migrate --settings=$(SETTINGS)
 	$(MANAGE) runserver 0.0.0.0:8008 --settings=$(SETTINGS)
+
+mud: venv ## Run the MUD Telnet server for MUD clients (kills existing ones first)
+	@echo "Killing existing python processes..."
+	-pkill -9 python || true
+	$(MANAGE) migrate --settings=$(SETTINGS)
+	$(MANAGE) start_mud_server --settings=$(SETTINGS)
 
 deploy-run: ## Run the Django development server (PythonAnywhere/production)
 	$(PYTHONANYWHERE_MANAGE) runserver 0.0.0.0:8008 --settings=$(PYTHONANYWHERE_SETTINGS)

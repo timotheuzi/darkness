@@ -391,6 +391,7 @@ def get_help(player):
         sb.append(f"LIST/LI       : View {room.shop_name} catalog")
         sb.append("BUY <item>    : Purchase hardware")
         sb.append("SELL <item>   : Liquidate hardware for credits")
+        sb.append("SELLALL       : Sell all unequipped hardware")
 
     dealer = NPC.objects.filter(location=room, npc_type="dealer", hp__gt=0).first()
     if dealer:
@@ -680,6 +681,16 @@ def respawn_npcs(room):
         n.hp = n.hp_max
         npc_ids.append(n.pk)
         respawned_count += 1
+        # Give respawned NPCs a chance to have drops and weapons
+        if not n.drops.exists() and random.random() < 0.5:
+            drop_item = Item.objects.order_by("?").first()
+            if drop_item:
+                n.drops.add(drop_item)
+        if not n.weapon and random.random() < 0.3:
+            weapon = Item.objects.filter(item_type="weapon").order_by("?").first()
+            if weapon:
+                n.weapon = weapon
+                n.save(update_fields=["weapon"])
 
     # Bulk update respawned NPCs
     if npc_ids:
@@ -731,7 +742,7 @@ def respawn_npcs(room):
 
         multiplier = 4 if is_boss else (2 if is_miniboss else 1)
 
-        NPC.objects.create(
+        new_npc = NPC.objects.create(
             name=f"{name} {random.randint(100, 999)}",
             description=f"A hostile {name.lower()} wandering the grid.",
             location=room,
@@ -746,6 +757,16 @@ def respawn_npcs(room):
             karma_alignment=karma_alignment,
             npc_type=npc_type,
         )
+        # Give new NPCs drops and weapons so bots can collect items
+        if random.random() < 0.5:
+            drop_item = Item.objects.order_by("?").first()
+            if drop_item:
+                new_npc.drops.add(drop_item)
+        if random.random() < 0.3:
+            weapon = Item.objects.filter(item_type="weapon").order_by("?").first()
+            if weapon:
+                new_npc.weapon = weapon
+                new_npc.save(update_fields=["weapon"])
 
         return f"\n[SENSORS] {'MASSIVE ' if is_boss else ''}NEW ENTITIES DETECTED."
 
@@ -1239,8 +1260,8 @@ def attack_target(player, target_name, auto=False):
         return "Target not found."
 
     if other:
-        if abs(player.lvl - other.lvl) > 3:
-            return "Target level too distant. Range: +/- 3 levels."
+        if abs(player.lvl - other.lvl) > 4:
+            return "Target level too distant. Range: +/- 4 levels."
         player.last_combat_player = other
         player.last_combat_npc = None
         player.karma -= 10
@@ -1494,8 +1515,8 @@ def use_ability(player, ability_name, target_name):
     if target_player:
         if player.lvl < 5:
             return "Neural safety lock engaged. Level 5 required to target users."
-        if abs(player.lvl - target_player.lvl) > 3:
-            return "Target level too distant. Range: +/- 3 levels."
+        if abs(player.lvl - target_player.lvl) > 4:
+            return "Target level too distant. Range: +/- 4 levels."
         if player.location.safe_zone:
             return "Violence is prohibited in this sector."
 
@@ -1870,7 +1891,7 @@ def use_ability(player, ability_name, target_name):
         for npc_obj in npcs:
             deal_dmg(1.2, "physical")
         for p in players_here:
-            if p.lvl >= 5 and abs(player.lvl - p.lvl) <= 3:
+            if p.lvl >= 5 and abs(player.lvl - p.lvl) <= 4:
                 deal_dmg(1.2, "physical")
     elif ability_name == "rasengan":
         # Spiral energy sphere - massive damage
@@ -2328,9 +2349,6 @@ def list_shop(player):
             .order_by("item_type", "name")
         )
 
-    # Limit to ~12 items to avoid scrolling
-    items = items[:12]
-
     sb = [f"\n=== {player.location.shop_name} Inventory ==="]
 
     current_type = None
@@ -2417,6 +2435,38 @@ def sell_item(player, item_name):
     # Add sold item to shop inventory
     player.location.shop_inventory.add(ii.item)
     return f"Sold {name} for {price} credits."
+
+
+def sell_all_items(player):
+    """Sell all unequipped items in the player's inventory to the current shop."""
+    if not player.location.shop_name:
+        return "No shop here to sell to."
+
+    unequipped = InventoryItem.objects.filter(player=player, equipped=False)
+    if not unequipped.exists():
+        return "No unequipped items to sell."
+
+    total_credits = 0
+    sold_count = 0
+    sold_names = []
+
+    for ii in unequipped:
+        price = ii.item.price // 2
+        total_credits += price * ii.quantity
+        sold_count += ii.quantity
+        sold_names.append(ii.item.name)
+        # Add sold item to shop inventory
+        player.location.shop_inventory.add(ii.item)
+        ii.delete()
+
+    player.money += total_credits
+    player.save(update_fields=["money"])
+
+    names_str = ", ".join(sold_names[:5])
+    extra = f" and {len(sold_names) - 5} more" if len(sold_names) > 5 else ""
+    return (
+        f"Sold {sold_count} item(s) ({names_str}{extra}) for {total_credits} credits."
+    )
 
 
 def generate_random_weapon(zone):
@@ -2669,17 +2719,19 @@ def process_bot_ai(bot):
     target_player = None
 
     if not room.safe_zone:
-        # Attack evil/semi-evil players (any bot can attack players with bad karma)
+        # Attack players within 4 levels based on bot aggression trait
         if not target_npc and not target_player:
             for p in players_here:
-                if p.karma < -20 and abs(bot.lvl - p.lvl) <= 3:
-                    target_player = p
-                    break
+                if abs(bot.lvl - p.lvl) <= 4:
+                    # Aggressive bots attack anyone; others attack based on karma
+                    if bot.bot_aggression > 60 or p.karma < -20:
+                        target_player = p
+                        break
 
-        # Priority 3: Attack nearby NPCs (only aggressive NPCs, and level-appropriate)
+        # Priority 3: Attack nearby NPCs (any NPC within level range, not just aggressive)
         if not target_npc and not target_player:
             if npcs.exists():
-                valid_npcs = [n for n in npcs if n.aggressive and abs(n.lvl - bot.lvl) <= 5]
+                valid_npcs = [n for n in npcs if abs(n.lvl - bot.lvl) <= 5]
                 if valid_npcs:
                     target_npc = random.choice(valid_npcs)
 
@@ -2692,7 +2744,7 @@ def process_bot_ai(bot):
     # Party behavior: invite players if social enough
     if bot.bot_social > 60 and not bot.parties.exists() and players_here.exists():
         for p in players_here:
-            if abs(bot.lvl - p.lvl) <= 3 and not p.parties.exists():
+            if abs(bot.lvl - p.lvl) <= 4 and not p.parties.exists():
                 invite_to_party(bot, p.user.username)
                 break
 
@@ -2729,6 +2781,38 @@ def process_bot_ai(bot):
             ]
             message = random.choice(greetings)
         ChatMessage.objects.create(sender=bot, room=room, message=message)
+
+    # Pick up items from the ground (bots collect loot)
+    if room.items.exists() and random.random() < 0.3:  # 30% chance to pick up
+        item = room.items.first()
+        if item:
+            room.items.remove(item)
+            ii, created = InventoryItem.objects.get_or_create(player=bot, item=item)
+            if not created:
+                ii.quantity += 1
+            ii.save()
+
+    # Auto-train stats if bot has stat points
+    if bot.stat_points > 0:
+        # Train primary stat based on class
+        primary_stats = {
+            "Street Samurai": "STR",
+            "Heavy": "STR",
+            "Jade Dragon": "AGI",
+            "Ninja": "AGI",
+            "Thief": "AGI",
+            "Netrunner": "INT",
+            "Techie": "INT",
+            "Psycher": "INT",
+            "Warlock": "INT",
+            "Medie": "HEA",
+            "Priest": "WIL",
+            "Fixer": "CHA",
+            "Trickster": "CHA",
+        }
+        stat_to_train = primary_stats.get(bot.game_class, "STR")
+        while bot.stat_points > 0:
+            train_stat(bot, stat_to_train)
 
     # Wander to adjacent room
     if room.exits and random.random() < 0.5:  # 50% chance to move
@@ -2784,7 +2868,7 @@ def get_poll_data(player):
     players_here = list(
         Player.objects.filter(location=player.location, online=True)
         .exclude(id=player.id)
-        .values("id", "user__username", "lvl", "game_class")
+        .values("id", "user__username", "lvl", "game_class", "is_bot")
     )
 
     # PvP notification
@@ -3056,6 +3140,10 @@ def steal_from_target(player, args):
 
     if not target_npc and not target_player:
         return f"No target named '{args}' here."
+
+    # Enforce level range for stealing from players before attempting
+    if target_player and abs(player.lvl - target_player.lvl) > 4:
+        return "Target level too distant. Range: +/- 4 levels."
 
     base_chance = 0.15 if player.game_class == "Thief" else 0.10
     agi_bonus = player.agi_stat * 0.01

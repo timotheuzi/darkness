@@ -1965,5 +1965,11 @@ class Command(BaseCommand):
                         aggressive=(lvl > 1),
                         npc_type=npc_type,
                     )
-                    if random.random() > 0.8:
+                    # Give NPCs drops more often so bots and players can collect items
+                    if random.random() > 0.4:
                         npc.drops.add(random.choice(items))
+                    # Give NPCs a weapon sometimes
+                    if random.random() > 0.6:
+                        weapon = random.choice([i for i in items if i.item_type == "weapon"])
+                        npc.weapon = weapon
+                        npc.save()
