@@ -47,6 +47,20 @@ CLASS_MOVES = {
         (20, "whirlwind", "WHL", "Multiple physical strikes. Scales with STR/ATK."),
         (25, "dragon_lunge", "DRG", "Heavy fire-elemental pierce. Scales with STR/ATK."),
         (30, "omnislash", "OMN", "Ultimate physical combo. Scales with STR/ATK."),
+        (35, "ronin_wrath", "RNW", "Triple masterful strikes. Scales with STR/ATK."),
+        (40, "blade_dance", "BDN", "Five-hit bladed flurry. Scales with STR/ATK."),
+        (
+            45,
+            "ghost_edge",
+            "GHT",
+            "Phase-blade ignores defense entirely. Scales with STR/ATK.",
+        ),
+        (
+            50,
+            "shatter_soul",
+            "SHS",
+            "Ultimate fire strike that drains life. Scales with STR/ATK.",
+        ),
     ],
     "Netrunner": [
         (1, "hack", "HCK", "System water/ice damage. Scales with INT."),
@@ -56,6 +70,15 @@ CLASS_MOVES = {
         (20, "blackout", "BKO", "Neural interference. Lowers target stats based on INT."),
         (25, "databreach", "DBR", "Siphon credits and deal water damage. Scales with INT."),
         (30, "zero_day", "ZER", "Critical system failure damage. Scales with INT."),
+        (35, "ice_wall", "ICW", "Water barrier. Damage plus Defense boost based on INT."),
+        (40, "daemon_host", "DMH", "Possess target: air damage and mana siphon. Scales with INT."),
+        (45, "quantum_fracture", "QTF", "Twin quantum lances. Heavy air damage. Scales with INT."),
+        (
+            50,
+            "neural_cascade",
+            "NCS",
+            "Ultimate triple ice cascade that shatters defense. Scales with INT.",
+        ),
     ],
     "Techie": [
         (1, "calibrate", "CAL", "Drone earth damage. Scales with INT/AGI."),
@@ -65,6 +88,15 @@ CLASS_MOVES = {
         (20, "plasma_arc", "PLA", "Heavy fire damage. Scales with INT."),
         (25, "tesla_coil", "TES", "Stun and air damage. Scales with INT."),
         (30, "singularity", "SIN", "Ultimate gravity collapse (Earth). Scales with INT."),
+        (35, "drone_legion", "DLG", "Three drone strikes. Scales with INT/ATK."),
+        (40, "emp_burst", "EMP", "Air pulse that scrambles target attack. Scales with INT."),
+        (45, "rail_gun", "RGU", "Magnetic slug pierces all defense. Scales with INT/ATK."),
+        (
+            50,
+            "orbital_laser",
+            "OLR",
+            "Ultimate orbital fire lance from the skies. Scales with INT.",
+        ),
     ],
     "Medie": [
         (1, "patch", "PTC", "Biological repair. Heals based on INT."),
@@ -79,6 +111,15 @@ CLASS_MOVES = {
             "NMA",
             "Ultimate survival boost. Massive HP recovery based on HEA.",
         ),
+        (35, "triage", "TRG", "Field surgery. Large heal and mana restore. Scales with HEA/INT."),
+        (40, "immune_boost", "IMB", "Boost Attack and Defense. Scales with HEA."),
+        (45, "leech_field", "LCF", "Drain target life to mend yourself. Scales with HEA/INT."),
+        (
+            50,
+            "phoenix_protocol",
+            "PHX",
+            "Ultimate revival matrix. Full HP recovery and toxin purge.",
+        ),
     ],
     "Fixer": [
         (1, "scheme", "SCH", "Drain credits from target. Scales with CHA."),
@@ -88,6 +129,25 @@ CLASS_MOVES = {
         (20, "market_crash", "MKT", "Siphon massive credits. Scales with CHA."),
         (25, "reinforcements", "REF", "Summon allies for extra hits. Scales with CHA/ATK."),
         (30, "hostile_takeover", "HTK", "Ultimate credit and soul drain. Scales with CHA."),
+        (
+            35,
+            "insurance_fraud",
+            "IFR",
+            "Staged disaster pays out damage and credits. Scales with CHA.",
+        ),
+        (
+            40,
+            "dirty_cop",
+            "DCP",
+            "Pay off security to crush target defense. Scales with CHA.",
+        ),
+        (45, "union_strike", "UNS", "Organized double assault. Scales with CHA/ATK."),
+        (
+            50,
+            "corporate_war",
+            "CWR",
+            "Ultimate hostile buyout. Massive damage and credit extraction. Scales with CHA.",
+        ),
     ],
     "Thief": [
         (1, "backstab", "BSB", "Critical strike from shadows. Scales with AGI/ATK."),
@@ -97,6 +157,20 @@ CLASS_MOVES = {
         (20, "shadow_strike", "SHD", "Critical hit from stealth. Scales with AGI/ATK."),
         (25, "assassinate", "ASN", "Execute target with low HP. Scales with AGI/ATK."),
         (30, "death_mark", "DMK", "Ultimate physical assassination. Scales with AGI/ATK."),
+        (35, "veil_step", "VLS", "Vanish mid-strike and stay hidden. Scales with AGI."),
+        (
+            40,
+            "garrote",
+            "GRT",
+            "Silent kill technique. Extra lethal from stealth. Scales with AGI/ATK.",
+        ),
+        (45, "shadow_clone", "SHC", "Three shadow duplicates strike. Scales with AGI/ATK."),
+        (
+            50,
+            "void_theft",
+            "VDT",
+            "Ultimate larceny: massive damage, stolen credits, and vanish. Scales with AGI/CHA.",
+        ),
     ],
     "Heavy": [
         (1, "smash", "SMH", "Heavy physical damage. Scales with STR."),
@@ -106,6 +180,20 @@ CLASS_MOVES = {
         (20, "juggernaut", "JUG", "Boost Attack and Defense based on HEA/STR."),
         (25, "avalanche", "AVL", "Massive earth AOE. Scales with STR/HEA."),
         (30, "earthshaker", "EQK", "Ultimate earth blow. Scales with STR/HEA."),
+        (35, "bulwark", "BLK", "Plant the line. Massive Defense boost. Scales with HEA/STR."),
+        (40, "wrecking_ball", "WKB", "Swing with brutal momentum. Scales with STR."),
+        (
+            45,
+            "berserker_rage",
+            "BGR",
+            "Trade blood for fury. Attack surge at HP cost. Scales with STR.",
+        ),
+        (
+            50,
+            "titan_fall",
+            "TTF",
+            "Ultimate seismic collapse. Double earth devastation. Scales with STR/HEA.",
+        ),
     ],
     "Psycher": [
         (1, "mind_bolt", "MND", "Intelligence-based energy damage. Scales with INT."),
@@ -115,6 +203,15 @@ CLASS_MOVES = {
         (20, "telekinesis", "TEK", "High physical mind damage. Scales with INT."),
         (25, "mind_control", "MNC", "Target strikes themselves. Effectiveness based on INT."),
         (30, "soul_annihilation", "SOL", "Ultimate psychic collapse. Scales with INT."),
+        (35, "psychic_crush", "PCR", "Crush the target's mind. Scales with INT."),
+        (40, "astral_veil", "ASV", "Project astrally: hide and harden defense. Scales with INT."),
+        (45, "eidolon_swarm", "EID", "Summon three psychic constructs. Scales with INT."),
+        (
+            50,
+            "mind_shatter",
+            "MDS",
+            "Ultimate psychic detonation. Ignores armor. Scales with INT.",
+        ),
     ],
     "Warlock": [
         (1, "curse", "CRS", "Weaken target. Lowers ATK/DEF based on INT."),
@@ -124,6 +221,15 @@ CLASS_MOVES = {
         (20, "necrosis", "NEC", "High rot damage over time. Scales with INT."),
         (25, "demonic_tether", "DMT", "Siphon HP and Mana. Scales with INT."),
         (30, "armageddon", "ARM", "Ultimate chaotic destruction. Scales with INT."),
+        (35, "hex_mark", "HXM", "Brand target: attack and defense rot away. Scales with INT."),
+        (40, "plague_wave", "PLW", "Corrosive rot tide. Scales with INT."),
+        (45, "infernal_pact", "IFP", "Pay in blood for massive hellfire. Scales with INT/HP."),
+        (
+            50,
+            "abyssal_rift",
+            "ABR",
+            "Ultimate void rift. Dark water devastation that feeds the caster. Scales with INT.",
+        ),
     ],
     "Priest": [
         (1, "heal", "HEL", "Holy restoration. Heals based on WIL."),
@@ -138,6 +244,15 @@ CLASS_MOVES = {
             "HVA",
             "Ultimate divine power. Massive heal and damage based on WIL.",
         ),
+        (35, "smite", "SMI", "Pillar of holy fire. Scales with WIL."),
+        (40, "sanctuary", "SNC", "Consecrated ground: Defense boost and heal. Scales with WIL."),
+        (45, "resurrect", "RSR", "Full system restoration and toxin purge. Scales with WIL."),
+        (
+            50,
+            "rapture",
+            "RAP",
+            "Ultimate ascension. Heals to full and burns the wicked. Scales with WIL.",
+        ),
     ],
     "Trickster": [
         (1, "bamboozle", "BAM", "Confuse target. Lowers DEF based on CHA/LUCK."),
@@ -147,6 +262,15 @@ CLASS_MOVES = {
         (20, "mirror_image", "MIR", "Illusionary defense. Large DEF boost based on CHA."),
         (25, "wild_card", "WCD", "Random effect. Scaling based on primary stats."),
         (30, "royal_flush", "RFL", "Ultimate luck-based destruction. Scales with CHA."),
+        (35, "loaded_dice", "LDD", "Weighted odds. Random heavy damage. Scales with CHA."),
+        (40, "puppet_string", "PPS", "Force target to strike itself. Scales with CHA."),
+        (45, "coin_flip", "CNF", "Fifty-fifty: brutal damage or full mend. Scales with CHA."),
+        (
+            50,
+            "chaos_theory",
+            "CHT",
+            "Ultimate cascade of absurd fortune. Wildly random devastation. Scales with CHA.",
+        ),
     ],
     "Jade Dragon": [
         (
@@ -166,6 +290,20 @@ CLASS_MOVES = {
             "JDA",
             "Ultimate martial trance. Massive combo. Scales with AGI/STR.",
         ),
+        (35, "phoenix_wing", "PHW", "Aerial fire strike on rising wings. Scales with AGI/STR."),
+        (40, "thousand_hands", "TSH", "Barrage of chi palms. Scales with AGI/STR."),
+        (
+            45,
+            "serpent_coil",
+            "SRC",
+            "Constrict and strike: lowers target defense. Scales with AGI.",
+        ),
+        (
+            50,
+            "dragon_god_fist",
+            "DGF",
+            "Ultimate five-hit dragon combo. Scales with AGI/STR.",
+        ),
     ],
     "Ninja": [
         (1, "kunai_throw", "KUN", "Swift thrown blade. High crit from stealth."),
@@ -175,6 +313,20 @@ CLASS_MOVES = {
         (20, "phantom_sweep", "PHS", "Area attack that hits all enemies."),
         (25, "throw", "THR", "Destroy weapon to deal 3x its damage to target."),
         (30, "sharingan", "SHR", "Copy target stats and strike with perfect accuracy."),
+        (35, "smoke_screen", "SMS", "Vanish in vapor and harden defense. Scales with AGI."),
+        (40, "thousand_blades", "THB", "Four-blade assassination flurry. Scales with AGI/ATK."),
+        (
+            45,
+            "forbidden_jutsu",
+            "FRJ",
+            "Forbidden technique: pay blood for lethal damage. Scales with AGI.",
+        ),
+        (
+            50,
+            "tsukuyomi",
+            "TSK",
+            "Ultimate genjutsu: copy stats, ignore defense, strike true. Scales with AGI.",
+        ),
     ],
 }
 
@@ -369,7 +521,15 @@ def get_help(player):
     sb.append("PARTY <cmd>   : Party system (CREATE, INVITE <player>, ACCEPT, LEAVE, STATUS)")
     sb.append("EXIT          : Log out and disconnect from the grid")
     sb.append("")
-    sb.append("Created by <a href='https://autarkylabs.pythonanywhere.com/' target='_blank'>Autarky Labs</a>")
+    sb.append("=== GRID PROTOCOLS ===")
+    sb.append("AFK TELEPORT  : Idling 2+ minutes in the starting Hub triggers a random")
+    sb.append("                relocation to a sector matching your level.")
+    sb.append("IDLE KICK     : 1 hour of total inactivity disconnects you. You lose")
+    sb.append("                NOTHING (credits, EXP and gear are kept).")
+    sb.append("AOE MOVES     : Some special moves/spells blast the WHOLE sector. They")
+    sb.append("                award EXP for every kill - and survivors aggro you.")
+    sb.append("")
+    sb.append("Created by <a href='https://autarkylabs.pythonanywhere.com/' target='_blank'>Dark Work</a>")
 
     if room.exits:
         sb.append(f"MOV/DIRS      : Navigation: {', '.join(room.exits.keys()).upper()}")
@@ -794,7 +954,9 @@ def move_player(player, direction):
             player.save(update_fields=["resting", "rest_started_at"])
 
         player.location = Room.objects.get(id=new_room_id)
-        player.save(update_fields=["location"])
+        player.last_move_time = timezone.now()
+        player.save(update_fields=["location", "last_move_time"])
+        touch_player_activity(player)
 
         # Broadcast exit to old room
         broadcast_room_event(player, old_room, None, "exit")
@@ -910,6 +1072,183 @@ def broadcast_npc_movement(npc, old_room, new_room):
             Player.objects.bulk_update(players_in_new, ["notification"])
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# AFK / Idle System
+# - The starting location (The Neon Hub) randomly teleports idle players and
+#   bots to random level-appropriate sectors after 2 minutes of inactivity.
+# - Players who do NOTHING for 1 hour are kicked and must log back in.
+#   Kicked players lose absolutely nothing (no credits, EXP or items).
+# ─────────────────────────────────────────────────────────────────────────────
+HUB_ROOM_ID = 1
+AFK_TELEPORT_SECONDS = 120  # 2 minutes idle in the hub -> random relocation
+AFK_KICK_SECONDS = 3600  # 1 hour of total inactivity -> kicked to login
+STUCK_BOT_SECONDS = 300  # bots that haven't moved for 5 min get relocated
+_last_afk_sweep = None
+
+# Zone id -> (min level, max level). Mirrors ZONE_TEMPLATES in init_game.
+ZONE_LEVEL_RANGES = {
+    "slums": (1, 3),
+    "neon": (2, 5),
+    "industrial": (3, 6),
+    "corporate": (6, 10),
+    "undergrid": (8, 12),
+    "wastes": (10, 15),
+    "nexus": (12, 18),
+    "undercity": (15, 20),
+}
+
+
+def touch_player_activity(player):
+    """Record that a player/bot just DID something (command, move, fight)."""
+    player.last_activity = timezone.now()
+    try:
+        player.save(update_fields=["last_activity"])
+    except Exception:
+        pass
+
+
+def get_level_appropriate_zones(level):
+    """Zones whose level band fits the given player level."""
+    zones = [
+        zone
+        for zone, (min_lvl, max_lvl) in ZONE_LEVEL_RANGES.items()
+        if level >= min_lvl and level <= max_lvl + 2
+    ]
+    if not zones:
+        # High-level players can be dropped anywhere dangerous
+        zones = list(ZONE_LEVEL_RANGES.keys())
+    return zones
+
+
+def pick_teleport_room(level):
+    """Pick a random level-appropriate room, preferring rooms with living NPCs
+    so relocated players and bots have something to fight for EXP."""
+    zones = get_level_appropriate_zones(level)
+    rooms = list(Room.objects.filter(zone__in=zones, safe_zone=False))
+    if not rooms:
+        rooms = list(Room.objects.filter(safe_zone=False).exclude(id=HUB_ROOM_ID))
+    if not rooms:
+        return None
+
+    # Prefer hunting grounds that actually have NPCs
+    populated = [r for r in rooms if r.npc_set.filter(hp__gt=0).exists()]
+    return random.choice(populated or rooms)
+
+
+def teleport_player_to_room(player, room, reason):
+    """Move a player/bot to a room, clearing combat state, and announce it."""
+    old_room = player.location
+    now = timezone.now()
+    player.location = room
+    player.last_move_time = now
+    player.last_activity = now
+    player.resting = False
+    player.rest_started_at = None
+    player.auto_attack = False
+    player.save(
+        update_fields=[
+            "location",
+            "last_move_time",
+            "last_activity",
+            "resting",
+            "rest_started_at",
+            "auto_attack",
+        ]
+    )
+    if old_room:
+        broadcast_room_event(player, old_room, None, "exit")
+    broadcast_room_event(player, None, room, "enter")
+    if len(player.notification) > 0:
+        player.notification += "\n"
+    player.notification += f"\n[TELEPORT] {reason} You materialize in {room.name}."
+    player.save(update_fields=["notification"])
+    return player
+
+
+def kick_player_for_inactivity(player):
+    """Kick an idle human player from the grid. They lose NOTHING - credits,
+    EXP, items and location are all preserved. They simply have to log back
+    in from the login page."""
+    player.online = False
+    player.last_combat_npc = None
+    player.last_combat_player = None
+    player.auto_attack = False
+    player.resting = False
+    player.rest_started_at = None
+    player.save(
+        update_fields=[
+            "online",
+            "last_combat_npc",
+            "last_combat_player",
+            "auto_attack",
+            "resting",
+            "rest_started_at",
+        ]
+    )
+    return f"[SYSTEM] {player.user.username} disconnected (1 hour of inactivity, no losses)."
+
+
+def process_afk_players(force=False):
+    """Periodic sweep handling idle players and bots:
+    1. Humans AFK for 1 hour get kicked (lose nothing).
+    2. Anyone idling 2+ minutes in the starting location gets randomly
+       teleported to a level-appropriate sector (random chance per sweep so
+       it happens 'randomly' shortly after the 2-minute mark, guaranteed by
+       5 minutes).
+    3. Bots stuck anywhere without moving for 5+ minutes (and not fighting)
+       are teleported back into action."""
+    global _last_afk_sweep
+
+    now = timezone.now()
+    if not force:
+        if _last_afk_sweep is not None:
+            if (now - _last_afk_sweep).total_seconds() < 10:
+                return
+        _last_afk_sweep = now
+
+    for p in Player.objects.filter(online=True).select_related("location", "user"):
+        last_active = p.last_activity or p.last_seen
+
+        # 1. Kick humans that have done nothing for 1 hour (bots never kick)
+        if not p.is_bot:
+            if last_active and (now - last_active).total_seconds() >= AFK_KICK_SECONDS:
+                kick_player_for_inactivity(p)
+                continue
+
+        # Skip anyone actively fighting or resting
+        if p.last_combat_npc or p.last_combat_player or p.resting:
+            continue
+        if not p.location:
+            continue
+
+        afk_seconds = (now - last_active).total_seconds() if last_active else 0
+        in_starting_location = p.location.id == HUB_ROOM_ID or p.location.zone == "hub"
+
+        # 2. Random relocation from the starting location after 2 min AFK
+        if in_starting_location and afk_seconds >= AFK_TELEPORT_SECONDS:
+            if random.random() < 0.4 or afk_seconds >= AFK_TELEPORT_SECONDS * 2 + 60:
+                room = pick_teleport_room(p.lvl)
+                if room and room != p.location:
+                    teleport_player_to_room(
+                        p, room, "Idle-link detected. Grid relocation protocol engaged."
+                    )
+            continue
+
+        # 3. Stuck bots: no movement and no activity for a long stretch
+        if p.is_bot and not in_starting_location:
+            last_move = p.last_move_time or last_active
+            stuck_seconds = (now - last_move).total_seconds() if last_move else 0
+            if stuck_seconds >= STUCK_BOT_SECONDS and afk_seconds >= AFK_TELEPORT_SECONDS:
+                if random.random() < 0.4 or stuck_seconds >= STUCK_BOT_SECONDS * 2:
+                    room = pick_teleport_room(p.lvl)
+                    if room and room != p.location:
+                        teleport_player_to_room(
+                            p,
+                            room,
+                            "Stuck-node reset. You are dropped into a live sector.",
+                        )
+
+
 def calculate_damage(
     atk, dfn, element="physical", weakness="none", resistance="none", crit_chance=0
 ):
@@ -931,6 +1270,320 @@ def calculate_damage(
             dmg = int(dmg * 0.5)
 
     return dmg, is_crit
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Room-wide AOE System
+# These special moves/spells blast the ENTIRE sector: every living NPC and
+# every eligible player takes damage, anything that dies awards EXP/loot,
+# and the survivors aggro the caster (NPCs turn hostile; bots react based
+# on their aggression/karma personality).
+# Format: move name -> (damage multiplier per hit, element)
+# ─────────────────────────────────────────────────────────────────────────────
+AOE_MOVES = {
+    "whirlwind": (1.2, "physical"),  # Street Samurai 20
+    "phantom_sweep": (1.2, "physical"),  # Ninja 20
+    "chi_burst": (1.5, "air"),  # Jade Dragon 25
+    "viral_burst": (1.5, "earth"),  # Medie 25
+    "avalanche": (1.8, "earth"),  # Heavy 25
+    "earthshaker": (2.0, "earth"),  # Heavy 30
+    "singularity": (2.0, "earth"),  # Techie 30
+    "armageddon": (2.2, "fire"),  # Warlock 30
+    "plague_wave": (1.6, "earth"),  # Warlock 40
+    "eidolon_swarm": (1.5, "air"),  # Psycher 45
+    "neural_cascade": (1.7, "water"),  # Netrunner 50
+    "orbital_laser": (2.2, "fire"),  # Techie 50
+    "titan_fall": (2.0, "earth"),  # Heavy 50
+    "chaos_theory": (1.8, "air"),  # Trickster 50
+}
+
+# Bonus damage multiplier AOE moves get against their primary target
+AOE_DIRECT_HIT_BONUS = 1.5
+
+
+def get_class_primary_stat(player):
+    """The class's main scaling stat (mirrors use_ability's damage logic)."""
+    if player.game_class in ("Street Samurai", "Heavy"):
+        return player.str_stat
+    if player.game_class == "Jade Dragon":
+        return player.agi_stat
+    if player.game_class in ("Netrunner", "Techie", "Psycher", "Warlock"):
+        return player.int_stat
+    if player.game_class == "Priest":
+        return player.wil_stat
+    if player.game_class in ("Thief", "Ninja"):
+        return player.agi_stat
+    if player.game_class == "Medie":
+        return max(player.int_stat, player.hea_stat)
+    if player.game_class in ("Fixer", "Trickster"):
+        return player.cha_stat
+    return 10
+
+
+def get_unarmed_mult(player):
+    """Jade Dragon-style bonus: 1.5x damage when no weapon is equipped."""
+    if InventoryItem.objects.filter(
+        player=player, equipped=True, item__item_type="weapon"
+    ).exists():
+        return 1.0
+    return 1.5
+
+
+def award_npc_kill(player, npc):
+    """Award EXP, credits, karma and loot for neutralizing an NPC.
+    Returns the output message (includes level-up checks)."""
+    output = ""
+    exp_gain = npc.exp_drop
+    player.exp += exp_gain
+    player.money += npc.money_drop
+
+    if npc.karma_alignment < -30:
+        player.karma += 5
+    elif npc.karma_alignment > 30:
+        player.karma -= 10
+    else:
+        player.karma += 1
+    player.karma = max(-100, min(100, player.karma))
+    player.save(update_fields=["exp", "money", "karma"])
+
+    output += f"\nTarget neutralized! +{exp_gain} exp, +{npc.money_drop} credits."
+    output += drop_npc_weapon(npc)
+    for item in npc.drops.all():
+        ii, created = InventoryItem.objects.get_or_create(player=player, item=item)
+        if not created:
+            ii.quantity += 1
+        ii.save()
+        output += f"\nRetrieved: {item.name}"
+    output += check_level_up(player)
+    return output
+
+
+def award_player_kill(player, target):
+    """Award EXP/credits for defeating another player and respawn them at the
+    hub. Returns the output message."""
+    exp_gain = target.lvl * 50
+    stolen = target.money // 4
+    player.exp += exp_gain
+    player.money += stolen
+    player.save(update_fields=["exp", "money", "karma"])
+
+    hub = Room.objects.filter(id=HUB_ROOM_ID).first()
+    target.hp = target.hp_max // 2
+    target.money = max(0, target.money - stolen)
+    if hub:
+        target.location = hub
+    target.last_combat_npc = None
+    target.last_combat_player = None
+    target.auto_attack = False
+    target.notification = (
+        f"\nYou were neutralized by {player.user.username}! Lost {stolen} credits."
+    )
+    target.save(
+        update_fields=[
+            "hp",
+            "money",
+            "location",
+            "last_combat_npc",
+            "last_combat_player",
+            "auto_attack",
+            "notification",
+        ]
+    )
+    output = f"\nYou neutralized {target.user.username}! +{exp_gain} exp, +{stolen} credits."
+    output += check_level_up(player)
+    return output
+
+
+def execute_room_aoe(player, ability_name, mult, element, req_lvl):
+    """Unleash a room-wide AOE strike. Every living NPC and every eligible
+    player in the sector takes damage; kills award EXP/loot; survivors AGGRO
+    the caster (NPCs turn hostile, aggressive bots strike back, cowardly bots
+    flee). The named target (if any) takes bonus damage."""
+    room = player.location
+    res = f"\n[AOE] {ability_name.upper()} erupts across the entire sector!"
+
+    # Damage scaling (mirrors use_ability's deal_dmg logic)
+    primary_stat = get_class_primary_stat(player)
+    power_val = (primary_stat * 1.5) + (player.attack * 0.5)
+    req_mult = 1.0 + (req_lvl / 20.0)
+    final_atk = int(power_val * mult * req_mult)
+    if element == "physical":
+        crit_chance = min(10, max(1, player.agi_stat // 5))
+    else:
+        crit_chance = min(10, max(1, player.int_stat // 5))
+
+    # Party members are never caught in the blast
+    party_member_ids = set()
+    party = player.parties.first()
+    if party:
+        party_member_ids = set(party.members.values_list("id", flat=True))
+
+    def strike(target, direct=False):
+        """Damage one entity. Returns (message, killed)."""
+        if target.hp <= 0:
+            return "", False
+        if isinstance(target, NPC):
+            dmg, is_crit = calculate_damage(
+                final_atk,
+                target.defense,
+                element=element,
+                weakness=target.weakness,
+                resistance=target.resistance,
+                crit_chance=crit_chance,
+            )
+        else:
+            dmg, is_crit = calculate_damage(
+                final_atk, target.defense, element=element, crit_chance=crit_chance
+            )
+        if direct:
+            dmg = int(dmg * AOE_DIRECT_HIT_BONUS)
+        t_name = target.name if isinstance(target, NPC) else target.user.username
+        target.hp -= dmg
+        msg = f"\n[AOE] {t_name} takes {dmg} {element} damage!"
+        if is_crit:
+            msg = f"\n[AOE][CRIT] {t_name} takes {dmg} {element} damage!"
+        killed = False
+        if isinstance(target, Player):
+            player.karma -= 2
+            player.save(update_fields=["karma"])
+            target.save(update_fields=["hp"])
+            if target.hp <= 0:
+                killed = True
+                msg += award_player_kill(player, target)
+        else:
+            target.save(update_fields=["hp"])
+            if target.hp <= 0:
+                killed = True
+                msg += award_npc_kill(player, target)
+        return msg, killed
+
+    hit_targets = 0
+    kill_count = 0
+
+    # 1. Blast every living NPC in the room
+    for npc in NPC.objects.filter(location=room, hp__gt=0):
+        direct = (
+            player.last_combat_npc and npc.id == player.last_combat_npc.id
+        ) or False
+        msg, killed = strike(npc, direct=direct)
+        if msg:
+            res += msg
+            hit_targets += 1
+            if killed:
+                kill_count += 1
+
+    # 2. Splash every eligible player (standard PvP rules: lvl 5+, +/-4 lvls)
+    for other in (
+        Player.objects.filter(location=room, online=True)
+        .exclude(id=player.id)
+        .exclude(id__in=party_member_ids)
+    ):
+        if other.lvl < 5 or abs(player.lvl - other.lvl) > 4:
+            continue
+        direct = (
+            player.last_combat_player and other.id == player.last_combat_player.id
+        ) or False
+        msg, killed = strike(other, direct=direct)
+        if msg:
+            res += msg
+            hit_targets += 1
+            if killed:
+                kill_count += 1
+
+    if hit_targets == 0:
+        res += "\nThe sector is empty. The blast dissipates harmlessly."
+        return res
+
+    res += f"\n[AOE] {hit_targets} entities caught in the blast radius. ({kill_count} down)"
+    return aoe_aggro_survivors(player, res, room, ability_name)
+
+
+def aoe_aggro_survivors(player, res, room, ability_name):
+    """Survivors of an AOE blast react: NPCs turn hostile and engage, vicious
+    bots counter-attack, cowardly bots flee. Broadcasts the carnage too."""
+    # AGGRO - surviving NPCs become hostile
+    surviving_npcs = list(NPC.objects.filter(location=room, hp__gt=0))
+    for npc in surviving_npcs:
+        if not npc.aggressive:
+            npc.aggressive = True
+            npc.save(update_fields=["aggressive"])
+
+    if surviving_npcs and not player.last_combat_npc and not player.last_combat_player:
+        engager = random.choice(surviving_npcs)
+        player.last_combat_npc = engager
+        player.save(update_fields=["last_combat_npc"])
+        res += f"\n[AGGRO] {engager.name} survived the blast and engages you!"
+
+    # Bots respond based on personality: vicious ones counter-attack,
+    # peaceful ones panic and run.
+    for bot in Player.objects.filter(
+        location=room, online=True, is_bot=True
+    ).exclude(id=player.id):
+        if bot.hp <= 0 or bot.last_combat_npc or bot.last_combat_player:
+            continue
+        if bot.bot_aggression >= 60 or bot.karma <= -20:
+            if abs(bot.lvl - player.lvl) <= 4:
+                bot.last_combat_player = player
+                bot.auto_attack = True
+                bot.last_combat_tick = timezone.now()
+                bot.save(
+                    update_fields=["last_combat_player", "auto_attack", "last_combat_tick"]
+                )
+                res += f"\n[AGGRO] {bot.user.username} witnessed the blast and turns on you!"
+        elif bot.bot_aggression < 30 and room.exits:
+            direction = random.choice(list(room.exits.keys()))
+            move_player(bot, direction)
+            res += f"\n[AGGRO] {bot.user.username} panics and flees the sector!"
+
+    # Broadcast the carnage to everyone else in the room
+    room_players = list(
+        Player.objects.filter(location=room, online=True)
+        .exclude(id=player.id)
+        .only("id", "notification")
+    )
+    broadcast_combat_to_room(
+        player,
+        ability_name.upper(),
+        f"{player.user.username} unleashes {ability_name.upper()} on the whole sector!",
+        room_players,
+    )
+    return res
+
+
+def true_strike_damage(player, target, mult, element, req_lvl):
+    """Ability damage that IGNORES the target's defense entirely.
+    Returns the output message (handles kills via the award helpers)."""
+    if not target or target.hp <= 0:
+        return "\nTarget required."
+    primary = get_class_primary_stat(player)
+    power_val = (primary * 1.5) + (player.attack * 0.5)
+    final_atk = int(power_val * mult * (1.0 + req_lvl / 20.0))
+    if element == "physical":
+        crit_chance = min(10, max(1, player.agi_stat // 5))
+    else:
+        crit_chance = min(10, max(1, player.int_stat // 5))
+    dmg, is_crit = calculate_damage(final_atk, 0, element=element, crit_chance=crit_chance)
+    t_name = target.name if isinstance(target, NPC) else target.user.username
+    target.hp -= dmg
+    target.save(update_fields=["hp"])
+    if is_crit:
+        msg = (
+            f"\n[PIERCE][CRIT] The strike phases through armor! "
+            f"{t_name} takes {dmg} {element} damage."
+        )
+    else:
+        msg = (
+            f"\n[PIERCE] The strike phases through armor! "
+            f"{t_name} takes {dmg} {element} damage."
+        )
+    if isinstance(target, Player):
+        player.karma -= 2
+        player.save(update_fields=["karma"])
+        if target.hp <= 0:
+            msg += award_player_kill(player, target)
+    elif target.hp <= 0:
+        msg += award_npc_kill(player, target)
+    return msg
 
 
 def handle_player_defeat(player, victor_player=None):
@@ -1052,10 +1705,7 @@ def combat_round(player):
         if target.hp <= 0:
             # Win logic
             if target_npc:
-                # Bots gain EXP at 50% rate (slower than humans)
                 exp_gain = target.exp_drop
-                if player.is_bot:
-                    exp_gain = int(target.exp_drop * 0.5)
                 player.exp += exp_gain
                 player.money += target.money_drop
                 player.last_combat_npc = None
@@ -1092,9 +1742,6 @@ def combat_round(player):
                 output += check_level_up(player)
             else:
                 exp_gain = target.lvl * 50
-                # Bots gain EXP at 50% rate (slower than humans)
-                if player.is_bot:
-                    exp_gain = int(target.lvl * 50 * 0.5)
                 player.exp += exp_gain
                 stolen = target.money // 4
                 player.money += stolen
@@ -1321,6 +1968,8 @@ def process_combat_tick(player):
     if (now - player.last_combat_tick).total_seconds() >= 3:
         player.last_combat_tick = now
         player.save(update_fields=["last_combat_tick"])
+        # Fighting counts as activity - never AFK while exchanging blows
+        touch_player_activity(player)
         if player.auto_attack:
             return combat_round(player)
         else:
@@ -1522,6 +2171,20 @@ def use_ability(player, ability_name, target_name):
 
     target = npc or target_player
     cost = 5 + (req_lvl // 2)
+
+    # Room-wide AOE moves blast the ENTIRE sector instead of one target.
+    # Any combat nearby gets dragged into it: everything in the room takes
+    # damage, deaths award EXP, and survivors aggro the caster.
+    if ability_name in AOE_MOVES:
+        if player.location.safe_zone:
+            return "Violence is prohibited in this sector."
+        if player.mana < cost:
+            return "INSUFFICIENT BUFFER (MANA)."
+        player.mana -= cost
+        player.save(update_fields=["mana"])
+        aoe_mult, aoe_element = AOE_MOVES[ability_name]
+        return execute_room_aoe(player, ability_name, aoe_mult, aoe_element, req_lvl)
+
     if player.mana < cost:
         return "INSUFFICIENT BUFFER (MANA)."
 
@@ -1535,6 +2198,10 @@ def use_ability(player, ability_name, target_name):
         nonlocal res
         if not target:
             res += "\nTarget required."
+            return
+        if target.hp <= 0:
+            # Already neutralized by an earlier hit in this combo -
+            # never award EXP twice for the same kill.
             return
 
         # Calculate critical strike chance based on INT for spells, AGI for physical
@@ -1690,6 +2357,340 @@ def use_ability(player, ability_name, target_name):
         player.attack += buff // 2
         player.save(update_fields=["defense", "attack"])
         res += "\nYou are blessed."
+
+    # ── Advanced Class Moves (Lv 35-50) ──
+    # Street Samurai
+    elif ability_name == "ronin_wrath":
+        if target:
+            for _ in range(3):
+                deal_dmg(2.2)
+        else:
+            res += "\nTarget required."
+    elif ability_name == "blade_dance":
+        if target:
+            for _ in range(5):
+                deal_dmg(1.6)
+        else:
+            res += "\nTarget required."
+    elif ability_name == "ghost_edge":
+        res += true_strike_damage(player, target, 2.6, "physical", req_lvl)
+    elif ability_name == "shatter_soul":
+        if target:
+            deal_dmg(3.2, "fire")
+            heal = int(player.hp_max * 0.15)
+            player.hp = min(player.hp_max, player.hp + heal)
+            player.save(update_fields=["hp"])
+            res += f"\n[SOUL DRAIN] You absorb {heal} HP from the shattered soul."
+        else:
+            res += "\nTarget required."
+    # Netrunner
+    elif ability_name == "ice_wall":
+        deal_dmg(2.0, "water")
+        buff = 15 + (player.int_stat // 3)
+        player.defense += buff
+        player.save(update_fields=["defense"])
+        res += f"\n[WALL] Ice barrier raised. Defense +{buff}."
+    elif ability_name == "daemon_host":
+        if target:
+            deal_dmg(2.4, "air")
+            drained = 10 + (player.int_stat // 2)
+            if isinstance(target, Player):
+                drained = min(drained, target.mana)
+                target.mana = max(0, target.mana - drained)
+                target.save(update_fields=["mana"])
+            player.mana = min(player.mana_max, player.mana + drained // 2 + 5)
+            player.save(update_fields=["mana"])
+            res += f"\n[DAEMON] Possession siphons {drained} mana from the host."
+        else:
+            res += "\nTarget required."
+    elif ability_name == "quantum_fracture":
+        if target:
+            deal_dmg(3.0, "air")
+            deal_dmg(3.0, "air")
+        else:
+            res += "\nTarget required."
+    # Techie
+    elif ability_name == "drone_legion":
+        if target:
+            for _ in range(3):
+                deal_dmg(1.8)
+        else:
+            res += "\nTarget required."
+    elif ability_name == "emp_burst":
+        if target:
+            debuff = 10 + (player.int_stat // 3)
+            target.attack = max(1, target.attack - debuff)
+            target.save(update_fields=["attack"])
+            res += f"\n[EMP] Weapon systems scrambled. Target ATK -{debuff}."
+            deal_dmg(2.2, "air")
+        else:
+            res += "\nTarget required."
+    elif ability_name == "rail_gun":
+        res += true_strike_damage(player, target, 3.0, "physical", req_lvl)
+    # Medie
+    elif ability_name == "triage":
+        heal = 40 + ((player.hea_stat + player.int_stat) * 2)
+        player.hp = min(player.hp_max, player.hp + heal)
+        player.mana = min(player.mana_max, player.mana + 10)
+        player.save(update_fields=["hp", "mana"])
+        res += f"\n[TRIAGE] Field surgery complete. +{heal} HP."
+    elif ability_name == "immune_boost":
+        buff = 10 + (player.hea_stat // 3)
+        player.attack += buff
+        player.defense += buff
+        player.save(update_fields=["attack", "defense"])
+        res += f"\n[BOOST] Immune response amplified. ATK/DEF +{buff}."
+    elif ability_name == "leech_field":
+        if target:
+            deal_dmg(2.5, "water")
+            heal = 15 + (player.hea_stat * 2)
+            player.hp = min(player.hp_max, player.hp + heal)
+            player.save(update_fields=["hp"])
+            res += f"\n[LEECH] Drained vitality. +{heal} HP."
+        else:
+            res += "\nTarget required."
+    elif ability_name == "phoenix_protocol":
+        player.hp = player.hp_max
+        player.mana = player.mana_max
+        player.addiction_points = 0
+        player.save(update_fields=["hp", "mana", "addiction_points"])
+        res += "\n[PHOENIX] Nanomachine revival. Fully restored and purified."
+    # Fixer
+    elif ability_name == "insurance_fraud":
+        if target:
+            deal_dmg(2.2)
+            loot = random.randint(20, 80) + (player.cha_stat * 2)
+            player.money += loot
+            player.save(update_fields=["money"])
+            res += f"\n[FRAUD] The payout clears: +{loot} CR."
+        else:
+            res += "\nTarget required."
+    elif ability_name == "dirty_cop":
+        if target:
+            debuff = 12 + (player.cha_stat // 3)
+            target.defense = max(1, target.defense - debuff)
+            target.save(update_fields=["defense"])
+            res += f"\n[BRIBE] Security looks away. Target DEF -{debuff}."
+            deal_dmg(1.8)
+        else:
+            res += "\nTarget required."
+    elif ability_name == "union_strike":
+        if target:
+            deal_dmg(2.0)
+            deal_dmg(2.0)
+        else:
+            res += "\nTarget required."
+    elif ability_name == "corporate_war":
+        if target:
+            deal_dmg(3.5)
+            loot = random.randint(100, 300) + (player.cha_stat * 3)
+            player.money += loot
+            player.save(update_fields=["money"])
+            res += f"\n[WAR] Hostile buyout completes. Extracted {loot} CR."
+        else:
+            res += "\nTarget required."
+    # Thief
+    elif ability_name == "veil_step":
+        if target:
+            deal_dmg(1.8)
+        else:
+            res += "\nTarget required."
+        player.hidden = True
+        player.save(update_fields=["hidden"])
+        res += "\n[VEIL] You slip back into the shadows, unseen."
+    elif ability_name == "garrote":
+        if target:
+            if player.hidden:
+                player.hidden = False
+                player.save(update_fields=["hidden"])
+                res += "\n[GARROTE] Strike from total silence!"
+                deal_dmg(3.5)
+            else:
+                deal_dmg(2.2)
+        else:
+            res += "\nTarget required."
+    elif ability_name == "shadow_clone":
+        if target:
+            for _ in range(3):
+                deal_dmg(1.7)
+        else:
+            res += "\nTarget required."
+    elif ability_name == "void_theft":
+        if target:
+            deal_dmg(2.8)
+            loot = random.randint(30, 120) + (player.cha_stat * 2)
+            if isinstance(target, Player):
+                loot = min(loot, target.money)
+                target.money = max(0, target.money - loot)
+                target.save(update_fields=["money"])
+            player.money += loot
+            player.save(update_fields=["money"])
+            player.hidden = True
+            player.save(update_fields=["hidden"])
+            res += f"\n[VOID] You vanish with {loot} CR into the void."
+        else:
+            res += "\nTarget required."
+    # Heavy
+    elif ability_name == "bulwark":
+        buff = 25 + (player.hea_stat // 2) + (player.str_stat // 4)
+        player.defense += buff
+        player.save(update_fields=["defense"])
+        res += f"\n[BULWARK] You plant the line. Defense +{buff}."
+    elif ability_name == "wrecking_ball":
+        deal_dmg(3.0)
+    elif ability_name == "berserker_rage":
+        buff = 15 + (player.str_stat // 3)
+        cost_hp = max(1, int(player.hp_max * 0.1))
+        player.attack += buff
+        player.hp = max(1, player.hp - cost_hp)
+        player.save(update_fields=["attack", "hp"])
+        res += f"\n[RAGE] Fury at a price: ATK +{buff}, -{cost_hp} HP."
+    # Psycher
+    elif ability_name == "psychic_crush":
+        deal_dmg(2.6, "air")
+    elif ability_name == "astral_veil":
+        buff = 12 + (player.int_stat // 3)
+        player.hidden = True
+        player.defense += buff
+        player.save(update_fields=["hidden", "defense"])
+        res += f"\n[ASTRAL] You project astrally: hidden, Defense +{buff}."
+    elif ability_name == "mind_shatter":
+        res += true_strike_damage(player, target, 3.2, "air", req_lvl)
+    # Warlock
+    elif ability_name == "hex_mark":
+        if target:
+            debuff = 12 + (player.int_stat // 3)
+            target.attack = max(1, target.attack - debuff)
+            target.defense = max(1, target.defense - debuff)
+            target.save(update_fields=["attack", "defense"])
+            res += f"\n[HEX] The mark rots their gear. Target ATK/DEF -{debuff}."
+        else:
+            res += "\nTarget required."
+    elif ability_name == "infernal_pact":
+        if target:
+            cost_hp = max(1, int(player.hp_max * 0.12))
+            player.hp = max(1, player.hp - cost_hp)
+            player.save(update_fields=["hp"])
+            res += f"\n[PACT] Blood price paid: -{cost_hp} HP."
+            deal_dmg(3.4, "fire")
+        else:
+            res += "\nTarget required."
+    elif ability_name == "abyssal_rift":
+        if target:
+            deal_dmg(3.0, "water")
+            heal = int(player.hp_max * 0.12)
+            player.hp = min(player.hp_max, player.hp + heal)
+            player.save(update_fields=["hp"])
+            res += f"\n[RIFT] The abyss feeds you: +{heal} HP."
+        else:
+            res += "\nTarget required."
+    # Priest
+    elif ability_name == "smite":
+        deal_dmg(2.6, "fire")
+    elif ability_name == "sanctuary":
+        buff = 12 + (player.wil_stat // 3)
+        heal = 20 + (player.wil_stat * 2)
+        player.defense += buff
+        player.hp = min(player.hp_max, player.hp + heal)
+        player.save(update_fields=["defense", "hp"])
+        res += f"\n[SANCTUARY] Consecrated ground: DEF +{buff}, +{heal} HP."
+    elif ability_name == "resurrect":
+        player.hp = player.hp_max
+        player.mana = max(player.mana, player.mana_max // 2)
+        player.addiction_points = 0
+        player.save(update_fields=["hp", "mana", "addiction_points"])
+        res += "\n[RESURRECT] Full system restoration. Toxins purged."
+    elif ability_name == "rapture":
+        player.hp = player.hp_max
+        player.save(update_fields=["hp"])
+        res += "\n[RAPTURE] You ascend briefly, fully renewed."
+        if target:
+            deal_dmg(2.4, "fire")
+        else:
+            res += "\nNo wicked target present."
+    # Trickster
+    elif ability_name == "loaded_dice":
+        if target:
+            roll = random.choice([1.5, 2.0, 2.5, 3.0, 3.5])
+            res += f"\n[DICE] The weighted dice land... x{roll}!"
+            deal_dmg(roll)
+        else:
+            res += "\nTarget required."
+    elif ability_name == "puppet_string":
+        if target:
+            self_dmg = max(1, (target.attack - target.defense // 2) + player.cha_stat)
+            t_name = target.name if isinstance(target, NPC) else target.user.username
+            target.hp -= self_dmg
+            target.save(update_fields=["hp"])
+            res += f"\n[PUPPET] {t_name} is forced to strike itself for {self_dmg} damage!"
+            if isinstance(target, Player):
+                player.karma -= 2
+                player.save(update_fields=["karma"])
+                if target.hp <= 0:
+                    res += award_player_kill(player, target)
+            elif target.hp <= 0:
+                res += award_npc_kill(player, target)
+        else:
+            res += "\nTarget required."
+    elif ability_name == "coin_flip":
+        if random.random() < 0.5:
+            res += "\n[COIN] Heads! Brutal fortune."
+            if target:
+                deal_dmg(3.2)
+            else:
+                res += "\nTarget required."
+        else:
+            player.hp = player.hp_max
+            player.save(update_fields=["hp"])
+            res += "\n[COIN] Tails! Full mend."
+    # Jade Dragon
+    elif ability_name == "phoenix_wing":
+        deal_dmg(2.8 * get_unarmed_mult(player), "fire")
+    elif ability_name == "thousand_hands":
+        if target:
+            for _ in range(4):
+                deal_dmg(1.5 * get_unarmed_mult(player))
+        else:
+            res += "\nTarget required."
+    elif ability_name == "serpent_coil":
+        if target:
+            debuff = 10 + (player.agi_stat // 3)
+            target.defense = max(1, target.defense - debuff)
+            target.save(update_fields=["defense"])
+            res += f"\n[COIL] Constricted! Target DEF -{debuff}."
+            deal_dmg(2.0 * get_unarmed_mult(player))
+        else:
+            res += "\nTarget required."
+    elif ability_name == "dragon_god_fist":
+        if target:
+            for _ in range(5):
+                deal_dmg(2.0 * get_unarmed_mult(player))
+        else:
+            res += "\nTarget required."
+    # Ninja
+    elif ability_name == "smoke_screen":
+        buff = 12 + (player.agi_stat // 3)
+        player.hidden = True
+        player.defense += buff
+        player.save(update_fields=["hidden", "defense"])
+        res += f"\n[SMOKE] You vanish in vapor. Hidden, Defense +{buff}."
+    elif ability_name == "thousand_blades":
+        if target:
+            for _ in range(4):
+                deal_dmg(1.6)
+        else:
+            res += "\nTarget required."
+    elif ability_name == "forbidden_jutsu":
+        if target:
+            cost_hp = max(1, int(player.hp_max * 0.12))
+            player.hp = max(1, player.hp - cost_hp)
+            player.save(update_fields=["hp"])
+            res += f"\n[FORBIDDEN] Blood price: -{cost_hp} HP."
+            deal_dmg(3.4)
+        else:
+            res += "\nTarget required."
+    elif ability_name == "tsukuyomi":
+        res += true_strike_damage(player, target, 3.0, "air", req_lvl)
 
     # Generic keyword-based handlers for other moves
     elif any(
@@ -2677,6 +3678,95 @@ def check_procedural_weapon_spawns():
     return spawned_weapons
 
 
+def bot_auto_equip(bot, item):
+    """Equip dropped/bought loot if it upgrades the bot's current gear.
+    Mirrors equip_item's stat adjustments. Returns True if equipped."""
+    if item.item_type not in ("weapon", "armor"):
+        return False
+    limits = GEAR_LIMITS.get(bot.game_class, {})
+    if item.item_type == "weapon":
+        allowed = limits.get("weapon")
+        current = (
+            InventoryItem.objects.filter(
+                player=bot, equipped=True, item__item_type="weapon"
+            )
+            .select_related("item")
+            .first()
+        )
+        better = not current or item.attack_bonus > current.item.attack_bonus
+    else:
+        allowed = limits.get("armor")
+        current = (
+            InventoryItem.objects.filter(
+                player=bot, equipped=True, item__item_type="armor"
+            )
+            .select_related("item")
+            .first()
+        )
+        better = not current or item.defense_bonus > current.item.defense_bonus
+
+    if not better or (allowed and item.subtype not in allowed):
+        return False
+
+    # Unequip the old piece (removing its stat bonuses)
+    if current:
+        old = current.item
+        bot.attack -= old.attack_bonus
+        bot.defense -= old.defense_bonus
+        bot.str_stat -= old.str_bonus
+        bot.int_stat -= old.int_bonus
+        bot.wil_stat -= old.wil_bonus
+        bot.agi_stat -= old.agi_bonus
+        bot.hea_stat -= old.hea_bonus
+        bot.cha_stat -= old.cha_bonus
+        current.equipped = False
+        current.save(update_fields=["equipped"])
+
+    ii, _created = InventoryItem.objects.get_or_create(player=bot, item=item)
+    ii.equipped = True
+    ii.save(update_fields=["equipped"])
+    bot.attack += item.attack_bonus
+    bot.defense += item.defense_bonus
+    bot.str_stat += item.str_bonus
+    bot.int_stat += item.int_bonus
+    bot.wil_stat += item.wil_bonus
+    bot.agi_stat += item.agi_bonus
+    bot.hea_stat += item.hea_bonus
+    bot.cha_stat += item.cha_bonus
+    bot.save(
+        update_fields=[
+            "attack",
+            "defense",
+            "str_stat",
+            "int_stat",
+            "wil_stat",
+            "agi_stat",
+            "hea_stat",
+            "cha_stat",
+        ]
+    )
+    return True
+
+
+def bot_try_use_ability(bot, target_name):
+    """Have a bot cast one of its learned class moves at its target so bots
+    actually level up like players. Returns True if an ability was attempted."""
+    if bot.mana < 8:
+        return False
+    learned = []
+    for lvl, name, _acr, _desc in CLASS_MOVES.get(bot.game_class, []):
+        if lvl > bot.lvl or name in ("stealth", "sneak"):
+            continue
+        if bot.mana >= 5 + (lvl // 2):
+            learned.append(name)
+    if not learned:
+        return False
+    move_name = random.choice(learned)
+    use_ability(bot, move_name, target_name)
+    touch_player_activity(bot)
+    return True
+
+
 def process_bot_ai(bot):
     """Process AI behavior for bot players. Called during polling or by process_bots command."""
     if not bot.is_bot or not bot.online:
@@ -2687,8 +3777,10 @@ def process_bot_ai(bot):
         process_combat_tick(bot)
         return ""
 
-    # Skip if bot is resting (they're already "active")
+    # Bots resting now actually RECOVER. (Previously they rested forever
+    # unless a human was polling their room - leaving them stuck in place.)
     if bot.resting:
+        process_resting(bot)
         return ""
 
     # Only act every 10-30 seconds (using persistent database field)
@@ -2698,12 +3790,15 @@ def process_bot_ai(bot):
         if time_since_last < random.randint(10, 30):
             return ""
 
-    # Update last action time
+    # Update last action time (acting = not AFK)
     bot.last_bot_action = now
     bot.save(update_fields=["last_bot_action"])
+    touch_player_activity(bot)
 
     # AI Decision Making
     room = bot.location
+    if not room:
+        return ""
 
     # Check if bot should rest (low HP) - but NOT if in combat
     if bot.hp < bot.hp_max * 0.3 and not bot.last_combat_npc and not bot.last_combat_player:
@@ -2738,6 +3833,10 @@ def process_bot_ai(bot):
     # Execute combat (without broadcasting to players - bots fight silently)
     if target_npc or target_player:
         target_name = target_npc.name if target_npc else target_player.user.username
+        # Mix class abilities into the fight (~35% of engagements) so bots
+        # actually fight like players and gain EXP/levels.
+        if random.random() < 0.35 and bot_try_use_ability(bot, target_name):
+            return ""
         attack_target(bot, target_name, auto=True)
         return ""
 
@@ -2782,8 +3881,9 @@ def process_bot_ai(bot):
             message = random.choice(greetings)
         ChatMessage.objects.create(sender=bot, room=room, message=message)
 
-    # Pick up items from the ground (bots collect loot)
-    if room.items.exists() and random.random() < 0.3:  # 30% chance to pick up
+    # Pick up items from the ground and EQUIP any upgrades
+    # (bots used to hoard loot without ever using it)
+    if room.items.exists() and random.random() < 0.5:  # 50% chance to pick up
         item = room.items.first()
         if item:
             room.items.remove(item)
@@ -2791,6 +3891,7 @@ def process_bot_ai(bot):
             if not created:
                 ii.quantity += 1
             ii.save()
+            bot_auto_equip(bot, item)
 
     # Auto-train stats if bot has stat points
     if bot.stat_points > 0:
@@ -2814,10 +3915,23 @@ def process_bot_ai(bot):
         while bot.stat_points > 0:
             train_stat(bot, stat_to_train)
 
-    # Wander to adjacent room
-    if room.exits and random.random() < 0.5:  # 50% chance to move
-        direction = random.choice(list(room.exits.keys()))
-        move_player(bot, direction)
+    # Wander: actively hunt for NPCs to fight. Bots linger a little in rooms
+    # that still have targets but leave empty sectors quickly (they used to
+    # get stuck oscillating in dead zones).
+    npcs_nearby = npcs.exists()
+    if room.exits:
+        move_chance = 0.35 if npcs_nearby else 0.85
+        if random.random() < move_chance:
+            direction = random.choice(list(room.exits.keys()))
+            move_player(bot, direction)
+    else:
+        # Dead-end room with no exits and nothing to fight: relocate to a
+        # live hunting ground instead of being stuck forever.
+        rescue_room = pick_teleport_room(bot.lvl)
+        if rescue_room and rescue_room != room:
+            teleport_player_to_room(
+                bot, rescue_room, "Pathfinder rerouted this stranded runner."
+            )
 
     return ""
 
@@ -2849,6 +3963,10 @@ def get_poll_data(player):
 
     # Check for procedural weapon spawns (once per process, using module-level cache)
     check_procedural_weapon_spawns()
+
+    # Idle handling: random 2-min hub AFK teleports, stuck-bot rescues and
+    # the 1-hour inactivity kick (rate-limited internally).
+    process_afk_players()
 
     cutoff = timezone.now() - timezone.timedelta(seconds=30)
     # Poll world chat and local chat

@@ -209,6 +209,8 @@ def register_view(request):
                 game_class=game_class,
                 location=start_room,
                 money=initial_money,
+                last_activity=timezone.now(),
+                last_move_time=timezone.now(),
                 **stats,
             )
             return JsonResponse({"message": f"Character initialized! Welcome to the grid, {name}."})
@@ -230,6 +232,7 @@ def login_view(request):
                 player = user.player
                 player.online = True
                 player.last_seen = timezone.now()
+                player.last_activity = timezone.now()
                 player.save()
                 return JsonResponse({"success": True})
             return JsonResponse({"success": False, "message": "Invalid credentials"})
@@ -245,19 +248,25 @@ def command_view(request):
 
         player = request.user.player
 
-        # Inactivity check (20 minutes)
+        # Inactivity kick (1 hour of doing NOTHING). Kicked players lose
+        # nothing - they just have to log back in from the login page.
         now = timezone.now()
-        if player.last_seen and (now - player.last_seen).total_seconds() > 1200:
-            player.online = False
-            player.save()
+        last_active = player.last_activity or player.last_seen
+        if last_active and (now - last_active).total_seconds() >= services.AFK_KICK_SECONDS:
+            services.kick_player_for_inactivity(player)
             logout(request)
             return JsonResponse(
-                {"message": "Session expired due to inactivity.", "action": "exit"}, status=401
+                {
+                    "message": "Kicked: 1 hour of inactivity. You lost nothing - log back in.",
+                    "action": "exit",
+                },
+                status=401,
             )
 
-        # Update last_seen on every command
+        # Update last_seen and record real activity (any command counts)
         player.last_seen = now
         player.save(update_fields=["last_seen"])
+        services.touch_player_activity(player)
 
         try:
             cmd_data = json.loads(request.body)
@@ -380,13 +389,14 @@ def poll_view(request):
 
         player = request.user.player
 
-        # Inactivity check (20 minutes)
+        # Inactivity kick (1 hour of doing NOTHING). Kicked players lose
+        # nothing; the web client reloads straight to the login page.
         now = timezone.now()
-        if player.last_seen and (now - player.last_seen).total_seconds() > 1200:
-            player.online = False
-            player.save()
+        last_active = player.last_activity or player.last_seen
+        if last_active and (now - last_active).total_seconds() >= services.AFK_KICK_SECONDS:
+            services.kick_player_for_inactivity(player)
             logout(request)
-            return JsonResponse({"status": "session_expired", "authenticated": False})
+            return JsonResponse({"status": "kicked_inactivity", "authenticated": False})
 
         return JsonResponse(services.get_poll_data(player))
     except (OperationalError, Exception):

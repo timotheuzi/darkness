@@ -1,6 +1,6 @@
 # DarknessMUD Django Makefile
 
-.PHONY: help venv setup lint clean lightclean migrate init run repair test deploy-init mud
+.PHONY: help venv setup lint clean lightclean migrate init fresh run repair test deploy-init mud
 
 VENV := .venv
 PYTHON := $(VENV)/bin/python
@@ -66,6 +66,11 @@ migrate: venv ## Run database migrations (local)
 
 init: migrate ## Initialize game world data (local) - WARNING: Wipes world state but keeps players
 	$(MANAGE) init_game --settings=$(SETTINGS)
+
+fresh: ## Wipe ALL user accounts and spawn a few fresh AI bots (world/rooms are kept)
+	@echo "Deleting all user accounts and creating fresh bots..."
+	$(MANAGE) migrate --settings=$(SETTINGS)
+	$(MANAGE) create_bots --wipe-users --count 8 --settings=$(SETTINGS)
 
 deploy-migrate: ## Run database migrations (PythonAnywhere/production)
 	$(PYTHONANYWHERE_MANAGE) makemigrations game --settings=$(PYTHONANYWHERE_SETTINGS)

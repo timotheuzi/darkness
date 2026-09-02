@@ -159,6 +159,13 @@ class Player(models.Model):
     bot_social = models.IntegerField(default=50)  # 0-100, likelihood to party with players
     last_bot_action = models.DateTimeField(null=True, blank=True)  # Track last AI action
 
+    # AFK tracking: last time the player/bot actually DID something
+    # (command, movement, combat, bot action). Used for the 2-minute
+    # Hub AFK teleport and the 1-hour inactivity kick.
+    last_activity = models.DateTimeField(null=True, blank=True)
+    # Last time the player/bot physically changed rooms (stuck-bot detection)
+    last_move_time = models.DateTimeField(null=True, blank=True)
+
     class Meta:
         indexes = [
             Index(fields=["online", "is_bot"]),

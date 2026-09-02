@@ -19,6 +19,13 @@ class Command(BaseCommand):
 
         try:
             while True:
+                # Idle handling: random 2-min hub AFK teleports, stuck-bot
+                # rescues, and the 1-hour inactivity kick for humans.
+                try:
+                    services.process_afk_players(force=True)
+                except Exception as e:
+                    self.stdout.write(f"AFK sweep error: {e}")
+
                 # Get all online bots
                 bots = Player.objects.filter(is_bot=True, online=True)
 

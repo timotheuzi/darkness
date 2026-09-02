@@ -95,13 +95,39 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--count", type=int, default=12, help="Number of bots to create (3-20)")
         parser.add_argument("--reset", action="store_true", help="Delete all existing bots first")
+        parser.add_argument(
+            "--wipe-users",
+            action="store_true",
+            help="Delete ALL user accounts (humans and bots) before creating new bots. "
+            "Django superusers are preserved unless --purge-superusers is also given.",
+        )
+        parser.add_argument(
+            "--purge-superusers",
+            action="store_true",
+            help="With --wipe-users: also delete Django superuser accounts.",
+        )
 
     def handle(self, *args, **kwargs):
         count = min(max(3, kwargs.get("count", 20)), 20)  # Clamp between 3-20
         reset = kwargs.get("reset", False)
+        wipe_users = kwargs.get("wipe_users", False)
+        purge_superusers = kwargs.get("purge_superusers", False)
 
         with transaction.atomic():
-            if reset:
+            if wipe_users:
+                self.stdout.write("Wiping ALL user accounts...")
+                users = User.objects.all()
+                if not purge_superusers:
+                    users = users.exclude(is_superuser=True)
+                total = users.count()
+                users.delete()
+                note = (
+                    " (superusers preserved)"
+                    if not purge_superusers
+                    else " (including superusers)"
+                )
+                self.stdout.write(self.style.SUCCESS(f"Deleted {total} users{note}."))
+            elif reset:
                 self.stdout.write("Removing existing bots...")
                 # Delete bot users and their players
                 bot_players = Player.objects.filter(is_bot=True)
@@ -221,6 +247,8 @@ class Command(BaseCommand):
                     stat_points=random.randint(0, lvl // 2),
                     last_bot_action=timezone.now()
                     - timezone.timedelta(seconds=random.randint(30, 60)),
+                    last_activity=timezone.now(),
+                    last_move_time=timezone.now(),
                 )
 
                 # Equip bot with random gear

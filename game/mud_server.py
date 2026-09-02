@@ -97,17 +97,23 @@ class MudClient:
         try:
             from game import services
             from game.models import Player
-            
-            # Check for inactivity BEFORE updating last_seen
+
+            # Inactivity kick (1 hour of doing NOTHING). Kicked players lose
+            # nothing and are returned to the login prompt.
             now = timezone.now()
-            if self.player.last_seen and (now - self.player.last_seen).total_seconds() > 1200:
+            last_active = self.player.last_activity or self.player.last_seen
+            if last_active and (now - last_active).total_seconds() >= services.AFK_KICK_SECONDS:
                 await self.logout()
-                return "Session expired due to inactivity."
-            
-            # Update last_seen
+                return (
+                    "\n[SYSTEM] Disconnected: 1 hour of inactivity.\n"
+                    "You lost nothing. Please log back in.\n\nHandle: "
+                )
+
+            # Update last_seen and record real activity
             self.player.last_seen = now
             self.player.save(update_fields=["last_seen"])
-            
+            services.touch_player_activity(self.player)
+
             parts = command.strip().split(" ", 1)
             cmd = parts[0].lower()
             args = parts[1] if len(parts) > 1 else ""
@@ -243,8 +249,14 @@ class MudClient:
                 self.user = user
                 self.player = user.player
                 self.player.online = True
-                self.player.last_seen = timezone.now()
-                self.player.save(update_fields=["online", "last_seen"])
+                now = timezone.now()
+                self.player.last_seen = now
+                self.player.last_activity = now
+                if not self.player.last_move_time:
+                    self.player.last_move_time = now
+                self.player.save(
+                    update_fields=["online", "last_seen", "last_activity", "last_move_time"]
+                )
                 self.authenticated = True
                 self.login_stage = 'playing'
                 
@@ -342,6 +354,20 @@ async def handle_client(reader, writer):
         print(f"Connection closed: {client_ip}")
 
 
+async def afk_watchdog():
+    """Background task: periodically sweeps idle connections. Handles the
+    random 2-minute Hub AFK teleports, stuck-bot rescues, and marks players
+    who have been idle 1+ hour as offline so they must log back in."""
+    from game import services
+
+    while True:
+        await asyncio.sleep(15)
+        try:
+            services.process_afk_players(force=True)
+        except Exception as e:
+            print(f"AFK watchdog error: {e}")
+
+
 async def run_mud_server(host='0.0.0.0', port=4000):
     """Run the MUD Telnet server."""
     print(f"Starting MUD server on {host}:{port}...")
@@ -350,11 +376,13 @@ async def run_mud_server(host='0.0.0.0', port=4000):
     print("Press Ctrl+C to stop the server.\n")
     
     server = await telnetlib3.create_server(host=host, port=port, client_connected_cb=handle_client)
+    watchdog = asyncio.ensure_future(afk_watchdog())
     
     try:
         await server.serve_forever()
     except KeyboardInterrupt:
         print("\nShutting down MUD server...")
+        watchdog.cancel()
         server.close()
         await server.wait_closed()
 
